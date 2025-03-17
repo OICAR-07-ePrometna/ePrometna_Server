@@ -31,3 +31,6 @@ go.work.sum
 *.old
 tmp/
 *.tmp
+
+# project confi
+ePrometna.json

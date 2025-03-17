@@ -1,7 +1,8 @@
 package config
 
 const (
-	LOG_FILE                    = "poscln.log"
+	_CONFIG_FILE                = "ePrometna.json"
+	LOG_FILE                    = "ePrometna.log"
 	LOG_FILE_MAX_SIZE           = 2
 	LOG_FILE_MAX_AGE            = 30
 	LOG_FILE_MAX_BACKUPS        = 0
@@ -9,4 +10,12 @@ const (
 	TMP_FOLDER           string = "./tmp"
 )
 
-var IsDevelopment = true
+// AppConfig is struct that contains basic app configuration variables
+var AppConfig *AppConfiguration = nil
+
+type AppConfiguration struct {
+	// IsDevelopment describes the environment
+	IsDevelopment bool
+	Port          int
+	DbConnection  string
+}

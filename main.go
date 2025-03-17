@@ -15,7 +15,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	if config.IsDevelopment {
+	if config.AppConfig.IsDevelopment {
 		devLoggerSetup()
 	} else {
 		prodLoggerSetup()
