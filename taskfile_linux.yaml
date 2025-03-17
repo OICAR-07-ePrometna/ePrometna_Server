@@ -1,0 +1,26 @@
+version: "3"
+tasks:
+  build:
+    platforms: [linux/amd64]
+    env:
+      GOOS: linux
+      GOARCH: amd64
+    vars:
+      OUTPUT_FILE: "{{.BIN_FOLDER}}/{{.PROJECT_CODE}}"
+    cmds:
+      - go build {{.BUILD_OPTIONS}} {{.TASK_OPTIONS}} -o {{.OUTPUT_FILE}}
+    internal: false
+
+  tidy:
+    cmds:
+      - rm -rf ./{{.BIN_FOLDER}}
+      - go fmt ./...
+      - go mod tidy -v
+    silent: false
+
+  run:
+    platforms: [linux/amd64]
+    cmds:
+      - rm -f log/{{.PROJECT_CODE}}*.log
+      - ./bin/{{.PROJECT_CODE}} {{.CLI_ARGS}}
+    silent: false

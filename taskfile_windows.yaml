@@ -1,0 +1,28 @@
+version: "3"
+tasks:
+  build:
+    platforms: [windows/amd64]
+    env:
+      GOOS: windows
+      GOARCH: amd64
+    vars:
+      OUTPUT_FILE: "{{.BIN_FOLDER}}\\{{.PROJECT_CODE}}"
+    cmds:
+      - go build {{.BUILD_OPTIONS}} {{.TASK_OPTIONS}} -o {{.OUTPUT_FILE}}
+    internal: false
+
+  tidy:
+    cmds:
+      # TODO: write remove for windows
+      # - rm -rf ./bin
+      - go fmt ./...
+      - go mod tidy -v
+    silent: false
+
+  run:
+    platforms: [windows/amd64]
+    cmds:
+      # TODO: write remove for windows
+      # - cmd: rm -f log/{{.PROJECT_CODE}}*.log
+      - cmd: "{{.BIN_FOLDER}}\\{{.PROJECT_CODE}} {{.CLI_ARGS}}:"
+    silent: false

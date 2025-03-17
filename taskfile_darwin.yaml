@@ -1,0 +1,26 @@
+version: "3"
+tasks:
+  build:
+    platforms: [darwin]
+    env:
+      GOOS: darwin
+      GOARCH: amd64
+    vars:
+      OUTPUT_FILE: "{{.BIN_FOLDER}}/{{.PROJECT_CODE}}"
+    cmds:
+      - go build {{.BUILD_OPTIONS}} {{.TASK_OPTIONS}} -o {{.OUTPUT_FILE}}
+    internal: false
+
+  tidy:
+    cmds:
+      - rm -rf ./{{.BIN_FOLDER}}
+      - go fmt ./...
+      - go mod tidy -v
+    silent: false
+
+  run:
+    platforms: [darwin]
+    cmds:
+      - rm -f log/{{.PROJECT_CODE}}*.log
+      - ./bin/{{.PROJECT_CODE}} {{.CLI_ARGS}}
+    silent: false

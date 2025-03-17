@@ -1,0 +1,66 @@
+version: "3"
+
+vars:
+  PROJECT_CODE: ePrometna_Servera
+
+  # folders
+  BIN_FOLDER: bin
+
+  # build options
+  # -v  print the names of packages as they are compiled
+  # -s  omit the symbol table and debug information
+  # -w  omit the DWARF symbol table
+  #
+  BUILD_OPTIONS: -v -ldflags="-s -w"
+
+includes:
+  osbuild:
+    taskfile: taskfile_{{OS}}.yaml
+    flatten: true
+
+tasks:
+  default:
+    cmds:
+      - task: list-tools
+    silent: false
+
+  rebuild:
+    cmds:
+      - cmd: go clean --modcache
+      - cmd: go clean -cache
+      - task: tidy
+      - task: verify
+      - task: build
+        vars: { TASK_OPTIONS: "-a" }
+    silent: false
+
+  verify:
+    cmds:
+      - go mod verify
+      - go vet ./...
+    silent: false
+
+  update:
+    cmds:
+      - go get -u all
+    silent: false
+
+  dev:
+    cmd: go run .
+    silent: true
+
+  test:
+    cmd: go test -v ./...
+    silent: false
+
+  list:
+    cmds:
+      - go list -u -m all
+    silent: true
+
+  list-tools:
+    cmds:
+      - go version
+      - gcc --version
+      - task --version
+    silent: true
