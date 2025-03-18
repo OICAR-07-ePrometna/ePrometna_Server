@@ -1,6 +1,7 @@
 package main
 
 import (
+	"ePrometna_Server/app"
 	"ePrometna_Server/config"
 	"ePrometna_Server/httpServer"
 	"ePrometna_Server/model"
@@ -23,6 +24,7 @@ func main() {
 		prodLoggerSetup()
 	}
 
+	// TODO: register databse as a singleton in app package and lock with mutexes mby rw once
 	db, err := gorm.Open(postgres.Open(config.AppConfig.DbConnection), &gorm.Config{
 		// NOTE: change LogMode if needed when debugging
 		Logger: NewGormZapLogger().LogMode(logger.Warn),
@@ -34,6 +36,9 @@ func main() {
 	if err = db.AutoMigrate(model.GetAllModels()...); err != nil {
 		zap.S().Panicf("Can't run AutoMigrate err = %+v", err)
 	}
+	app.Setup()
+	// BUG: need to provide constructor function not object
+	app.Provide(db)
 
 	// TODO: this is test insert remove later
 	db.Create(&model.Tmodel{Name: "Test insert"})

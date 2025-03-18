@@ -120,18 +120,3 @@ func corsHeader() gin.HandlerFunc {
 		// TODO: write hteaders if neaded
 	}
 }
-
-// TODO: this will not be used like this only temporary
-func setupHandlers(router *gin.Engine) {
-	// TODO: Replace gin default logger with zap
-	// router.Use(gin.Recovery())
-	api := router.Group("/api")
-	api.Use(corsHeader())
-
-	// Basic ping
-	helloFunc := gin.HandlerFunc(func(c *gin.Context) {
-		c.JSON(http.StatusOK, "Hello")
-	})
-
-	api.GET("/", helloFunc)
-}
