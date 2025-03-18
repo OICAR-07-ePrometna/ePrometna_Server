@@ -25,7 +25,7 @@ func main() {
 
 	db, err := gorm.Open(postgres.Open(config.AppConfig.DbConnection), &gorm.Config{
 		// NOTE: change LogMode if needed when debugging
-		Logger: NewGormZapLogger().LogMode(logger.Silent),
+		Logger: NewGormZapLogger().LogMode(logger.Warn),
 	})
 	if err != nil {
 		zap.S().DPanicf("failed to connect database err = %+v", err)
