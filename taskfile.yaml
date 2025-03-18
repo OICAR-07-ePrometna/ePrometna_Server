@@ -38,25 +38,29 @@ tasks:
     cmds:
       - go mod verify
       - go vet ./...
-    silent: false
 
   update:
     cmds:
       - go get -u all
-    silent: false
 
   dev:
-    cmd: go run .
-    silent: true
+    cmds:
+      - task: start-db
+      - defer: { task: stop-db }
+      - cmd: go run .
 
   test:
     cmd: go test -v ./...
-    silent: false
+
+  start-db:
+    cmd: docker-compose up -d
+
+  stop-db:
+    cmd: docker-compose stop
 
   list:
     cmds:
       - go list -u -m all
-    silent: true
 
   list-tools:
     cmds:

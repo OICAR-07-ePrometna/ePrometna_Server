@@ -8,7 +8,8 @@ tasks:
     vars:
       OUTPUT_FILE: "{{.BIN_FOLDER}}/{{.PROJECT_CODE}}"
     cmds:
-      - go build {{.BUILD_OPTIONS}} {{.TASK_OPTIONS}} -o {{.OUTPUT_FILE}}
+      - cmd: go build {{.BUILD_OPTIONS}} {{.TASK_OPTIONS}} -o {{.OUTPUT_FILE}}
+      - defer: { task: stop-db }
     internal: false
 
   tidy:

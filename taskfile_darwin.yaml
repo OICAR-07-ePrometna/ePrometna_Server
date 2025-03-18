@@ -4,11 +4,11 @@ tasks:
     platforms: [darwin]
     env:
       GOOS: darwin
-      GOARCH: amd64
+      GOARCH: arm
     vars:
       OUTPUT_FILE: "{{.BIN_FOLDER}}/{{.PROJECT_CODE}}"
     cmds:
-      - go build {{.BUILD_OPTIONS}} {{.TASK_OPTIONS}} -o {{.OUTPUT_FILE}}
+      - cmd: go build {{.BUILD_OPTIONS}} {{.TASK_OPTIONS}} -o {{.OUTPUT_FILE}}
     internal: false
 
   tidy:
