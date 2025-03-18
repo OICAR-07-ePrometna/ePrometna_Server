@@ -61,6 +61,7 @@ func checkInterrupt(ctx context.Context, wg *sync.WaitGroup, schedulerCancel con
 
 func run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
+	gin.DisableConsoleColor()
 	if !config.AppConfig.IsDevelopment {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -122,6 +123,8 @@ func corsHeader() gin.HandlerFunc {
 
 // TODO: this will not be used like this only temporary
 func setupHandlers(router *gin.Engine) {
+	// TODO: Replace gin default logger with zap
+	// router.Use(gin.Recovery())
 	api := router.Group("/api")
 	api.Use(corsHeader())
 

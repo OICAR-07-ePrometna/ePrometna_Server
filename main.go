@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func main() {
@@ -22,12 +23,19 @@ func main() {
 		prodLoggerSetup()
 	}
 
-	dsn := "host=localhost user=postgres password=postgres dbname=eprometna port=5332 sslmode=disable"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(config.AppConfig.DbConnection), &gorm.Config{
+		// NOTE: change LogMode if needed when debugging
+		Logger: NewGormZapLogger().LogMode(logger.Silent),
+	})
 	if err != nil {
 		zap.S().DPanicf("failed to connect database err = %+v", err)
 	}
-	db.AutoMigrate(&model.Tmodel{})
+
+	if err = db.AutoMigrate(model.GetAllModels()...); err != nil {
+		zap.S().Panicf("Can't run AutoMigrate err = %+v", err)
+	}
+
+	// TODO: this is test insert remove later
 	db.Create(&model.Tmodel{Name: "Test insert"})
 
 	httpServer.Start()
