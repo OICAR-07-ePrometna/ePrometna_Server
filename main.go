@@ -2,6 +2,7 @@ package main
 
 import (
 	"ePrometna_Server/config"
+	"ePrometna_Server/httpServer"
 	"os"
 	"path/filepath"
 
@@ -21,7 +22,7 @@ func main() {
 		prodLoggerSetup()
 	}
 
-	zap.S().Infoln("Bokic")
+	httpServer.Start()
 }
 
 func devLoggerSetup() error {
