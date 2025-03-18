@@ -1,15 +1,26 @@
-
 services:
   db:
     image: postgres
     restart: always
     environment:
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5332:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      retries: 5
+      timeout: 3s
 
   adminer:
     image: adminer
     restart: always
     ports:
       - 8080:8080
+
+volumes:
+  postgres_data:
