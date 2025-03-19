@@ -38,10 +38,16 @@ func main() {
 	}
 	app.Setup()
 	// BUG: need to provide constructor function not object
-	app.Provide(db)
-
-	// TODO: this is test insert remove later
-	db.Create(&model.Tmodel{Name: "Test insert"})
+	app.Provide(func() *gorm.DB {
+		db, err := gorm.Open(postgres.Open(config.AppConfig.DbConnection), &gorm.Config{
+			// NOTE: change LogMode if needed when debugging
+			Logger: NewGormZapLogger().LogMode(logger.Warn),
+		})
+		if err != nil {
+			zap.S().Panicf("failed to provide database dependency, err = %+v", err)
+		}
+		return db
+	})
 
 	httpServer.Start()
 }

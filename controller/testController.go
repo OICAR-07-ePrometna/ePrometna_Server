@@ -2,6 +2,7 @@ package controller
 
 import (
 	"ePrometna_Server/app"
+	"ePrometna_Server/model"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -32,8 +33,16 @@ func (c *TestController) RegisterEndpoints(api *gin.RouterGroup) {
 
 	// register Endpoints
 	group.GET("/", c.test)
+	group.POST("/", c.insert)
 }
 
 func (c *TestController) test(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, "Bokic")
+}
+
+func (c *TestController) insert(ctx *gin.Context) {
+	t := model.Tmodel{Name: "Test insert"}
+	c.db.Create(&t)
+
+	ctx.JSON(http.StatusOK, t)
 }
