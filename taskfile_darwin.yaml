@@ -4,7 +4,7 @@ tasks:
     platforms: [darwin]
     env:
       GOOS: darwin
-      GOARCH: arm
+      GOARCH: arm64
     vars:
       OUTPUT_FILE: "{{.BIN_FOLDER}}/{{.PROJECT_CODE}}"
     cmds:
