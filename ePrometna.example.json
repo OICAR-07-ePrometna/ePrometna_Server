@@ -1,5 +1,5 @@
 {
     "IsDevelopment": true,
     "Port": 8090,
-    "DbConnection": ""
+    "DbConnection": "host=localhost user=postgres password=postgres dbname=eprometna port=5332 sslmode=disable"
 }
