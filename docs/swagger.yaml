@@ -1,7 +1,7 @@
 info:
   contact: {}
 paths:
-  /:
+  /test:
     get:
       consumes:
       - application/json
@@ -13,5 +13,17 @@ paths:
           description: OK
       summary: ping example
       tags:
-      - example
+      - test
+    post:
+      consumes:
+      - application/json
+      description: do a insert into databse with test user and returns inserted struct
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Insert new test struct
+      tags:
+      - test
 swagger: "2.0"

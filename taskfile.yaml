@@ -45,6 +45,7 @@ tasks:
 
   dev:
     cmds:
+      - task: generate-swagger
       - task: start-db
       - defer: { task: stop-db }
       - cmd: go run .
@@ -57,6 +58,9 @@ tasks:
 
   stop-db:
     cmd: docker-compose stop
+
+  generate-swagger:
+    cmd: swag init
 
   list:
     cmds:

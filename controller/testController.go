@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -27,8 +28,6 @@ func NewTestController() *TestController {
 	return controller
 }
 
-// @BasePath /api/test
-
 func (c *TestController) RegisterEndpoints(api *gin.RouterGroup) {
 	// create a group with the name of the router
 	group := api.Group("/test")
@@ -42,17 +41,26 @@ func (c *TestController) RegisterEndpoints(api *gin.RouterGroup) {
 // @Summary ping example
 // @Schemes
 // @Description do ping
-// @Tags example
+// @Tags test
 // @Accept json
 // @Produce json
 // @Success 200
-// @Router / [get]
+// @Router /test/ [get]
 func (c *TestController) test(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, "Bokic")
 }
 
+// PingExample godoc
+// @Summary Insert new test struct
+// @Schemes
+// @Description do a insert into databse with test user and returns inserted struct
+// @Tags test
+// @Accept json
+// @Produce json
+// @Success 200
+// @Router /test/ [post]
 func (c *TestController) insert(ctx *gin.Context) {
-	t := model.Tmodel{Name: "Test insert"}
+	t := model.Tmodel{Name: "Test insert", Uuid: uuid.New()}
 	c.db.Create(&t)
 
 	ctx.JSON(http.StatusOK, t)

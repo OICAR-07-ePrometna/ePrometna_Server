@@ -51,7 +51,7 @@ func main() {
 		return db
 	})
 	fmt.Printf("Database http://localhost:8080\n")
-	fmt.Printf("swagger http://localhost:8080/swagger/index.json\n")
+	fmt.Printf("swagger http://localhost:8080/swagger/index.html\n")
 
 	ginSwagger.WrapHandler(swaggerfiles.Handler,
 		ginSwagger.URL("http://localhost:8080/swagger/doc.json"),

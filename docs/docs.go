@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/": {
+        "/test": {
             "get": {
                 "description": "do ping",
                 "consumes": [
@@ -25,9 +25,27 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "example"
+                    "test"
                 ],
                 "summary": "ping example",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "post": {
+                "description": "do a insert into databse with test user and returns inserted struct",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "Insert new test struct",
                 "responses": {
                     "200": {
                         "description": "OK"

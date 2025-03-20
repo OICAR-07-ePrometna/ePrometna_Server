@@ -3,7 +3,6 @@ package httpServer
 import (
 	"ePrometna_Server/controller"
 	"ePrometna_Server/docs"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
@@ -17,14 +16,11 @@ func setupHandlers(router *gin.Engine) {
 	api := router.Group("/api")
 	api.Use(corsHeader())
 
-	// Basic ping
-	helloFunc := gin.HandlerFunc(func(c *gin.Context) {
-		c.JSON(http.StatusOK, "Hello")
-	})
-
-	api.GET("/", helloFunc)
+	// register swagger
 	docs.SwaggerInfo.BasePath = "/api"
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+
+	// testController
 	tc := controller.NewTestController()
 	tc.RegisterEndpoints(api)
 }
