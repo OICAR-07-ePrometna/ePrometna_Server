@@ -5,6 +5,7 @@ import (
 	"ePrometna_Server/config"
 	"ePrometna_Server/httpServer"
 	"ePrometna_Server/model"
+	"fmt"
 
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
@@ -48,6 +49,6 @@ func main() {
 		}
 		return db
 	})
-
+	fmt.Printf("Database http://localhost:8080\n")
 	httpServer.Start()
 }
