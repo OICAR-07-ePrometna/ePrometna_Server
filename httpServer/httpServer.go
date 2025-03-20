@@ -61,7 +61,7 @@ func checkInterrupt(ctx context.Context, wg *sync.WaitGroup, schedulerCancel con
 
 func run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	gin.DisableConsoleColor()
+	// gin.DisableConsoleColor()
 	if !config.AppConfig.IsDevelopment {
 		gin.SetMode(gin.ReleaseMode)
 	}
