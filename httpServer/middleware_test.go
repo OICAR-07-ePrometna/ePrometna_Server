@@ -14,11 +14,9 @@ import (
 // startTESTServer is a test function
 func startTESTServer() *gin.Engine {
 	router := gin.Default()
-	router.Use(protect())
 	router.GET("/ping", func(c *gin.Context) {
 		c.String(200, "pong")
 	})
-
 	return router
 }
 
@@ -35,6 +33,8 @@ func TestGenerateTokens(t *testing.T) {
 	}
 
 	router := startTESTServer()
+	router.Use(protect())
+
 	w := httptest.NewRecorder()
 	req, err := http.NewRequest("GET", "/ping", strings.NewReader(""))
 	if err != nil {
