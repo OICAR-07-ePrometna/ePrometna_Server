@@ -22,6 +22,9 @@ func LoadConfig() error {
 	AppConfig = &conf
 
 	fmt.Println("Configuration loaded in successfully")
-	fmt.Printf("AppConfig: %+v\n", AppConfig)
+	if AppConfig.IsDevelopment {
+		fmt.Printf("AppConfig: %+v\n", AppConfig)
+	}
+
 	return nil
 }

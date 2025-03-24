@@ -35,7 +35,7 @@ func GenerateTokens(username string) (string, string, error) {
 		},
 	}
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessTokenClaims)
-	accessTokenString, err := accessToken.SignedString(config.AppConfig.JwtKey)
+	accessTokenString, err := accessToken.SignedString([]byte(config.AppConfig.JwtKey))
 	if err != nil {
 		return "", "", err
 	}
@@ -51,7 +51,7 @@ func GenerateTokens(username string) (string, string, error) {
 		},
 	}
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshTokenClaims)
-	refreshTokenString, err := refreshToken.SignedString(config.AppConfig.RefreshKey)
+	refreshTokenString, err := refreshToken.SignedString([]byte(config.AppConfig.RefreshKey))
 	if err != nil {
 		return "", "", err
 	}
