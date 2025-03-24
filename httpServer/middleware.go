@@ -24,7 +24,7 @@ func protect() gin.HandlerFunc {
 		}
 		tokenString := authHeader[len("Bearer "):]
 		token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (any, error) {
-			return config.AppConfig.JwtKey, nil
+			return []byte(config.AppConfig.JwtKey), nil
 		})
 		if err != nil || !token.Valid {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, "Invalid token")
