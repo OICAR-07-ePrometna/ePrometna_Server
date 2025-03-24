@@ -2,10 +2,8 @@ package httpServer
 
 import (
 	"ePrometna_Server/config"
-	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -52,25 +50,4 @@ func GenerateTokens(username string) (string, string, error) {
 	}
 
 	return accessTokenString, refreshTokenString, nil
-}
-
-// Middleware to protect routes
-func protect() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		authHeader := c.GetString("Authorization")
-		if authHeader == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, "Missing token")
-			return
-		}
-
-		// Parse token
-		tokenString := authHeader[len("Bearer "):]
-		token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (any, error) {
-			return config.AppConfig.JwtKey, nil
-		})
-		if err != nil || !token.Valid {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, "Invalid token")
-			return
-		}
-	}
 }
