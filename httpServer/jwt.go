@@ -8,10 +8,10 @@ import (
 )
 
 type Claims struct {
+	jwt.RegisteredClaims
 	Username string `json:"username"`
 	Uuid     string `json:"uuid"`
 	Role     string `json:"role"`
-	jwt.RegisteredClaims
 }
 
 // Token expiry durations
@@ -42,7 +42,10 @@ func GenerateTokens(username string) (string, string, error) {
 
 	// Create refresh token
 	refreshTokenClaims := &Claims{
+		// TODO: register Uuid and Role
 		Username: username,
+		Uuid:     "",
+		Role:     "",
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(refreshTokenDuration)),
 		},
