@@ -95,28 +95,3 @@ func run(ctx context.Context, wg *sync.WaitGroup) {
 	}
 	zap.S().Info("HTTP server was shut down")
 }
-
-/*
-func headersMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		headers := w.Header()
-		headers.Add("Access-Control-Allow-Origin", "http://localhost:3000")
-		headers.Add("Vary", "Origin")
-		headers.Add("Vary", "Access-Control-Request-Method")
-		headers.Add("Vary", "Access-Control-Request-Headers")
-		headers.Add("Access-Control-Allow-Headers", "Content-Type, Origin, Accept, token, Access-Control-Allow-Origin")
-		headers.Add("Access-Control-Allow-Methods", "GET,POST,OPTIONS,DELETE")
-		if r.Method == "OPTIONS" {
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
-*/
-
-func corsHeader() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// TODO: write hteaders if neaded
-	}
-}

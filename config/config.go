@@ -18,4 +18,6 @@ type AppConfiguration struct {
 	IsDevelopment bool
 	Port          int
 	DbConnection  string
+	JwtKey        string
+	RefreshKey    string
 }

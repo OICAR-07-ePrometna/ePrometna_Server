@@ -23,4 +23,11 @@ func setupHandlers(router *gin.Engine) {
 	// testController
 	tc := controller.NewTestController()
 	tc.RegisterEndpoints(api)
+
+	/*
+		tp := controller.NewTestController()
+		protected := api.Group("/protected")
+		protected.Use(protect())
+		tp.RegisterEndpoints(protected)
+	*/
 }
