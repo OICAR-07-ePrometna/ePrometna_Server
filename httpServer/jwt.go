@@ -9,6 +9,8 @@ import (
 
 type Claims struct {
 	Username string `json:"username"`
+	Uuid     string `json:"uuid"`
+	Role     string `json:"role"`
 	jwt.RegisteredClaims
 }
 
@@ -24,8 +26,10 @@ func GenerateTokens(username string) (string, string, error) {
 	// Create access token
 
 	accessTokenClaims := &Claims{
-		// TODO: register Uuid
+		// TODO: register Uuid and Role
 		Username: username,
+		Uuid:     "",
+		Role:     "",
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(accessTokenDuration)),
 		},
