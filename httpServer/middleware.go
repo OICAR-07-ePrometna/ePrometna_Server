@@ -30,6 +30,7 @@ func protect() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, "Invalid token")
 			return
 		}
+		c.Next()
 	}
 }
 
