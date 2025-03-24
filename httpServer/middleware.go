@@ -18,6 +18,10 @@ func protect() gin.HandlerFunc {
 		}
 
 		// Parse token
+		if len(authHeader) <= len("Bearer ") || authHeader[:len("Bearer ")] != "Bearer " {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, "Invalid token format")
+			return
+		}
 		tokenString := authHeader[len("Bearer "):]
 		token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (any, error) {
 			return config.AppConfig.JwtKey, nil
