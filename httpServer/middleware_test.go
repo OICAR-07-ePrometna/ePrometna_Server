@@ -26,7 +26,9 @@ func startTESTServer() *gin.Engine {
 func TestGenerateTokens(t *testing.T) {
 	// Setup
 	// TODO: This may be dangerouts
-	os.Chdir("../")
+	if err := os.Chdir("../"); err != nil {
+		t.Fatalf("Failed to change directory: %v", err)
+	}
 
 	err := config.LoadConfig()
 	if err != nil {
