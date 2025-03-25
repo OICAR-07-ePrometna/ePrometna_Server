@@ -52,6 +52,35 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/test/{uuid}": {
+            "delete": {
+                "description": "do a delete on item uui",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "Delets test item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Test model UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
         }
     }
 }`

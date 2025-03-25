@@ -26,4 +26,23 @@ paths:
       summary: Insert new test struct
       tags:
       - test
+  /test/{uuid}:
+    delete:
+      consumes:
+      - application/json
+      description: do a delete on item uui
+      parameters:
+      - description: Test model UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Delets test item
+      tags:
+      - test
 swagger: "2.0"

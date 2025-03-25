@@ -3,25 +3,26 @@ package controller
 import (
 	"ePrometna_Server/app"
 	"ePrometna_Server/model"
+	"ePrometna_Server/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
+	"go.uber.org/zap"
 )
 
 type TestController struct {
-	db *gorm.DB
+	testService service.ITestService
 }
 
 func NewTestController() *TestController {
 	var controller *TestController
 
 	// Call dependency injection
-	app.Invoke(func(db *gorm.DB) {
+	app.Invoke(func(testService service.ITestService) {
 		// create controller
 		controller = &TestController{
-			db: db,
+			testService: testService,
 		}
 	})
 
@@ -35,6 +36,7 @@ func (c *TestController) RegisterEndpoints(api *gin.RouterGroup) {
 	// register Endpoints
 	group.GET("/", c.test)
 	group.POST("/", c.insert)
+	group.DELETE("/:uuid", c.delete)
 }
 
 // PingExample godoc
@@ -47,7 +49,13 @@ func (c *TestController) RegisterEndpoints(api *gin.RouterGroup) {
 // @Success 200
 // @Router /test/ [get]
 func (c *TestController) test(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, "Bokic")
+	tmodel, err := c.testService.ReadAll()
+	if err != nil {
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, tmodel)
 }
 
 // PingExample godoc
@@ -61,7 +69,38 @@ func (c *TestController) test(ctx *gin.Context) {
 // @Router /test/ [post]
 func (c *TestController) insert(ctx *gin.Context) {
 	t := model.Tmodel{Name: "Test insert", Uuid: uuid.New()}
-	c.db.Create(&t)
+	tmodel, err := c.testService.Create(&t)
+	if err != nil {
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
 
-	ctx.JSON(http.StatusOK, t)
+	ctx.JSON(http.StatusOK, tmodel)
+}
+
+// DeleteExamle godoc
+// @Summary Delets test item
+// @Schemes
+// @Description do a delete on item uui
+// @Tags test
+// @Accept json
+// @Produce json
+// @Success 200
+// @Param        uuid   path      string  true  "Test model UUID"
+// @Router /test/{uuid} [delete]
+func (c *TestController) delete(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("uuid"))
+	if err != nil {
+		zap.S().Errorf("error parsing uuid value = %s", ctx.Param("uuid"))
+		ctx.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	err = c.testService.Delete(id)
+	if err != nil {
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, nil)
 }
