@@ -1,6 +1,36 @@
+definitions:
+  dto.TmodelDto:
+    properties:
+      age:
+        type: integer
+      name:
+        type: string
+      uuid:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
+  /test:
+    post:
+      consumes:
+      - application/json
+      description: Create a test model
+      parameters:
+      - description: Test model
+        in: body
+        name: model
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TmodelDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+      summary: Delets test item
+      tags:
+      - test
   /test/:
     get:
       consumes:
@@ -14,7 +44,7 @@ paths:
       summary: ping example
       tags:
       - test
-    post:
+    put:
       consumes:
       - application/json
       description: do a insert into databse with test user and returns inserted struct
@@ -24,6 +54,25 @@ paths:
         "200":
           description: OK
       summary: Insert new test struct
+      tags:
+      - test
+  /test/{uuid}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes an item with uuid
+      parameters:
+      - description: Test model UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Delets test item
       tags:
       - test
 swagger: "2.0"

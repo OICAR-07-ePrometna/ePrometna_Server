@@ -5,6 +5,7 @@ import (
 	"ePrometna_Server/config"
 	"ePrometna_Server/httpServer"
 	"ePrometna_Server/model"
+	"ePrometna_Server/service"
 	"fmt"
 
 	swaggerfiles "github.com/swaggo/files"
@@ -50,6 +51,9 @@ func main() {
 		}
 		return db
 	})
+
+	app.Provide(service.NewTestService)
+
 	fmt.Printf("Database http://localhost:8080\n")
 	fmt.Printf("swagger http://localhost:8090/swagger/index.html\n")
 

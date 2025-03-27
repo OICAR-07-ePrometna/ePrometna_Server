@@ -9,6 +9,6 @@ type Tmodel struct {
 	gorm.Model
 
 	Name string
-	age  int
+	Age  int
 	Uuid uuid.UUID
 }
