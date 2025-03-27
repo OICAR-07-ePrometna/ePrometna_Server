@@ -5,6 +5,7 @@ import (
 	"ePrometna_Server/model"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -34,7 +35,9 @@ func NewTestService() ITestService {
 
 // Delete implements ITestService.
 func (t TestService) Delete(id uuid.UUID) error {
+	// NOTE: this doesn't actually delete the entry rather sets deleted at field to now
 	rez := t.db.Delete(&model.Tmodel{}, "uuid = ?", id)
+	zap.S().Debugf("Delete statment on uuid = %s, rez %+v", id, rez)
 	return rez.Error
 }
 
