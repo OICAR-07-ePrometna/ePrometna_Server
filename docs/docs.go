@@ -15,6 +15,37 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/test": {
+            "post": {
+                "description": "do a delete on item uui",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "Delets test item",
+                "parameters": [
+                    {
+                        "description": "Test model UUID",
+                        "name": "model",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Tmodel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/test/": {
             "get": {
                 "description": "do ping",
@@ -34,7 +65,7 @@ const docTemplate = `{
                     }
                 }
             },
-            "post": {
+            "put": {
                 "description": "do a insert into databse with test user and returns inserted struct",
                 "consumes": [
                     "application/json"
@@ -81,6 +112,11 @@ const docTemplate = `{
                     }
                 }
             }
+        }
+    },
+    "definitions": {
+        "model.Tmodel": {
+            "type": "object"
         }
     }
 }`

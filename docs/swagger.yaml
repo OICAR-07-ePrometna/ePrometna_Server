@@ -1,6 +1,29 @@
+definitions:
+  model.Tmodel:
+    type: object
 info:
   contact: {}
 paths:
+  /test:
+    post:
+      consumes:
+      - application/json
+      description: do a delete on item uui
+      parameters:
+      - description: Test model UUID
+        in: body
+        name: model
+        required: true
+        schema:
+          $ref: '#/definitions/model.Tmodel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Delets test item
+      tags:
+      - test
   /test/:
     get:
       consumes:
@@ -14,7 +37,7 @@ paths:
       summary: ping example
       tags:
       - test
-    post:
+    put:
       consumes:
       - application/json
       description: do a insert into databse with test user and returns inserted struct

@@ -4,6 +4,7 @@ import (
 	"ePrometna_Server/app"
 	"ePrometna_Server/model"
 	"ePrometna_Server/service"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -35,7 +36,8 @@ func (c *TestController) RegisterEndpoints(api *gin.RouterGroup) {
 
 	// register Endpoints
 	group.GET("/", c.test)
-	group.POST("/", c.insert)
+	group.PUT("/", c.insert)
+	group.POST("/", c.create)
 	group.DELETE("/:uuid", c.delete)
 }
 
@@ -66,7 +68,7 @@ func (c *TestController) test(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Success 200
-// @Router /test/ [post]
+// @Router /test/ [put]
 func (c *TestController) insert(ctx *gin.Context) {
 	t := model.Tmodel{Name: "Test insert", Uuid: uuid.New()}
 	tmodel, err := c.testService.Create(&t)
@@ -103,4 +105,25 @@ func (c *TestController) delete(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, nil)
+}
+
+// DeleteExamle godoc
+// @Summary Delets test item
+// @Schemes
+// @Description do a delete on item uui
+// @Tags test
+// @Accept json
+// @Produce json
+// @Success 200
+// @Param        model    body     model.Tmodel  true  "Test model UUID"
+// @Router /test [post]
+func (c *TestController) create(ctx *gin.Context) {
+	// TODO: should use dto not Tmodel
+	var md model.Tmodel
+	md.Uuid = uuid.New()
+	if err := ctx.Bind(&md); err != nil {
+		ctx.AbortWithError(http.StatusBadRequest, err)
+	}
+	fmt.Printf("md: %v\n", md)
+	ctx.AbortWithStatus(http.StatusOK)
 }
