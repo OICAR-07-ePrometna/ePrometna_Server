@@ -12,10 +12,21 @@ type TmodelDto struct {
 	Uuid string
 }
 
-func (dto *TmodelDto) Map() *model.Tmodel {
+// ToModel create a model from a dto
+func (dto *TmodelDto) ToModel() *model.Tmodel {
 	return &model.Tmodel{
 		Name: dto.Name,
 		Age:  dto.Age,
 		Uuid: uuid.New(),
 	}
+}
+
+// FromModel returns a dto from model struct
+func (dto *TmodelDto) FromModel(m *model.Tmodel) *TmodelDto {
+	dto = &TmodelDto{
+		Name: m.Name,
+		Age:  m.Age,
+		Uuid: m.Uuid.String(),
+	}
+	return dto
 }

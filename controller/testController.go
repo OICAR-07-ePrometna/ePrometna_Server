@@ -5,7 +5,6 @@ import (
 	"ePrometna_Server/dto"
 	"ePrometna_Server/model"
 	"ePrometna_Server/service"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -115,7 +114,7 @@ func (c *TestController) delete(ctx *gin.Context) {
 // @Tags test
 // @Accept json
 // @Produce json
-// @Success 200
+// @Success 201
 // @Param model body dto.TmodelDto true "Test model"
 // @Router /test [post]
 func (c *TestController) create(ctx *gin.Context) {
@@ -125,6 +124,11 @@ func (c *TestController) create(ctx *gin.Context) {
 		ctx.AbortWithError(http.StatusBadRequest, err)
 	}
 
-	fmt.Printf("md: %v\n", md.Map())
-	ctx.AbortWithStatus(http.StatusOK)
+	cmod, err := c.testService.Create(md.ToModel())
+	if err != nil {
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+	}
+
+	// ctx.JSON(http.StatusOK, cmod)
+	ctx.JSON(http.StatusCreated, md.FromModel(cmod))
 }
