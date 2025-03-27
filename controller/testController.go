@@ -2,6 +2,7 @@ package controller
 
 import (
 	"ePrometna_Server/app"
+	"ePrometna_Server/dto"
 	"ePrometna_Server/model"
 	"ePrometna_Server/service"
 	"fmt"
@@ -83,7 +84,7 @@ func (c *TestController) insert(ctx *gin.Context) {
 // DeleteExamle godoc
 // @Summary Delets test item
 // @Schemes
-// @Description do a delete on item uui
+// @Description Deletes an item with uuid
 // @Tags test
 // @Accept json
 // @Produce json
@@ -107,23 +108,23 @@ func (c *TestController) delete(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, nil)
 }
 
-// DeleteExamle godoc
+// CreateExample godoc
 // @Summary Delets test item
 // @Schemes
-// @Description do a delete on item uui
+// @Description Create a test model
 // @Tags test
 // @Accept json
 // @Produce json
 // @Success 200
-// @Param        model    body     model.Tmodel  true  "Test model UUID"
+// @Param model body dto.TmodelDto true "Test model"
 // @Router /test [post]
 func (c *TestController) create(ctx *gin.Context) {
 	// TODO: should use dto not Tmodel
-	var md model.Tmodel
-	md.Uuid = uuid.New()
+	var md dto.TmodelDto
 	if err := ctx.Bind(&md); err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)
 	}
-	fmt.Printf("md: %v\n", md)
+
+	fmt.Printf("md: %v\n", md.Map())
 	ctx.AbortWithStatus(http.StatusOK)
 }

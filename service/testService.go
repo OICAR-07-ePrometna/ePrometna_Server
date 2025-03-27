@@ -20,7 +20,7 @@ type TestService struct {
 	db *gorm.DB
 }
 
-func NewTestService(db *gorm.DB) ITestService {
+func NewTestService() ITestService {
 	var service ITestService
 
 	app.Invoke(func(db *gorm.DB) {

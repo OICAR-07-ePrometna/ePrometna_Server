@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/test": {
             "post": {
-                "description": "do a delete on item uui",
+                "description": "Create a test model",
                 "consumes": [
                     "application/json"
                 ],
@@ -30,12 +30,12 @@ const docTemplate = `{
                 "summary": "Delets test item",
                 "parameters": [
                     {
-                        "description": "Test model UUID",
+                        "description": "Test model",
                         "name": "model",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.Tmodel"
+                            "$ref": "#/definitions/dto.TmodelDto"
                         }
                     }
                 ],
@@ -86,7 +86,7 @@ const docTemplate = `{
         },
         "/test/{uuid}": {
             "delete": {
-                "description": "do a delete on item uui",
+                "description": "Deletes an item with uuid",
                 "consumes": [
                     "application/json"
                 ],
@@ -115,8 +115,19 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "model.Tmodel": {
-            "type": "object"
+        "dto.TmodelDto": {
+            "type": "object",
+            "properties": {
+                "age": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                }
+            }
         }
     }
 }`

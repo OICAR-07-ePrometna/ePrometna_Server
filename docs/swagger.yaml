@@ -1,5 +1,12 @@
 definitions:
-  model.Tmodel:
+  dto.TmodelDto:
+    properties:
+      age:
+        type: integer
+      name:
+        type: string
+      uuid:
+        type: string
     type: object
 info:
   contact: {}
@@ -8,14 +15,14 @@ paths:
     post:
       consumes:
       - application/json
-      description: do a delete on item uui
+      description: Create a test model
       parameters:
-      - description: Test model UUID
+      - description: Test model
         in: body
         name: model
         required: true
         schema:
-          $ref: '#/definitions/model.Tmodel'
+          $ref: '#/definitions/dto.TmodelDto'
       produces:
       - application/json
       responses:
@@ -53,7 +60,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: do a delete on item uui
+      description: Deletes an item with uuid
       parameters:
       - description: Test model UUID
         in: path
