@@ -8,5 +8,13 @@ package model
 func GetAllModels() []any {
 	return []any{
 		&Tmodel{},
+		&User{},
+		&Car{},
+		&CarDrivers{},
+		&DriverLicense{},
+		&OwnerHistory{},
+		&Mobile{},
+		&RegistrationInfo{},
+		&TempData{},
 	}
 }
