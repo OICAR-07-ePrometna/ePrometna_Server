@@ -44,7 +44,7 @@ func main() {
 	app.Provide(func() *gorm.DB {
 		db, err := gorm.Open(postgres.Open(config.AppConfig.DbConnection), &gorm.Config{
 			// NOTE: change LogMode if needed when debugging
-			Logger: NewGormZapLogger().LogMode(logger.Info),
+			Logger: NewGormZapLogger().LogMode(logger.Warn),
 		})
 		if err != nil {
 			zap.S().Panicf("failed to provide database dependency, err = %+v", err)

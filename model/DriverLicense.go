@@ -11,10 +11,8 @@ type DriverLicense struct {
 	gorm.Model
 	Uuid          uuid.UUID `gorm:"type:uuid;unique;not null"`
 	UserId        uint      `gorm:"type:uint;unique;not null"`
-	DriverId      uint      `gorm:"type:uint;unique;not null"`
-	LicenseNumber string    `gorm:"type:string;unique;not null"`
+	LicenseNumber string    `gorm:"type:varchar(50);unique;not null"`
 	IssueDate     time.Time `gorm:"type:date;not null"`
 	ExpiringDate  time.Time `gorm:"type:date;not null"`
-	Category      string    `gorm:"type:string;not null"`
-	User          User      `gorm:"foreignKey:UserId;references:ID"`
+	Category      string    `gorm:"type:varchar(50);not null"`
 }
