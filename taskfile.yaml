@@ -1,7 +1,7 @@
 version: "3"
 
 vars:
-  PROJECT_CODE: ePrometna_Servera
+  PROJECT_CODE: ePrometna_Server
 
   # folders
   BIN_FOLDER: bin
@@ -11,7 +11,7 @@ vars:
   # -s  omit the symbol table and debug information
   # -w  omit the DWARF symbol table
   #
-  BUILD_OPTIONS: -v -ldflags="-s -w"
+  BUILD_OPTIONS: -v -ldflags="-s -w -a -race"
 
 includes:
   osbuild:
@@ -44,9 +44,8 @@ tasks:
       - go get -u all
 
   dev:
+    deps: [generate-swagger, start-db]
     cmds:
-      - task: generate-swagger
-      - task: start-db
       - defer: { task: stop-db }
       - cmd: go run .
 
@@ -60,7 +59,9 @@ tasks:
     cmd: docker-compose stop
 
   generate-swagger:
+    internal: true
     cmd: swag init
+    ignore_error: true
 
   list:
     cmds:
