@@ -9,9 +9,6 @@ import (
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 func main() {
@@ -21,17 +18,6 @@ func main() {
 	}
 
 	app.Setup()
-	app.Provide(func() *gorm.DB {
-		db, err := gorm.Open(postgres.Open(config.AppConfig.DbConnection), &gorm.Config{
-			// NOTE: change LogMode if needed when debugging
-			Logger: app.NewGormZapLogger().LogMode(logger.Warn),
-		})
-		if err != nil {
-			zap.S().Panicf("failed to provide database dependency, err = %+v", err)
-		}
-		return db
-	})
-
 	app.Provide(service.NewTestService)
 
 	zap.S().Infof("Database: http://localhost:8080")

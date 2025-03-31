@@ -3,6 +3,7 @@ package app
 import (
 	"ePrometna_Server/config"
 	"ePrometna_Server/model"
+	"time"
 
 	"go.uber.org/dig"
 	"go.uber.org/zap"
@@ -16,12 +17,6 @@ var digContainer *dig.Container = nil
 func Setup() {
 	if digContainer == nil {
 
-		if config.AppConfig.IsDevelopment {
-			devLoggerSetup()
-		} else {
-			prodLoggerSetup()
-		}
-
 		setupLogger()
 		dbSetup()
 
@@ -32,6 +27,17 @@ func Setup() {
 }
 
 func setupLogger() {
+	if config.AppConfig.IsDevelopment {
+		err := devLoggerSetup()
+		if err != nil {
+			zap.S().Panicf("failed to connect database err = %+v", err)
+		}
+	} else {
+		err := prodLoggerSetup()
+		if err != nil {
+			zap.S().Panicf("failed to connect database err = %+v", err)
+		}
+	}
 }
 
 func dbSetup() {
@@ -42,6 +48,15 @@ func dbSetup() {
 	if err != nil {
 		zap.S().Panicf("failed to connect database err = %+v", err)
 	}
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		zap.S().Panicf("failed to get database connection: %+v", err)
+	}
+
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	if err = db.AutoMigrate(model.GetAllModels()...); err != nil {
 		zap.S().Panicf("Can't run AutoMigrate err = %+v", err)
