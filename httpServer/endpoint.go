@@ -3,6 +3,7 @@ package httpServer
 import (
 	"ePrometna_Server/controller"
 	"ePrometna_Server/docs"
+	"ePrometna_Server/model"
 
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
@@ -19,6 +20,8 @@ func setupHandlers(router *gin.Engine) {
 	// register swagger
 	docs.SwaggerInfo.BasePath = "/api"
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+
+	api.Use(AllowAccess(model.RoleFirma, model.RoleAdmin))
 
 	// testController
 	tc := controller.NewTestController()

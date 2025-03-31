@@ -2,6 +2,9 @@ package httpServer
 
 import (
 	"ePrometna_Server/config"
+	"ePrometna_Server/model"
+	"encoding/base64"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -9,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // startTESTServer is a test function
@@ -41,7 +45,7 @@ func TestGenerateTokens(t *testing.T) {
 		t.Fatalf("Failed to generate tokens %+v", err)
 	}
 
-	jwt, _, err := GenerateTokens("Test")
+	jwt, _, err := GenerateTokens(model.User{Email: "Test@test.t", Uuid: uuid.New()})
 	if err != nil {
 		t.Fatalf("Failed to generate tokens %+v", err)
 	}
@@ -57,4 +61,37 @@ func TestGenerateTokens(t *testing.T) {
 			t.Fatalf("Expected body: %q, got: %q", expected, w.Body.String())
 		}
 	}
+}
+
+// Helper function to create a test JWT
+func createTestJWT(t *testing.T, claims Claims) string {
+	// Create a simple header
+	header := map[string]string{
+		"alg": "HS256",
+		"typ": "JWT",
+	}
+
+	// Convert header to JSON
+	headerJSON, err := json.Marshal(header)
+	if err != nil {
+		t.Fatalf("Failed to marshal header: %v", err)
+	}
+
+	// Convert claims to JSON
+	claimsJSON, err := json.Marshal(claims)
+	if err != nil {
+		t.Fatalf("Failed to marshal claims: %v", err)
+	}
+
+	// Base64 encode header
+	headerBase64 := base64.RawURLEncoding.EncodeToString(headerJSON)
+
+	// Base64 encode claims
+	claimsBase64 := base64.RawURLEncoding.EncodeToString(claimsJSON)
+
+	// Create a fake signature (doesn't matter for these tests)
+	fakeSig := "SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+
+	// Combine to form token
+	return headerBase64 + "." + claimsBase64 + "." + fakeSig
 }

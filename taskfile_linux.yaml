@@ -1,4 +1,5 @@
 version: "3"
+
 tasks:
   build:
     platforms: [linux/amd64]
@@ -20,7 +21,10 @@ tasks:
 
   run:
     platforms: [linux/amd64]
+    env:
+      GIN_MODE: release
+    deps: [start-db]
     cmds:
       - rm -f log/{{.PROJECT_CODE}}*.log
-      - ./bin/{{.PROJECT_CODE}} {{.CLI_ARGS}}
+      - ./{{.BIN_FOLDER}}/{{.PROJECT_CODE}} {{.CLI_ARGS}}
     silent: false
