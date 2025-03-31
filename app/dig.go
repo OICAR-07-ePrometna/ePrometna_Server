@@ -29,12 +29,12 @@ func setupLogger() {
 	if config.AppConfig.IsDevelopment {
 		err := devLoggerSetup()
 		if err != nil {
-			zap.S().Panicf("failed to connect database err = %+v", err)
+			zap.S().Panicf("failed to set up logger, err = %+v", err)
 		}
 	} else {
 		err := prodLoggerSetup()
 		if err != nil {
-			zap.S().Panicf("failed to connect database err = %+v", err)
+			zap.S().Panicf("failed to set up logger, err = %+v", err)
 		}
 	}
 }
