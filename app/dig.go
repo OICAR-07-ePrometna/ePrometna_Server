@@ -3,6 +3,7 @@ package app
 import (
 	"ePrometna_Server/config"
 	"ePrometna_Server/model"
+	"sync"
 	"time"
 
 	"go.uber.org/dig"
@@ -14,16 +15,14 @@ import (
 
 var digContainer *dig.Container = nil
 
+var once = sync.Once{}
+
 func Setup() {
-	if digContainer == nil {
-
+	once.Do(func() {
 		setupLogger()
-		dbSetup()
-
 		digContainer = dig.New()
-		return
-	}
-	zap.S().Warn("app setup is called more than once")
+		dbSetup()
+	})
 }
 
 func setupLogger() {
@@ -40,7 +39,7 @@ func setupLogger() {
 	}
 }
 
-func dbSetup() {
+func newDbConn() *gorm.DB {
 	db, err := gorm.Open(postgres.Open(config.AppConfig.DbConnection), &gorm.Config{
 		// NOTE: change LogMode if needed when debugging
 		Logger: NewGormZapLogger().LogMode(logger.Warn),
@@ -48,7 +47,11 @@ func dbSetup() {
 	if err != nil {
 		zap.S().Panicf("failed to connect database err = %+v", err)
 	}
+	return db
+}
 
+func dbSetup() {
+	db := newDbConn()
 	sqlDB, err := db.DB()
 	if err != nil {
 		zap.S().Panicf("failed to get database connection: %+v", err)
@@ -61,6 +64,8 @@ func dbSetup() {
 	if err = db.AutoMigrate(model.GetAllModels()...); err != nil {
 		zap.S().Panicf("Can't run AutoMigrate err = %+v", err)
 	}
+
+	Provide(newDbConn)
 }
 
 func Provide(service any, opts ...dig.ProvideOption) {

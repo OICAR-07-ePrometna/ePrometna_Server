@@ -11,7 +11,7 @@ vars:
   # -s  omit the symbol table and debug information
   # -w  omit the DWARF symbol table
   #
-  BUILD_OPTIONS: -v -ldflags="-s -w -a -race"
+  BUILD_OPTIONS: -v -ldflags="-s -w "
 
 includes:
   osbuild:
