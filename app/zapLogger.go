@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"context"
@@ -16,15 +16,6 @@ import (
 	"gorm.io/gorm/utils"
 )
 
-/*
-	type Interface interface {
-	  LogMode(LogLevel) Interface
-	  Info(context.Context, string, ...interface{})
-	  Warn(context.Context, string, ...interface{})
-	  Error(context.Context, string, ...interface{})
-	  Trace(ctx context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error)
-	}
-*/
 type gormZapLogger struct {
 	logger.Config
 	infoStr, warnStr, errStr            string
@@ -126,27 +117,23 @@ func devLoggerSetup() error {
 func prodLoggerSetup() error {
 	_ = os.Mkdir(config.LOG_FOLDER, 0755)
 
-	// console log, text
-	// log level
 	consoleLogLevel := zap.LevelEnablerFunc(func(level zapcore.Level) bool {
 		return level >= zapcore.InfoLevel
 	})
 	// log output
 	consoleLogFile := zapcore.Lock(os.Stdout)
-	// log configuration
+
+	// log configuration no date time and location, just level
 	consoleLogConfig := zap.NewProductionEncoderConfig()
-	// configure keys
-	// configure types
-	consoleLogConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-	consoleLogConfig.EncodeLevel = nil
+	consoleLogConfig.EncodeTime = nil
 	consoleLogConfig.EncodeCaller = nil
-	// create encoder
+
 	consoleLogEncoder := zapcore.NewConsoleEncoder(consoleLogConfig)
 
 	// file log, text
 	// log level
 	fileLogLevel := zap.LevelEnablerFunc(func(level zapcore.Level) bool {
-		return level >= zapcore.DebugLevel
+		return level >= zapcore.InfoLevel
 	})
 	// log output, with rotation
 	logPath := filepath.Join(config.LOG_FOLDER, config.LOG_FILE)
