@@ -10,7 +10,6 @@ tasks:
       OUTPUT_FILE: "{{.BIN_FOLDER}}/{{.PROJECT_CODE}}"
     cmds:
       - cmd: go build {{.BUILD_OPTIONS}} {{.TASK_OPTIONS}} -o {{.OUTPUT_FILE}}
-      - task: copy-config
     internal: false
 
   tidy:
