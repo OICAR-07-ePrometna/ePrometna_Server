@@ -22,16 +22,14 @@ func setupHandlers(router *gin.Engine) {
 	swagger := ginSwagger.WrapHandler(swaggerfiles.Handler,
 		ginSwagger.URL("http://localhost:8090/swagger/doc.json"),
 		ginSwagger.DefaultModelsExpandDepth(2))
-
 	router.GET("/swagger/*any", swagger)
-
-	// api.Use(AllowAccess(model.RoleFirma, model.RoleAdmin))
 
 	// TODO: remove test controller
 	controller.NewTestController().RegisterEndpoints(api)
-
 	controller.NewLoginController().RegisterEndpoints(api)
+	controller.NewUserController().RegisterEndpoints(api)
 
+	// api.Use(AllowAccess(model.RoleFirma, model.RoleAdmin))
 	/*
 		tp := controller.NewTestController()
 		protected := api.Group("/protected")

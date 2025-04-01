@@ -18,6 +18,7 @@ func main() {
 	app.Setup()
 	app.Provide(service.NewTestService)
 	app.Provide(service.NewLoginService)
+	app.Provide(service.NewUserCrudService)
 
 	zap.S().Infof("Database: http://localhost:8080")
 	zap.S().Infof("swagger: http://localhost:8090/swagger/index.html")

@@ -18,6 +18,8 @@ definitions:
       uuid:
         type: string
     type: object
+  dto.UserDto:
+    type: object
 info:
   contact: {}
 paths:
@@ -134,4 +136,105 @@ paths:
       summary: Deletes test item
       tags:
       - test
+  /user:
+    post:
+      parameters:
+      - description: Data for new user
+        in: body
+        name: model
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.UserDto'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Create new user
+      tags:
+      - user
+  /user/{uuid}:
+    delete:
+      description: get a user with uuid
+      parameters:
+      - description: user uuid
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: get user with uuid
+      tags:
+      - user
+    get:
+      description: get a user with uuid
+      parameters:
+      - description: user uuid
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserDto'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: get user with uuid
+      tags:
+      - user
+    put:
+      parameters:
+      - description: uuid of user to be updated
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: Data for updating user
+        in: body
+        name: model
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserDto'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Update user with new dat
+      tags:
+      - user
 swagger: "2.0"
