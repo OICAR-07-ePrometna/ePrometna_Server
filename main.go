@@ -3,7 +3,6 @@ package main
 import (
 	"ePrometna_Server/app"
 	"ePrometna_Server/config"
-	"ePrometna_Server/controller"
 	"ePrometna_Server/httpServer"
 	"ePrometna_Server/service"
 
@@ -26,8 +25,6 @@ func main() {
 
 	app.Provide(service.NewTestService)
 	app.Provide(service.NewLoginService)
-
-	app.Provide(controller.NewLoginController)
 
 	zap.S().Infof("Database: http://localhost:8080")
 	zap.S().Infof("swagger: http://localhost:8090/swagger/index.html")

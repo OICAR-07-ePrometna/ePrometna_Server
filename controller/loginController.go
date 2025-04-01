@@ -43,9 +43,7 @@ func (c *LoginController) RegisterEndpoints(api *gin.RouterGroup) {
 // @Accept json
 // @Produce json
 // @Param loginDto body dto.LoginDto true "Login credentials"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} map[string]string
-// @Failure 401 {object} map[string]string
+// @Success 200
 // @Router /login [post]
 
 func (c *LoginController) login(ctx *gin.Context) {
