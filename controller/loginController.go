@@ -37,21 +37,19 @@ func (c *LoginController) RegisterEndpoints(api *gin.RouterGroup) {
 }
 
 // Login godoc
-//
-//	@Summary	User login
-//	@Schemes
-//	@Description	Authenticates a user and returns access and refresh tokens
-//	@Tags			login
-//	@Accept			json
-//	@Produce		json
-//	@Param			loginDto	body	dto.LoginDto	true	"Login credentials"
-//	@Success		200
-//	@Router			/login [post]
+// @Summary User login
+// @Description Authenticates a user and returns access and refresh tokens
+// @Tags login
+// @Accept json
+// @Produce json
+// @Param loginDto body dto.LoginDto true "Login credentials"
+// @Success 200
+// @Router /login [post]
 func (c *LoginController) login(ctx *gin.Context) {
 	var loginDto dto.LoginDto
 
 	if err := ctx.ShouldBindJSON(&loginDto); err != nil {
-		zap.S().Errorf("Invalid login request error = %+v", err)
+		zap.S().Error("Invalid login request", zap.Error(err))
 		ctx.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
@@ -67,4 +65,5 @@ func (c *LoginController) login(ctx *gin.Context) {
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	})
+
 }
