@@ -2,7 +2,6 @@ package service
 
 import (
 	"ePrometna_Server/app"
-
 	"ePrometna_Server/model"
 	"ePrometna_Server/util/auth"
 	"errors"
@@ -35,7 +34,7 @@ func (s *LoginService) Login(email, password string) (string, string, error) {
 	var user model.User
 	if err := s.db.Where("email = ?", email).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			zap.S().Warnf("User not found Email = %s", user.Email)
+			zap.S().Warnf("User not found Email = %s", email)
 			return "", "", errors.New("invalid username or password")
 		}
 

@@ -4,9 +4,9 @@
         "contact": {}
     },
     "paths": {
-        "/test": {
+        "/login": {
             "post": {
-                "description": "Create a test model",
+                "description": "Authenticates a user and returns access and refresh tokens",
                 "consumes": [
                     "application/json"
                 ],
@@ -14,28 +14,28 @@
                     "application/json"
                 ],
                 "tags": [
-                    "test"
+                    "login"
                 ],
-                "summary": "Delets test item",
+                "summary": "User login",
                 "parameters": [
                     {
-                        "description": "Test model",
-                        "name": "model",
+                        "description": "Login credentials",
+                        "name": "loginDto",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.TmodelDto"
+                            "$ref": "#/definitions/dto.LoginDto"
                         }
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created"
+                    "200": {
+                        "description": "OK"
                     }
                 }
             }
         },
-        "/test/": {
+        "/test": {
             "get": {
                 "description": "do ping",
                 "consumes": [
@@ -71,6 +71,35 @@
                         "description": "OK"
                     }
                 }
+            },
+            "post": {
+                "description": "Create a test model",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "Delets test item",
+                "parameters": [
+                    {
+                        "description": "Test model",
+                        "name": "model",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.TmodelDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
             }
         },
         "/test/{uuid}": {
@@ -104,6 +133,21 @@
         }
     },
     "definitions": {
+        "dto.LoginDto": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.TmodelDto": {
             "type": "object",
             "properties": {

@@ -18,16 +18,18 @@ func setupHandlers(router *gin.Engine) {
 
 	// register swagger
 	docs.SwaggerInfo.BasePath = "/api"
+
+	ginSwagger.WrapHandler(swaggerfiles.Handler,
+		ginSwagger.URL("http://localhost:8090/swagger/doc.json"),
+		ginSwagger.DefaultModelsExpandDepth(2))
+
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
-	//api.Use(AllowAccess(model.RoleFirma, model.RoleAdmin))
+	// api.Use(AllowAccess(model.RoleFirma, model.RoleAdmin))
 
 	// testController
-	tc := controller.NewTestController()
-	lc := controller.NewLoginController()
-
-	tc.RegisterEndpoints(api)
-	lc.RegisterEndpoints(api)
+	// controller.NewTestController().RegisterEndpoints(api)
+	controller.NewLoginController().RegisterEndpoints(api)
 
 	/*
 		tp := controller.NewTestController()
