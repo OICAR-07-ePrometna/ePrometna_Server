@@ -27,8 +27,9 @@ func setupHandlers(router *gin.Engine) {
 
 	// api.Use(AllowAccess(model.RoleFirma, model.RoleAdmin))
 
-	// testController
-	// controller.NewTestController().RegisterEndpoints(api)
+	// TODO: remove test controller
+	controller.NewTestController().RegisterEndpoints(api)
+
 	controller.NewLoginController().RegisterEndpoints(api)
 
 	/*

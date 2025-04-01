@@ -34,7 +34,7 @@ func (s *LoginService) Login(email, password string) (string, string, error) {
 	var user model.User
 	if err := s.db.Where("email = ?", email).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			zap.S().Warnf("User not found Email = %s", email)
+			zap.S().Debugf("User not found Email = %s", email)
 			return "", "", errors.New("invalid email or password")
 		}
 
@@ -43,7 +43,7 @@ func (s *LoginService) Login(email, password string) (string, string, error) {
 	}
 
 	if !auth.VerifyPassword(user.PasswordHash, password) {
-		zap.S().Warnf("Invalid password for user Email: %s, uuid: %s", user.Email, user.Uuid)
+		zap.S().Debugf("Invalid password for user Email: %s, uuid: %s", user.Email, user.Uuid)
 		return "", "", errors.New("invalid email or password")
 	}
 

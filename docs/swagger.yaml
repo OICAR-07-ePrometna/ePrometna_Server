@@ -70,7 +70,7 @@ paths:
       responses:
         "201":
           description: Created
-      summary: Create test item
+      summary: Creates test item
       tags:
       - test
     put:

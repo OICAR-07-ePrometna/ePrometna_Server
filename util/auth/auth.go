@@ -42,7 +42,6 @@ func GenerateTokens(user *model.User) (string, string, error) {
 
 	// Create refresh token
 	refreshTokenClaims := &Claims{
-		// TODO: register Uuid and Role
 		Email: user.Email,
 		Uuid:  user.Uuid.String(),
 		Role:  user.Role,

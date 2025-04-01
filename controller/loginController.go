@@ -37,14 +37,14 @@ func (c *LoginController) RegisterEndpoints(api *gin.RouterGroup) {
 }
 
 // Login godoc
-// @Summary User login
-// @Description Authenticates a user and returns access and refresh tokens
-// @Tags login
-// @Accept json
-// @Produce json
-// @Param loginDto body dto.LoginDto true "Login credentials"
-// @Success 200
-// @Router /login [post]
+//	@Summary		User login
+//	@Description	Authenticates a user and returns access and refresh tokens
+//	@Tags			login
+//	@Accept			json
+//	@Produce		json
+//	@Param			loginDto	body	dto.LoginDto	true	"Login credentials"
+//	@Success		200
+//	@Router			/login [post]
 func (c *LoginController) login(ctx *gin.Context) {
 	var loginDto dto.LoginDto
 

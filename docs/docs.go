@@ -94,7 +94,7 @@ const docTemplate = `{
                 "tags": [
                     "test"
                 ],
-                "summary": "Delets test item",
+                "summary": "Creates test item",
                 "parameters": [
                     {
                         "description": "Test model",
@@ -125,7 +125,7 @@ const docTemplate = `{
                 "tags": [
                     "test"
                 ],
-                "summary": "Delets test item",
+                "summary": "Deletes test item",
                 "parameters": [
                     {
                         "type": "string",
