@@ -3,7 +3,6 @@ package httpServer
 import (
 	"ePrometna_Server/controller"
 	"ePrometna_Server/docs"
-	"ePrometna_Server/model"
 
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
@@ -19,13 +18,19 @@ func setupHandlers(router *gin.Engine) {
 
 	// register swagger
 	docs.SwaggerInfo.BasePath = "/api"
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
-	api.Use(AllowAccess(model.RoleFirma, model.RoleAdmin))
+	swagger := ginSwagger.WrapHandler(swaggerfiles.Handler,
+		ginSwagger.URL("http://localhost:8090/swagger/doc.json"),
+		ginSwagger.DefaultModelsExpandDepth(2))
 
-	// testController
-	tc := controller.NewTestController()
-	tc.RegisterEndpoints(api)
+	router.GET("/swagger/*any", swagger)
+
+	// api.Use(AllowAccess(model.RoleFirma, model.RoleAdmin))
+
+	// TODO: remove test controller
+	controller.NewTestController().RegisterEndpoints(api)
+
+	controller.NewLoginController().RegisterEndpoints(api)
 
 	/*
 		tp := controller.NewTestController()

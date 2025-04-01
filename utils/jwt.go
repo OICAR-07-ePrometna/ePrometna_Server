@@ -1,4 +1,4 @@
-package httpServer
+package utils
 
 import (
 	"ePrometna_Server/config"
@@ -15,7 +15,7 @@ import (
 
 type Claims struct {
 	jwt.RegisteredClaims
-	Email string         `json:"username"`
+	Email string         `json:"email"`
 	Uuid  string         `json:"uuid"`
 	Role  model.UserRole `json:"role"`
 }

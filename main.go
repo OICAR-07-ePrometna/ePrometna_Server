@@ -6,8 +6,6 @@ import (
 	"ePrometna_Server/httpServer"
 	"ePrometna_Server/service"
 
-	swaggerfiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
 )
 
@@ -18,14 +16,15 @@ func main() {
 	}
 
 	app.Setup()
+	app.Provide(func() *zap.Logger {
+		return zap.L()
+	})
+
 	app.Provide(service.NewTestService)
+	app.Provide(service.NewLoginService)
 
 	zap.S().Infof("Database: http://localhost:8080")
 	zap.S().Infof("swagger: http://localhost:8090/swagger/index.html")
-
-	ginSwagger.WrapHandler(swaggerfiles.Handler,
-		ginSwagger.URL("http://localhost:8090/swagger/doc.json"),
-		ginSwagger.DefaultModelsExpandDepth(-1))
 
 	httpServer.Start()
 }

@@ -60,7 +60,9 @@ tasks:
 
   generate-swagger:
     internal: true
-    cmd: swag init
+    cmds:
+      - cmd: swag fmt
+      - cmd: swag init
     ignore_error: true
 
   list:

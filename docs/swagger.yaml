@@ -1,4 +1,14 @@
 definitions:
+  dto.LoginDto:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
   dto.TmodelDto:
     properties:
       age:
@@ -11,7 +21,39 @@ definitions:
 info:
   contact: {}
 paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns access and refresh tokens
+      parameters:
+      - description: Login credentials
+        in: body
+        name: loginDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: User login
+      tags:
+      - login
   /test:
+    get:
+      consumes:
+      - application/json
+      description: do ping
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: ping example
+      tags:
+      - test
     post:
       consumes:
       - application/json
@@ -28,20 +70,7 @@ paths:
       responses:
         "201":
           description: Created
-      summary: Delets test item
-      tags:
-      - test
-  /test/:
-    get:
-      consumes:
-      - application/json
-      description: do ping
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-      summary: ping example
+      summary: Creates test item
       tags:
       - test
     put:
@@ -72,7 +101,7 @@ paths:
       responses:
         "200":
           description: OK
-      summary: Delets test item
+      summary: Deletes test item
       tags:
       - test
 swagger: "2.0"

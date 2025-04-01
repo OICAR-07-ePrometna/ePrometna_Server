@@ -15,9 +15,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/test": {
+        "/login": {
             "post": {
-                "description": "Create a test model",
+                "description": "Authenticates a user and returns access and refresh tokens",
                 "consumes": [
                     "application/json"
                 ],
@@ -25,28 +25,28 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "test"
+                    "login"
                 ],
-                "summary": "Delets test item",
+                "summary": "User login",
                 "parameters": [
                     {
-                        "description": "Test model",
-                        "name": "model",
+                        "description": "Login credentials",
+                        "name": "loginDto",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.TmodelDto"
+                            "$ref": "#/definitions/dto.LoginDto"
                         }
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created"
+                    "200": {
+                        "description": "OK"
                     }
                 }
             }
         },
-        "/test/": {
+        "/test": {
             "get": {
                 "description": "do ping",
                 "consumes": [
@@ -82,6 +82,35 @@ const docTemplate = `{
                         "description": "OK"
                     }
                 }
+            },
+            "post": {
+                "description": "Create a test model",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "test"
+                ],
+                "summary": "Creates test item",
+                "parameters": [
+                    {
+                        "description": "Test model",
+                        "name": "model",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.TmodelDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
             }
         },
         "/test/{uuid}": {
@@ -96,7 +125,7 @@ const docTemplate = `{
                 "tags": [
                     "test"
                 ],
-                "summary": "Delets test item",
+                "summary": "Deletes test item",
                 "parameters": [
                     {
                         "type": "string",
@@ -115,6 +144,21 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.LoginDto": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.TmodelDto": {
             "type": "object",
             "properties": {

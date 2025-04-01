@@ -42,14 +42,15 @@ func (c *TestController) RegisterEndpoints(api *gin.RouterGroup) {
 }
 
 // PingExample godoc
-// @Summary ping example
-// @Schemes
-// @Description do ping
-// @Tags test
-// @Accept json
-// @Produce json
-// @Success 200
-// @Router /test/ [get]
+//
+//	@Summary	ping example
+//	@Schemes
+//	@Description	do ping
+//	@Tags			test
+//	@Accept			json
+//	@Produce		json
+//	@Success		200
+//	@Router			/test [get]
 func (c *TestController) test(ctx *gin.Context) {
 	tmodel, err := c.testService.ReadAll()
 	if err != nil {
@@ -61,14 +62,15 @@ func (c *TestController) test(ctx *gin.Context) {
 }
 
 // PingExample godoc
-// @Summary Insert new test struct
-// @Schemes
-// @Description do a insert into databse with test user and returns inserted struct
-// @Tags test
-// @Accept json
-// @Produce json
-// @Success 200
-// @Router /test/ [put]
+//
+//	@Summary	Insert new test struct
+//	@Schemes
+//	@Description	do a insert into databse with test user and returns inserted struct
+//	@Tags			test
+//	@Accept			json
+//	@Produce		json
+//	@Success		200
+//	@Router			/test [put]
 func (c *TestController) insert(ctx *gin.Context) {
 	t := model.Tmodel{Name: "Test insert", Uuid: uuid.New()}
 	tmodel, err := c.testService.Create(&t)
@@ -81,15 +83,16 @@ func (c *TestController) insert(ctx *gin.Context) {
 }
 
 // DeleteExamle godoc
-// @Summary Delets test item
-// @Schemes
-// @Description Deletes an item with uuid
-// @Tags test
-// @Accept json
-// @Produce json
-// @Success 200
-// @Param        uuid   path      string  true  "Test model UUID"
-// @Router /test/{uuid} [delete]
+//
+//	@Summary	Deletes test item
+//	@Schemes
+//	@Description	Deletes an item with uuid
+//	@Tags			test
+//	@Accept			json
+//	@Produce		json
+//	@Success		200
+//	@Param			uuid	path	string	true	"Test model UUID"
+//	@Router			/test/{uuid} [delete]
 func (c *TestController) delete(ctx *gin.Context) {
 	id, err := uuid.Parse(ctx.Param("uuid"))
 	if err != nil {
@@ -108,15 +111,16 @@ func (c *TestController) delete(ctx *gin.Context) {
 }
 
 // CreateExample godoc
-// @Summary Delets test item
-// @Schemes
-// @Description Create a test model
-// @Tags test
-// @Accept json
-// @Produce json
-// @Success 201
-// @Param model body dto.TmodelDto true "Test model"
-// @Router /test [post]
+//
+//	@Summary	Creates test item
+//	@Schemes
+//	@Description	Create a test model
+//	@Tags			test
+//	@Accept			json
+//	@Produce		json
+//	@Success		201
+//	@Param			model	body	dto.TmodelDto	true	"Test model"
+//	@Router			/test [post]
 func (c *TestController) create(ctx *gin.Context) {
 	// TODO: should use dto not Tmodel
 	var md dto.TmodelDto
