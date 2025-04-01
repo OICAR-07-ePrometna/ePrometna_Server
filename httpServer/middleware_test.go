@@ -3,13 +3,14 @@ package httpServer
 import (
 	"ePrometna_Server/config"
 	"ePrometna_Server/model"
-	"ePrometna_Server/utils"
-	"encoding/base64"
-	"encoding/json"
+
+	"ePrometna_Server/util/auth"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -25,17 +26,25 @@ func startTESTServer() *gin.Engine {
 	return router
 }
 
+var once = sync.Once{}
+
+func LoadConfigForTests() {
+	once.Do(func() {
+		// NOTE: Change directory
+		if err := os.Chdir("../"); err != nil {
+			panic(fmt.Sprintf("Failed to change directory: %v", err))
+		}
+
+		err := config.LoadConfig()
+		if err != nil {
+			panic(fmt.Sprintf("Failed to load config %+v", err))
+		}
+	})
+}
+
 func TestGenerateTokens(t *testing.T) {
 	// Setup
-	// TODO: This may be dangerous
-	if err := os.Chdir("../"); err != nil {
-		t.Fatalf("Failed to change directory: %v", err)
-	}
-
-	err := config.LoadConfig()
-	if err != nil {
-		t.Fatalf("Failed to load config %+v", err)
-	}
+	LoadConfigForTests()
 
 	router := startTESTServer()
 	router.Use(protect())
@@ -46,7 +55,7 @@ func TestGenerateTokens(t *testing.T) {
 		t.Fatalf("Failed to generate tokens %+v", err)
 	}
 
-	jwt, _, err := utils.GenerateTokens(model.User{Email: "Test@test.t", Uuid: uuid.New()})
+	jwt, _, err := auth.GenerateTokens(&model.User{Email: "Test@test.t", Uuid: uuid.New()})
 	if err != nil {
 		t.Fatalf("Failed to generate tokens %+v", err)
 	}
@@ -62,37 +71,4 @@ func TestGenerateTokens(t *testing.T) {
 			t.Fatalf("Expected body: %q, got: %q", expected, w.Body.String())
 		}
 	}
-}
-
-// Helper function to create a test JWT
-func createTestJWT(t *testing.T, claims utils.Claims) string {
-	// Create a simple header
-	header := map[string]string{
-		"alg": "HS256",
-		"typ": "JWT",
-	}
-
-	// Convert header to JSON
-	headerJSON, err := json.Marshal(header)
-	if err != nil {
-		t.Fatalf("Failed to marshal header: %v", err)
-	}
-
-	// Convert claims to JSON
-	claimsJSON, err := json.Marshal(claims)
-	if err != nil {
-		t.Fatalf("Failed to marshal claims: %v", err)
-	}
-
-	// Base64 encode header
-	headerBase64 := base64.RawURLEncoding.EncodeToString(headerJSON)
-
-	// Base64 encode claims
-	claimsBase64 := base64.RawURLEncoding.EncodeToString(claimsJSON)
-
-	// Create a fake signature (doesn't matter for these tests)
-	fakeSig := "SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-
-	// Combine to form token
-	return headerBase64 + "." + claimsBase64 + "." + fakeSig
 }

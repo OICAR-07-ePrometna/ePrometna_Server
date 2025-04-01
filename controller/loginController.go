@@ -53,20 +53,20 @@ func (c *LoginController) login(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&loginDto); err != nil {
 		zap.S().Error("Invalid login request", zap.Error(err))
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		ctx.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	accessToken, refreshToken, err := c.loginService.Login(loginDto.Email, loginDto.Password)
 	if err != nil {
 		zap.S().Error("Login failed", zap.Error(err))
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"accessToken":  accessToken,
-		"refreshToken": refreshToken,
+	ctx.JSON(http.StatusOK, dto.TokenResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
 	})
 
 }
