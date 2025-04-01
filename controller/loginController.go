@@ -37,6 +37,7 @@ func (c *LoginController) RegisterEndpoints(api *gin.RouterGroup) {
 }
 
 // Login godoc
+//
 //	@Summary		User login
 //	@Description	Authenticates a user and returns access and refresh tokens
 //	@Tags			login
@@ -65,5 +66,4 @@ func (c *LoginController) login(ctx *gin.Context) {
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	})
-
 }

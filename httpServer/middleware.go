@@ -3,7 +3,6 @@ package httpServer
 import (
 	"ePrometna_Server/config"
 	"ePrometna_Server/model"
-
 	"ePrometna_Server/util/auth"
 	"errors"
 	"net/http"
@@ -16,17 +15,26 @@ import (
 var ErrInvalidTokenFormat = errors.New("invalid token format")
 
 // parseToken parses jwt token from header
-func parseToken(authHeader string) (string, error) {
+func parseToken(authHeader string) (*jwt.Token, *auth.Claims, error) {
 	// Parse token
 	if len(authHeader) <= len("Bearer ") || authHeader[:len("Bearer ")] != "Bearer " {
-		return "", ErrInvalidTokenFormat
+		return nil, nil, ErrInvalidTokenFormat
 	}
 	tokenString := authHeader[len("Bearer "):]
-	return tokenString, nil
+	var claims auth.Claims
+	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (any, error) {
+		return []byte(config.AppConfig.JwtKey), nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return token, &claims, nil
 }
 
-// Middleware to protect routes
-func protect() gin.HandlerFunc {
+// Protect protects routes allowing access only to given roles (model.UserRole)
+// if roles are empty they it only checks for the validity of tokens
+func Protect(roles ...model.UserRole) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -34,22 +42,22 @@ func protect() gin.HandlerFunc {
 			return
 		}
 
-		tokenString, err := parseToken(authHeader)
+		token, claims, err := parseToken(authHeader)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, "Invalid token format")
 			return
-
 		}
 
-		token, err := jwt.ParseWithClaims(tokenString, &auth.Claims{}, func(token *jwt.Token) (any, error) {
-
-			return []byte(config.AppConfig.JwtKey), nil
-		})
-
-		if err != nil || !token.Valid {
+		if !token.Valid {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, "Invalid token")
 			return
 		}
+
+		if len(roles) != 0 && !slices.Contains(roles, claims.Role) {
+			c.AbortWithStatus(http.StatusForbidden)
+			return
+		}
+
 		c.Next()
 	}
 }
@@ -80,16 +88,6 @@ func corsHeader() gin.HandlerFunc {
 			return
 		}
 
-		c.Next()
-	}
-}
-
-func AllowAccess(roles ...model.UserRole) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// TODO: in progres
-		if !slices.Contains(roles, "") {
-			c.AbortWithStatus(http.StatusForbidden)
-		}
 		c.Next()
 	}
 }
