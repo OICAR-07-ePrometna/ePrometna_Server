@@ -3,7 +3,6 @@ package httpServer
 import (
 	"ePrometna_Server/config"
 	"ePrometna_Server/model"
-
 	"ePrometna_Server/util/auth"
 	"errors"
 	"net/http"
@@ -16,13 +15,21 @@ import (
 var ErrInvalidTokenFormat = errors.New("invalid token format")
 
 // parseToken parses jwt token from header
-func parseToken(authHeader string) (string, error) {
+func parseToken(authHeader string) (*jwt.Token, *auth.Claims, error) {
 	// Parse token
 	if len(authHeader) <= len("Bearer ") || authHeader[:len("Bearer ")] != "Bearer " {
-		return "", ErrInvalidTokenFormat
+		return nil, nil, ErrInvalidTokenFormat
 	}
 	tokenString := authHeader[len("Bearer "):]
-	return tokenString, nil
+	var claims auth.Claims
+	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (any, error) {
+		return []byte(config.AppConfig.JwtKey), nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return token, &claims, nil
 }
 
 // Middleware to protect routes
@@ -34,22 +41,17 @@ func protect() gin.HandlerFunc {
 			return
 		}
 
-		tokenString, err := parseToken(authHeader)
+		token, _, err := parseToken(authHeader)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, "Invalid token format")
 			return
-
 		}
 
-		token, err := jwt.ParseWithClaims(tokenString, &auth.Claims{}, func(token *jwt.Token) (any, error) {
-
-			return []byte(config.AppConfig.JwtKey), nil
-		})
-
-		if err != nil || !token.Valid {
+		if !token.Valid {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, "Invalid token")
 			return
 		}
+
 		c.Next()
 	}
 }
@@ -84,12 +86,26 @@ func corsHeader() gin.HandlerFunc {
 	}
 }
 
+// AllowAccess protect a routes alowwing acces only to given roles (model.UserRole)
 func AllowAccess(roles ...model.UserRole) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// TODO: in progres
-		if !slices.Contains(roles, "") {
-			c.AbortWithStatus(http.StatusForbidden)
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, "Missing token")
+			return
 		}
+
+		_, claims, err := parseToken(authHeader)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, "Invalid token format")
+			return
+		}
+
+		if !slices.Contains(roles, claims.Role) {
+			c.AbortWithStatus(http.StatusForbidden)
+			return
+		}
+
 		c.Next()
 	}
 }
