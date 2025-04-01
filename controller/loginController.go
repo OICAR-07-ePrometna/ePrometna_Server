@@ -30,10 +30,10 @@ func NewLoginController() *LoginController {
 
 func (c *LoginController) RegisterEndpoints(api *gin.RouterGroup) {
 	// create a group with the name of the router
-	group := api.Group("/login")
+	group := api.Group("")
 
 	// register Endpoints
-	group.POST("/", c.login)
+	group.POST("/login", c.login)
 }
 
 // Login godoc

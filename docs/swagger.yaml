@@ -70,7 +70,7 @@ paths:
       responses:
         "201":
           description: Created
-      summary: Delets test item
+      summary: Create test item
       tags:
       - test
     put:
@@ -101,7 +101,7 @@ paths:
       responses:
         "200":
           description: OK
-      summary: Delets test item
+      summary: Deletes test item
       tags:
       - test
 swagger: "2.0"

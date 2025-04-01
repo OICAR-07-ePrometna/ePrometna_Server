@@ -11,7 +11,7 @@ import (
 )
 
 type ILoginService interface {
-	Login(username, password string) (string, string, error)
+	Login(email, password string) (string, string, error)
 }
 
 type LoginService struct {
@@ -35,7 +35,7 @@ func (s *LoginService) Login(email, password string) (string, string, error) {
 	if err := s.db.Where("email = ?", email).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			zap.S().Warnf("User not found Email = %s", email)
-			return "", "", errors.New("invalid username or password")
+			return "", "", errors.New("invalid email or password")
 		}
 
 		zap.S().Errorf("Failed to query user, error = %+v", err)
@@ -44,7 +44,7 @@ func (s *LoginService) Login(email, password string) (string, string, error) {
 
 	if !auth.VerifyPassword(user.PasswordHash, password) {
 		zap.S().Warnf("Invalid password for user Email: %s, uuid: %s", user.Email, user.Uuid)
-		return "", "", errors.New("invalid username or password")
+		return "", "", errors.New("invalid email or password")
 	}
 
 	token, refresh, err := auth.GenerateTokens(&user)

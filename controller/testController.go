@@ -84,7 +84,7 @@ func (c *TestController) insert(ctx *gin.Context) {
 
 // DeleteExamle godoc
 //
-//	@Summary	Delets test item
+//	@Summary	Deletes test item
 //	@Schemes
 //	@Description	Deletes an item with uuid
 //	@Tags			test
@@ -112,7 +112,7 @@ func (c *TestController) delete(ctx *gin.Context) {
 
 // CreateExample godoc
 //
-//	@Summary	Delets test item
+//	@Summary	Creates test item
 //	@Schemes
 //	@Description	Create a test model
 //	@Tags			test
