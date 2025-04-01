@@ -32,8 +32,8 @@ func parseToken(authHeader string) (*jwt.Token, *auth.Claims, error) {
 	return token, &claims, nil
 }
 
-// AllowAccess protect a routes allowing access only to given roles (model.UserRole)
-// user AllowAccess or protect
+// Protect protects routes allowing access only to given roles (model.UserRole)
+// if roles are empty they it only checks for the validity of tokens
 func Protect(roles ...model.UserRole) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
