@@ -32,8 +32,9 @@ func parseToken(authHeader string) (*jwt.Token, *auth.Claims, error) {
 	return token, &claims, nil
 }
 
-// Middleware to protect routes
-func protect() gin.HandlerFunc {
+// AllowAccess protect a routes allowing access only to given roles (model.UserRole)
+// user AllowAccess or protect
+func Protect(roles ...model.UserRole) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -41,7 +42,7 @@ func protect() gin.HandlerFunc {
 			return
 		}
 
-		token, _, err := parseToken(authHeader)
+		token, claims, err := parseToken(authHeader)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, "Invalid token format")
 			return
@@ -49,6 +50,11 @@ func protect() gin.HandlerFunc {
 
 		if !token.Valid {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, "Invalid token")
+			return
+		}
+
+		if len(roles) != 0 && !slices.Contains(roles, claims.Role) {
+			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
 
@@ -79,30 +85,6 @@ func corsHeader() gin.HandlerFunc {
 
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
-			return
-		}
-
-		c.Next()
-	}
-}
-
-// AllowAccess protect a routes alowwing acces only to given roles (model.UserRole)
-func AllowAccess(roles ...model.UserRole) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, "Missing token")
-			return
-		}
-
-		_, claims, err := parseToken(authHeader)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, "Invalid token format")
-			return
-		}
-
-		if !slices.Contains(roles, claims.Role) {
-			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
 

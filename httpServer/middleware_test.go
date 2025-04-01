@@ -3,7 +3,6 @@ package httpServer
 import (
 	"ePrometna_Server/config"
 	"ePrometna_Server/model"
-
 	"ePrometna_Server/util/auth"
 	"fmt"
 	"net/http"
@@ -47,7 +46,7 @@ func TestGenerateTokens(t *testing.T) {
 	LoadConfigForTests()
 
 	router := startTESTServer()
-	router.Use(protect())
+	router.Use(Protect())
 
 	w := httptest.NewRecorder()
 	req, err := http.NewRequest("GET", "/ping", strings.NewReader(""))
