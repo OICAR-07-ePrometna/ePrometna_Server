@@ -32,12 +32,12 @@ func LoadConfigForTests() {
 	once.Do(func() {
 		// NOTE: Change directory
 		if err := os.Chdir("../"); err != nil {
-			panic(fmt.Sprintf("Failed to change directory: %v", err))
+			panic(fmt.Errorf("Failed to change directory: %v", err))
 		}
 
 		err := config.LoadConfig()
 		if err != nil {
-			panic(fmt.Sprintf("Failed to load config %+v", err))
+			panic(fmt.Errorf("Failed to load config %+v", err))
 		}
 	})
 }
