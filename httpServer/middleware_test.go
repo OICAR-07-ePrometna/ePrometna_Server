@@ -3,6 +3,7 @@ package httpServer
 import (
 	"ePrometna_Server/config"
 	"ePrometna_Server/model"
+	"ePrometna_Server/utils"
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
@@ -45,7 +46,7 @@ func TestGenerateTokens(t *testing.T) {
 		t.Fatalf("Failed to generate tokens %+v", err)
 	}
 
-	jwt, _, err := GenerateTokens(model.User{Email: "Test@test.t", Uuid: uuid.New()})
+	jwt, _, err := utils.GenerateTokens(model.User{Email: "Test@test.t", Uuid: uuid.New()})
 	if err != nil {
 		t.Fatalf("Failed to generate tokens %+v", err)
 	}
@@ -64,7 +65,7 @@ func TestGenerateTokens(t *testing.T) {
 }
 
 // Helper function to create a test JWT
-func createTestJWT(t *testing.T, claims Claims) string {
+func createTestJWT(t *testing.T, claims utils.Claims) string {
 	// Create a simple header
 	header := map[string]string{
 		"alg": "HS256",

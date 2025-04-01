@@ -1,4 +1,4 @@
-package httpServer
+package utils
 
 import (
 	"ePrometna_Server/config"

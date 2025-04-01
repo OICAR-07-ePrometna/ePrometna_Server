@@ -25,7 +25,10 @@ func setupHandlers(router *gin.Engine) {
 
 	// testController
 	tc := controller.NewTestController()
+	lc := controller.NewLoginController()
+
 	tc.RegisterEndpoints(api)
+	lc.RegisterEndpoints(api)
 
 	/*
 		tp := controller.NewTestController()

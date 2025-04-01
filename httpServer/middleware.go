@@ -3,6 +3,7 @@ package httpServer
 import (
 	"ePrometna_Server/config"
 	"ePrometna_Server/model"
+	"ePrometna_Server/utils"
 	"errors"
 	"net/http"
 	"slices"
@@ -38,7 +39,7 @@ func protect() gin.HandlerFunc {
 			return
 
 		}
-		token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (any, error) {
+		token, err := jwt.ParseWithClaims(tokenString, &utils.Claims{}, func(token *jwt.Token) (any, error) {
 			return []byte(config.AppConfig.JwtKey), nil
 		})
 
