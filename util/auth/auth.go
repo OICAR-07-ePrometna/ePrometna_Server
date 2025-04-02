@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -65,4 +66,14 @@ func GenerateTokens(user *model.User) (string, string, error) {
 func VerifyPassword(hashedPassword, plainPassword string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword))
 	return err == nil
+}
+
+func HashPassword(password string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), 1)
+	if err != nil {
+		zap.S().Errorf("Failed to hash password err = %+v", err)
+		return "", err
+	}
+
+	return string(hash), nil
 }

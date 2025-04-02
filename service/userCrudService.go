@@ -3,6 +3,7 @@ package service
 import (
 	"ePrometna_Server/app"
 	"ePrometna_Server/model"
+	"ePrometna_Server/util/auth"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -10,7 +11,7 @@ import (
 )
 
 type IUserCrudService interface {
-	Create(user *model.User) (*model.User, error)
+	Create(user *model.User, password string) (*model.User, error)
 	Read(uuid uuid.UUID) (*model.User, error)
 	ReadAll() ([]model.User, error)
 	Update(uuid uuid.UUID, user *model.User) (*model.User, error)
@@ -73,8 +74,14 @@ func (u UserCrudSerrvice) Update(_uuid uuid.UUID, user *model.User) (*model.User
 }
 
 // Create implements IUserCrudService.
-func (u UserCrudSerrvice) Create(user *model.User) (*model.User, error) {
+func (u UserCrudSerrvice) Create(user *model.User, password string) (*model.User, error) {
 	// TODO: hash password
+	hash, err := auth.HashPassword(password)
+	if err != nil {
+		return nil, err
+	}
+
+	user.PasswordHash = hash
 	rez := u.db.Create(&user)
 	if rez.Error != nil {
 		return nil, rez.Error

@@ -43,6 +43,7 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 }
 
 // UserExample godoc
+//
 //	@Summary		get user with uuid
 //	@Description	get a user with uuid
 //	@Tags			user
@@ -79,6 +80,7 @@ func (u *UserController) get(c *gin.Context) {
 }
 
 // UserExample godoc
+//
 //	@Summary	Create new user
 //	@Tags		user
 //	@Produce	json
@@ -86,15 +88,16 @@ func (u *UserController) get(c *gin.Context) {
 //	@Failure	400
 //	@Failure	404
 //	@Failure	500
-//	@Param		model	body	dto.UserDto	true	"Data for new user"
+//	@Param		model	body	dto.NewUserDto	true	"Data for new user"
 //	@Router		/user [post]
 func (u *UserController) create(c *gin.Context) {
-	var dto dto.UserDto
+	var dto dto.NewUserDto
 	if err := c.Bind(&dto); err != nil {
+		zap.S().Errorf("Failed to bind error = %+v", err)
 		c.AbortWithError(http.StatusBadRequest, err)
 	}
 
-	user, err := u.UserCrud.Create(dto.ToModel())
+	user, err := u.UserCrud.Create(dto.ToModel(), dto.Password)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 	}
@@ -103,6 +106,7 @@ func (u *UserController) create(c *gin.Context) {
 }
 
 // UserExample godoc
+//
 //	@Summary	Update user with new dat
 //	@Tags		user
 //	@Produce	json
@@ -135,6 +139,7 @@ func (u *UserController) update(c *gin.Context) {
 }
 
 // UserExample  godoc
+//
 //	@Summary		get user with uuid
 //	@Description	get a user with uuid
 //	@Tags			user

@@ -16,6 +16,7 @@ func main() {
 	}
 
 	app.Setup()
+
 	app.Provide(service.NewTestService)
 	app.Provide(service.NewLoginService)
 	app.Provide(service.NewUserCrudService)

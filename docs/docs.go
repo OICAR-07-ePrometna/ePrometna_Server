@@ -204,7 +204,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UserDto"
+                            "$ref": "#/definitions/dto.NewUserDto"
                         }
                     }
                 ],
@@ -344,6 +344,26 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.DriverLicenseDto": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "expiringDate": {
+                    "type": "string"
+                },
+                "issueDate": {
+                    "type": "string"
+                },
+                "licenseNumber": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.LoginDto": {
             "type": "object",
             "required": [
@@ -355,6 +375,41 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.NewUserDto": {
+            "type": "object",
+            "properties": {
+                "birthDate": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "license": {
+                    "$ref": "#/definitions/dto.DriverLicenseDto"
+                },
+                "oib": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "residence": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "uuid": {
                     "type": "string"
                 }
             }
@@ -374,7 +429,39 @@ const docTemplate = `{
             }
         },
         "dto.UserDto": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "birthDate": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "license": {
+                    "$ref": "#/definitions/dto.DriverLicenseDto"
+                },
+                "oib": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "residence": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                }
+            }
         }
     }
 }`
