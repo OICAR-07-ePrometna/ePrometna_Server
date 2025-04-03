@@ -15,7 +15,7 @@ func HandleRefresh(c *gin.Context) {
 
 	// Check if refresh token is empty
 	if refreshTokenString == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Refresh token is required"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Refresh token is required"})
 		return
 	}
 

@@ -26,6 +26,7 @@ func NewMockLoginServiceWithUsers(users map[string]string) *MockLoginService {
 		mockUsers: users,
 	}
 }
+
 func (m *MockLoginService) AddMockUser(email, password string) {
 	m.mockUsers[email] = password
 }

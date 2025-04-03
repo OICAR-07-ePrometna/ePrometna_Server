@@ -25,5 +25,9 @@ type AppConfiguration struct {
 }
 
 func IsDevEnvironment() bool {
-	return os.Getenv("APP_ENV") == "development"
+	env := os.Getenv("APP_ENV")
+	if env == "" {
+		env = "development"
+	}
+	return env == "development"
 }
