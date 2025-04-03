@@ -2,14 +2,12 @@ package dto
 
 import (
 	"ePrometna_Server/model"
+	"ePrometna_Server/util/format"
 	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
-
-// NOTE: date format
-const DateFormat = "2006-01-02"
 
 type NewUserDto struct {
 	Uuid      string
@@ -21,14 +19,13 @@ type NewUserDto struct {
 	Email     string
 	Password  string
 	Role      string
-	License   DriverLicenseDto
 }
 
 // ToModel create a model from a dto
 func (dto *NewUserDto) ToModel() *model.User {
-	bod, err := time.Parse(DateFormat, dto.BirthDate)
+	bod, err := time.Parse(format.DateFormat, dto.BirthDate)
 	if err != nil {
-		zap.S().DPanicf("Bad date time format need %s has %s", DateFormat, dto.BirthDate)
+		zap.S().DPanicf("Bad date time format need %s has %s", format.DateFormat, dto.BirthDate)
 		// TODO: see what to have to happen in prod
 		return nil
 	}
@@ -43,23 +40,20 @@ func (dto *NewUserDto) ToModel() *model.User {
 		BirthDate: bod,
 		Email:     dto.Email,
 		Role:      role,
-		// TODO: see what to do with license
 	}
 }
 
 // FromModel returns a dto from model struct
 func (dto *NewUserDto) FromModel(m *model.User) *NewUserDto {
-	license := DriverLicenseDto{}
 	dto = &NewUserDto{
 		Uuid:      m.Uuid.String(),
 		FirstName: m.FirstName,
 		LastName:  m.LastName,
 		OIB:       m.OIB,
 		Residence: m.Residence,
-		BirthDate: m.BirthDate.Format(DateFormat),
+		BirthDate: m.BirthDate.Format(format.DateFormat),
 		Email:     m.Email,
 		Role:      string(m.Role),
-		License:   *license.FromModel(&m.License),
 	}
 	return dto
 }

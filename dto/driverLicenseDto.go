@@ -2,6 +2,7 @@ package dto
 
 import (
 	"ePrometna_Server/model"
+	"ePrometna_Server/util/format"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,15 +19,15 @@ type DriverLicenseDto struct {
 
 // ToModel create a model from a dto
 func (dto *DriverLicenseDto) ToModel() *model.DriverLicense {
-	issueDate, err := time.Parse(DateFormat, dto.IssueDate)
+	issueDate, err := time.Parse(format.DateFormat, dto.IssueDate)
 	if err != nil {
-		zap.S().DPanicf("Bad date time format need %s has %s", DateFormat, dto.IssueDate)
+		zap.S().DPanicf("Bad date time format need %s has %s", format.DateFormat, dto.IssueDate)
 		// TODO: see what to have to happen in prod
 		return nil
 	}
-	exp, err := time.Parse(DateFormat, dto.ExpiringDate)
+	exp, err := time.Parse(format.DateFormat, dto.ExpiringDate)
 	if err != nil {
-		zap.S().DPanicf("Bad date time format need %s has %s", DateFormat, dto.ExpiringDate)
+		zap.S().DPanicf("Bad date time format need %s has %s", format.DateFormat, dto.ExpiringDate)
 		// TODO: see what to have to happen in prod
 		return nil
 	}
@@ -45,8 +46,8 @@ func (dto *DriverLicenseDto) FromModel(m *model.DriverLicense) *DriverLicenseDto
 		Uuid:          m.Uuid.String(),
 		LicenseNumber: m.LicenseNumber,
 		Category:      m.Category,
-		IssueDate:     m.IssueDate.Format(DateFormat),
-		ExpiringDate:  m.ExpiringDate.Format(DateFormat),
+		IssueDate:     m.IssueDate.Format(format.DateFormat),
+		ExpiringDate:  m.ExpiringDate.Format(format.DateFormat),
 	}
 	return dto
 }

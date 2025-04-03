@@ -394,9 +394,6 @@ const docTemplate = `{
                 "lastName": {
                     "type": "string"
                 },
-                "license": {
-                    "$ref": "#/definitions/dto.DriverLicenseDto"
-                },
                 "oib": {
                     "type": "string"
                 },
