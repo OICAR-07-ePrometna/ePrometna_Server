@@ -1,11 +1,17 @@
 package controller
 
 import (
+	"ePrometna_Server/app"
+	"ePrometna_Server/config"
 	"ePrometna_Server/dto"
+	"ePrometna_Server/model"
 	"ePrometna_Server/service"
+	"ePrometna_Server/util/auth"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -13,68 +19,102 @@ type LoginController struct {
 	loginService service.ILoginService
 }
 
-// func NewLoginController() *LoginController {
-// 	var controller *LoginController
-
-// 	// Call dependency injection
-// 	app.Invoke(func(loginService service.ILoginService) {
-// 		// create controller
-// 		controller = &LoginController{
-// 			loginService: loginService,
-// 		}
-// 	})
-
-// 	return controller
-// }
-
 func NewLoginController() *LoginController {
 	var controller *LoginController
 
 	// Use the mock service for testing
-	mockService := service.NewMockLoginService()
-	controller = &LoginController{
-		loginService: mockService,
-	}
+	app.Invoke(func(loginService service.ILoginService) {
+		// create controller
+		controller = &LoginController{
+			loginService: loginService,
+		}
+	})
 
 	return controller
 }
 
 func (c *LoginController) RegisterEndpoints(api *gin.RouterGroup) {
 	// create a group with the name of the router
-	group := api.Group("")
+	group := api.Group("/auth")
 
 	// register Endpoints
 	group.POST("/login", c.login)
+	group.POST("/refresh", c.RefreshToken)
 }
 
 // Login godoc
 //
 //	@Summary		User login
 //	@Description	Authenticates a user and returns access and refresh tokens
-//	@Tags			login
+//	@Tags			auth
 //	@Accept			json
 //	@Produce		json
 //	@Param			loginDto	body	dto.LoginDto	true	"Login credentials"
 //	@Success		200
-//	@Router			/login [post]
-func (c *LoginController) login(ctx *gin.Context) {
+//	@Router			/auth/login [post]
+func (l *LoginController) login(c *gin.Context) {
 	var loginDto dto.LoginDto
 
-	if err := ctx.ShouldBindJSON(&loginDto); err != nil {
+	if err := c.ShouldBindJSON(&loginDto); err != nil {
 		zap.S().Error("Invalid login request", zap.Error(err))
-		ctx.JSON(http.StatusBadRequest, err.Error())
+		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	accessToken, refreshToken, err := c.loginService.Login(loginDto.Email, loginDto.Password)
+	accessToken, refreshToken, err := l.loginService.Login(loginDto.Email, loginDto.Password)
 	if err != nil {
 		zap.S().Error("Login failed", zap.Error(err))
-		ctx.JSON(http.StatusUnauthorized, err.Error())
+		c.JSON(http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	ctx.JSON(http.StatusOK, dto.TokenResponse{
+	c.JSON(http.StatusOK, dto.TokenResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
+	})
+}
+
+// Refresh godoc
+//
+//	@Summary		Refresh Access Token
+//	@Description	Generates a new access token using a valid refresh token
+//	@Tags			auth
+//	@Accept			x-www-form-urlencoded
+//	@Produce		json
+//	@Param			refresh_token	body		string				true	"Refresh Token"
+//	@Success		200				{object}	map[string]string	"access_token"
+//	@Failure		401				{object}	map[string]string	"error"
+//	@Router			/auth/refresh [post]
+func (l *LoginController) RefreshToken(c *gin.Context) {
+	tokenString := ""
+
+	var claims auth.Claims
+	_, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (any, error) {
+		return []byte(config.AppConfig.JwtKey), nil
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+	userUuid, err := uuid.Parse(claims.Uuid)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	jwt, refreshNew, err := l.loginService.RefreshTokens(&model.User{
+		Uuid:  userUuid,
+		Email: claims.Email,
+		Role:  claims.Role,
+	})
+	if err != nil {
+		zap.S().Error("Refresh failed", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.TokenResponse{
+		AccessToken:  jwt,
+		RefreshToken: refreshNew,
 	})
 }

@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/login": {
+        "/auth/login": {
             "post": {
                 "description": "Authenticates a user and returns access and refresh tokens",
                 "consumes": [
@@ -46,7 +46,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/refresh": {
+        "/auth/refresh": {
             "post": {
                 "description": "Generates a new access token using a valid refresh token",
                 "consumes": [
@@ -61,11 +61,13 @@ const docTemplate = `{
                 "summary": "Refresh Access Token",
                 "parameters": [
                     {
-                        "type": "string",
                         "description": "Refresh Token",
                         "name": "refresh_token",
-                        "in": "formData",
-                        "required": true
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {

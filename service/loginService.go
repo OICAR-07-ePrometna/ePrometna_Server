@@ -12,6 +12,7 @@ import (
 
 type ILoginService interface {
 	Login(email, password string) (string, string, error)
+	RefreshTokens(user *model.User) (string, string, error)
 }
 
 type LoginService struct {
@@ -54,4 +55,9 @@ func (s *LoginService) Login(email, password string) (string, string, error) {
 	}
 
 	return token, refresh, nil
+}
+
+// Refresh implements ILoginService.
+func (s *LoginService) RefreshTokens(user *model.User) (string, string, error) {
+	return auth.GenerateTokens(user)
 }

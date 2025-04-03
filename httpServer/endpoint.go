@@ -32,8 +32,6 @@ func setupHandlers(router *gin.Engine) {
 
 	controller.NewLoginController().RegisterEndpoints(api)
 
-	controller.NewAuthController().RegisterEndpoints(api)
-
 	/*
 		tp := controller.NewTestController()
 		protected := api.Group("/protected")

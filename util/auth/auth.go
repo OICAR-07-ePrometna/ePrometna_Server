@@ -22,6 +22,10 @@ const (
 	refreshTokenDuration = 7 * 24 * time.Hour
 )
 
+func ParseClaims(token string) (*Claims, error) {
+	return nil, nil
+}
+
 // Generate JWT access and refresh tokens
 func GenerateTokens(user *model.User) (string, string, error) {
 	// Create access token

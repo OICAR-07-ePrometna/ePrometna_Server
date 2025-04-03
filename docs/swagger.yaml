@@ -21,7 +21,7 @@ definitions:
 info:
   contact: {}
 paths:
-  /login:
+  /auth/login:
     post:
       consumes:
       - application/json
@@ -41,17 +41,18 @@ paths:
       summary: User login
       tags:
       - login
-  /refresh:
+  /auth/refresh:
     post:
       consumes:
       - application/x-www-form-urlencoded
       description: Generates a new access token using a valid refresh token
       parameters:
       - description: Refresh Token
-        in: formData
+        in: body
         name: refresh_token
         required: true
-        type: string
+        schema:
+          type: string
       produces:
       - application/json
       responses:
