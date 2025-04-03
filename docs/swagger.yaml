@@ -41,6 +41,35 @@ paths:
       summary: User login
       tags:
       - login
+  /refresh:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Generates a new access token using a valid refresh token
+      parameters:
+      - description: Refresh Token
+        in: formData
+        name: refresh_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: access_token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Refresh Access Token
+      tags:
+      - auth
   /test:
     get:
       consumes:

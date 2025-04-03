@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"ePrometna_Server/app"
 	"ePrometna_Server/dto"
 	"ePrometna_Server/service"
 	"net/http"
@@ -14,16 +13,28 @@ type LoginController struct {
 	loginService service.ILoginService
 }
 
+// func NewLoginController() *LoginController {
+// 	var controller *LoginController
+
+// 	// Call dependency injection
+// 	app.Invoke(func(loginService service.ILoginService) {
+// 		// create controller
+// 		controller = &LoginController{
+// 			loginService: loginService,
+// 		}
+// 	})
+
+// 	return controller
+// }
+
 func NewLoginController() *LoginController {
 	var controller *LoginController
 
-	// Call dependency injection
-	app.Invoke(func(loginService service.ILoginService) {
-		// create controller
-		controller = &LoginController{
-			loginService: loginService,
-		}
-	})
+	// Use the mock service for testing
+	mockService := service.NewMockLoginService()
+	controller = &LoginController{
+		loginService: mockService,
+	}
 
 	return controller
 }
@@ -37,6 +48,7 @@ func (c *LoginController) RegisterEndpoints(api *gin.RouterGroup) {
 }
 
 // Login godoc
+//
 //	@Summary		User login
 //	@Description	Authenticates a user and returns access and refresh tokens
 //	@Tags			login
