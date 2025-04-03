@@ -79,25 +79,30 @@ func (l *LoginController) login(c *gin.Context) {
 //	@Summary		Refresh Access Token
 //	@Description	Generates a new access token using a valid refresh token
 //	@Tags			auth
-//	@Accept			x-www-form-urlencoded
 //	@Produce		json
-//	@Param			refresh_token	body		string				true	"Refresh Token"
-//	@Success		200				{object}	map[string]string	"access_token"
-//	@Failure		401				{object}	map[string]string	"error"
+//	@Param			refreshToken	body	string	true	"Refresh Token"
+//	@Success		200
 //	@Router			/auth/refresh [post]
 func (l *LoginController) RefreshToken(c *gin.Context) {
-	tokenString := ""
+	var rToken dto.RefreshDto
+	if err := c.ShouldBind(&rToken); err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+	zap.S().Debugf("Parsed token from body %+v", rToken)
 
 	var claims auth.Claims
-	_, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (any, error) {
-		return []byte(config.AppConfig.JwtKey), nil
+	_, err := jwt.ParseWithClaims(rToken.RefreshToken, &claims, func(token *jwt.Token) (any, error) {
+		return []byte(config.AppConfig.RefreshKey), nil
 	})
 	if err != nil {
+		zap.S().Errorf("Error Parsing clames err = %+v", err)
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 	userUuid, err := uuid.Parse(claims.Uuid)
 	if err != nil {
+		zap.S().Errorf("Error Parsing uuid err = %+v", err)
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -108,7 +113,7 @@ func (l *LoginController) RefreshToken(c *gin.Context) {
 		Role:  claims.Role,
 	})
 	if err != nil {
-		zap.S().Error("Refresh failed", zap.Error(err))
+		zap.S().Error("Refresh failed err = %+v", err)
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}

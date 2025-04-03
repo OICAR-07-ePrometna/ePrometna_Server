@@ -97,16 +97,14 @@ paths:
           description: OK
       summary: User login
       tags:
-      - login
+      - auth
   /auth/refresh:
     post:
-      consumes:
-      - application/x-www-form-urlencoded
       description: Generates a new access token using a valid refresh token
       parameters:
       - description: Refresh Token
         in: body
-        name: refresh_token
+        name: refreshToken
         required: true
         schema:
           type: string
@@ -114,17 +112,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: access_token
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "401":
-          description: error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
+          description: OK
       summary: Refresh Access Token
       tags:
       - auth

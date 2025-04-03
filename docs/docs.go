@@ -25,7 +25,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "login"
+                    "auth"
                 ],
                 "summary": "User login",
                 "parameters": [
@@ -49,9 +49,6 @@ const docTemplate = `{
         "/auth/refresh": {
             "post": {
                 "description": "Generates a new access token using a valid refresh token",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -62,7 +59,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "Refresh Token",
-                        "name": "refresh_token",
+                        "name": "refreshToken",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -72,22 +69,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "access_token",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
+                        "description": "OK"
                     }
                 }
             }
