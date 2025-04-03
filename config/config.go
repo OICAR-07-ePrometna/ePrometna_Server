@@ -1,5 +1,7 @@
 package config
 
+import "os"
+
 const (
 	_CONFIG_FILE                = "ePrometna.json"
 	LOG_FILE                    = "ePrometna.log"
@@ -20,4 +22,8 @@ type AppConfiguration struct {
 	DbConnection  string
 	JwtKey        string
 	RefreshKey    string
+}
+
+func IsDevEnvironment() bool {
+	return os.Getenv("APP_ENV") == "development"
 }

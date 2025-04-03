@@ -4,12 +4,17 @@ import (
 	"ePrometna_Server/utils"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
-type AuthController struct{}
+type AuthController struct {
+	logger *zap.SugaredLogger
+}
 
 func NewAuthController() *AuthController {
-	return &AuthController{}
+	return &AuthController{
+		logger: zap.S(),
+	}
 }
 
 func (a *AuthController) RegisterEndpoints(api *gin.RouterGroup) {
@@ -30,5 +35,6 @@ func (a *AuthController) RegisterEndpoints(api *gin.RouterGroup) {
 //	@Failure		401				{object}	map[string]string	"error"
 //	@Router			/refresh [post]
 func (a *AuthController) RefreshToken(c *gin.Context) {
+	a.logger.Info("Refresh token request received")
 	utils.HandleRefresh(c)
 }

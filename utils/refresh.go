@@ -13,6 +13,12 @@ func HandleRefresh(c *gin.Context) {
 	// Extract the refresh token from the request body
 	refreshTokenString := c.PostForm("refresh_token")
 
+	// Check if refresh token is empty
+	if refreshTokenString == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Refresh token is required"})
+		return
+	}
+
 	// Parse and verify the refresh token
 	refreshToken, err := jwt.ParseWithClaims(refreshTokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		// Ensure the signing method is HMAC
@@ -30,8 +36,14 @@ func HandleRefresh(c *gin.Context) {
 
 	// Extract claims and validate the refresh token
 	claims, ok := refreshToken.Claims.(*Claims)
-	if !ok || claims.ExpiresAt.Time.Before(time.Now()) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired refresh token"})
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid refresh token claims"})
+		return
+	}
+
+	// Check if token has expired
+	if claims.ExpiresAt.Time.Before(time.Now()) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Expired refresh token"})
 		return
 	}
 

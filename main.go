@@ -22,8 +22,10 @@ func main() {
 
 	app.Provide(service.NewTestService)
 	app.Provide(service.NewLoginService)
-	app.Provide(service.NewMockLoginService)
 
+	if config.IsDevEnvironment() {
+		app.Provide(service.NewMockLoginService)
+	}
 	zap.S().Infof("Database: http://localhost:8080")
 	zap.S().Infof("swagger: http://localhost:8090/swagger/index.html")
 
