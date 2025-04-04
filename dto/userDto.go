@@ -31,7 +31,7 @@ func (dto *UserDto) ToModel() (*model.User, error) {
 
 	bod, err := time.Parse(format.DateFormat, dto.BirthDate)
 	if err != nil {
-		zap.S().Error("Failed to parse BirthDate = %s, err = %+v", dto.BirthDate, err)
+		zap.S().Errorf("Failed to parse BirthDate = %s, err = %+v", dto.BirthDate, err)
 		return nil, cerror.ErrBadDateFormat
 	}
 
