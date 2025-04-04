@@ -82,7 +82,6 @@ func (u *UserCrudService) Update(_uuid uuid.UUID, user *model.User) (*model.User
 
 // Create implements IUserCrudService.
 func (u *UserCrudService) Create(user *model.User, password string) (*model.User, error) {
-	// TODO: hash password
 	hash, err := auth.HashPassword(password)
 	if err != nil {
 		return nil, err

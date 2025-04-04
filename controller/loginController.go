@@ -56,14 +56,14 @@ func (l *LoginController) login(c *gin.Context) {
 	var loginDto dto.LoginDto
 
 	if err := c.ShouldBindJSON(&loginDto); err != nil {
-		zap.S().Error("Invalid login request", zap.Error(err))
+		zap.S().Error("Invalid login request err = %+v", err)
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	accessToken, refreshToken, err := l.loginService.Login(loginDto.Email, loginDto.Password)
 	if err != nil {
-		zap.S().Error("Login failed", zap.Error(err))
+		zap.S().Errorf("Login failed err = %+v", err)
 		c.JSON(http.StatusUnauthorized, err.Error())
 		return
 	}
@@ -84,17 +84,16 @@ func (l *LoginController) login(c *gin.Context) {
 //	@Success		200
 //	@Router			/auth/refresh [post]
 func (l *LoginController) RefreshToken(c *gin.Context) {
-func (l *LoginController) RefreshToken(c *gin.Context) {
 	var rToken dto.RefreshDto
 	if err := c.ShouldBindJSON(&rToken); err != nil {
-		zap.S().Errorf("Failed to bind refresh token JSON: %v", err)
+		zap.S().Errorf("Failed to bind refresh token JSON, err %+v", err)
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
-	zap.S().Debugf("Parsed token from body %+v", rToken)
-	// (Rest of the function implementation)
-}
+	zap.S().Debugf("Parsed token from body token = %+v", rToken)
+
 	var claims auth.Claims
+
 	_, err := jwt.ParseWithClaims(rToken.RefreshToken, &claims, func(token *jwt.Token) (any, error) {
 		return []byte(config.AppConfig.RefreshKey), nil
 	})
@@ -103,6 +102,7 @@ func (l *LoginController) RefreshToken(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
+
 	userUuid, err := uuid.Parse(claims.Uuid)
 	if err != nil {
 		zap.S().Errorf("Error Parsing uuid err = %+v", err)
@@ -110,7 +110,7 @@ func (l *LoginController) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	jwt, refreshNew, err := l.loginService.RefreshTokens(&model.User{
+	token, refreshNew, err := l.loginService.RefreshTokens(&model.User{
 		Uuid:  userUuid,
 		Email: claims.Email,
 		Role:  claims.Role,
@@ -122,7 +122,7 @@ func (l *LoginController) RefreshToken(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, dto.TokenResponse{
-		AccessToken:  jwt,
+		AccessToken:  token,
 		RefreshToken: refreshNew,
 	})
 }

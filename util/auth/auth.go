@@ -69,7 +69,7 @@ func VerifyPassword(hashedPassword, plainPassword string) bool {
 }
 
 func HashPassword(password string) (string, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), 1)
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		zap.S().Errorf("Failed to hash password err = %+v", err)
 		return "", err
