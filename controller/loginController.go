@@ -84,13 +84,16 @@ func (l *LoginController) login(c *gin.Context) {
 //	@Success		200
 //	@Router			/auth/refresh [post]
 func (l *LoginController) RefreshToken(c *gin.Context) {
+func (l *LoginController) RefreshToken(c *gin.Context) {
 	var rToken dto.RefreshDto
-	if err := c.ShouldBind(&rToken); err != nil {
+	if err := c.ShouldBindJSON(&rToken); err != nil {
+		zap.S().Errorf("Failed to bind refresh token JSON: %v", err)
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 	zap.S().Debugf("Parsed token from body %+v", rToken)
-
+	// (Rest of the function implementation)
+}
 	var claims auth.Claims
 	_, err := jwt.ParseWithClaims(rToken.RefreshToken, &claims, func(token *jwt.Token) (any, error) {
 		return []byte(config.AppConfig.RefreshKey), nil
