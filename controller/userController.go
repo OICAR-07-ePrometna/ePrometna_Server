@@ -92,9 +92,8 @@ func (u *UserController) get(c *gin.Context) {
 //	@Router		/user [post]
 func (u *UserController) create(c *gin.Context) {
 	var dto dto.NewUserDto
-	if err := c.Bind(&dto); err != nil {
+	if err := c.BindJSON(&dto); err != nil {
 		zap.S().Errorf("Failed to bind error = %+v", err)
-		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 	newUser, err := dto.ToModel()
@@ -127,14 +126,14 @@ func (u *UserController) create(c *gin.Context) {
 func (u *UserController) update(c *gin.Context) {
 	userUuid, err := uuid.Parse(c.Param("uuid"))
 	if err != nil {
-		zap.S().Errorf("error parsing uuid value = %s", c.Param("uuid"))
+		zap.S().Errorf("Error parsing UUID = %s", c.Param("uuid"))
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
 	var dto dto.UserDto
-	if err := c.Bind(&dto); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+	if err := c.BindJSON(&dto); err != nil {
+		zap.S().Errorf("Failed to bind error = %+v", err)
 		return
 	}
 

@@ -55,9 +55,8 @@ func (c *LoginController) RegisterEndpoints(api *gin.RouterGroup) {
 func (l *LoginController) login(c *gin.Context) {
 	var loginDto dto.LoginDto
 
-	if err := c.ShouldBindJSON(&loginDto); err != nil {
+	if err := c.BindJSON(&loginDto); err != nil {
 		zap.S().Error("Invalid login request err = %+v", err)
-		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -85,9 +84,8 @@ func (l *LoginController) login(c *gin.Context) {
 //	@Router			/auth/refresh [post]
 func (l *LoginController) RefreshToken(c *gin.Context) {
 	var rToken dto.RefreshDto
-	if err := c.ShouldBindJSON(&rToken); err != nil {
+	if err := c.BindJSON(&rToken); err != nil {
 		zap.S().Errorf("Failed to bind refresh token JSON, err %+v", err)
-		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 	zap.S().Debugf("Parsed token from body token = %+v", rToken)
