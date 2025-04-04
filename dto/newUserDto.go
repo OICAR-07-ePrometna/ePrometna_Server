@@ -2,6 +2,7 @@ package dto
 
 import (
 	"ePrometna_Server/model"
+	"ePrometna_Server/util/cerror"
 	"ePrometna_Server/util/format"
 	"time"
 
@@ -22,13 +23,13 @@ type NewUserDto struct {
 }
 
 // ToModel create a model from a dto
-func (dto *NewUserDto) ToModel() *model.User {
+func (dto *NewUserDto) ToModel() (*model.User, error) {
 	bod, err := time.Parse(format.DateFormat, dto.BirthDate)
 	if err != nil {
-		zap.S().DPanicf("Bad date time format need %s has %s", format.DateFormat, dto.BirthDate)
-		// TODO: see what to have to happen in prod
-		return nil
+		zap.S().Errorf("Bad date time format need %s has %s", format.DateFormat, dto.BirthDate)
+		return nil, cerror.ErrBadDateFormat
 	}
+	// TODO: map role
 	role := model.RoleSuperAdmin
 
 	return &model.User{
@@ -40,7 +41,7 @@ func (dto *NewUserDto) ToModel() *model.User {
 		BirthDate: bod,
 		Email:     dto.Email,
 		Role:      role,
-	}
+	}, nil
 }
 
 // FromModel returns a dto from model struct

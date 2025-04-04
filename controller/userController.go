@@ -95,9 +95,15 @@ func (u *UserController) create(c *gin.Context) {
 	if err := c.Bind(&dto); err != nil {
 		zap.S().Errorf("Failed to bind error = %+v", err)
 		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+	newUser, err := dto.ToModel()
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
 	}
 
-	user, err := u.UserCrud.Create(dto.ToModel(), dto.Password)
+	user, err := u.UserCrud.Create(newUser, dto.Password)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 	}
@@ -110,7 +116,7 @@ func (u *UserController) create(c *gin.Context) {
 //	@Summary	Update user with new dat
 //	@Tags		user
 //	@Produce	json
-//	@Success	200	{object}	dto.UserDto
+//	@Success	200     dto.UserDto
 //	@Failure	400
 //	@Failure	404
 //	@Failure	500
@@ -128,11 +134,19 @@ func (u *UserController) update(c *gin.Context) {
 	var dto dto.UserDto
 	if err := c.Bind(&dto); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
+		return
 	}
 
-	user, err := u.UserCrud.Update(userUuid, dto.ToModel())
+	newUser, err := dto.ToModel()
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	user, err := u.UserCrud.Update(userUuid, newUser)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 
 	c.JSON(http.StatusCreated, dto.FromModel(user))

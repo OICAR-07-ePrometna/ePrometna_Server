@@ -25,7 +25,7 @@ type UserCrudSerrvice struct {
 func NewUserCrudService() IUserCrudService {
 	var service IUserCrudService
 	app.Invoke(func(db *gorm.DB) {
-		service = UserCrudSerrvice{
+		service = &UserCrudSerrvice{
 			db: db,
 		}
 	})
@@ -34,7 +34,7 @@ func NewUserCrudService() IUserCrudService {
 }
 
 // ReadAll implements IUserCrudService.
-func (u UserCrudSerrvice) ReadAll() ([]model.User, error) {
+func (u *UserCrudSerrvice) ReadAll() ([]model.User, error) {
 	var users []model.User
 	rez := u.db.Find(&users)
 	if rez.Error != nil {
@@ -44,8 +44,8 @@ func (u UserCrudSerrvice) ReadAll() ([]model.User, error) {
 }
 
 // Delete implements IUserCrudService.
-func (u UserCrudSerrvice) Delete(_uuid uuid.UUID) error {
-	rez := u.db.Delete(&model.Tmodel{}, "uuid = ?", _uuid)
+func (u *UserCrudSerrvice) Delete(_uuid uuid.UUID) error {
+	rez := u.db.Where("uuid = ?", _uuid).Delete(&model.User{})
 	zap.S().Debugf("Delete statment on uuid = %s, rez %+v", _uuid, rez)
 	if rez.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
@@ -54,7 +54,7 @@ func (u UserCrudSerrvice) Delete(_uuid uuid.UUID) error {
 }
 
 // Read implements IUserCrudService.
-func (u UserCrudSerrvice) Read(_uuid uuid.UUID) (*model.User, error) {
+func (u *UserCrudSerrvice) Read(_uuid uuid.UUID) (*model.User, error) {
 	var user model.User
 	rez := u.db.Where("uuid = ?", _uuid).First(&user)
 	if rez.Error != nil {
@@ -64,17 +64,24 @@ func (u UserCrudSerrvice) Read(_uuid uuid.UUID) (*model.User, error) {
 }
 
 // Update implements IUserCrudService.
-func (u UserCrudSerrvice) Update(_uuid uuid.UUID, user *model.User) (*model.User, error) {
-	// TODO: preserve password
-	rez := u.db.Where("uuid = ?", _uuid).Save(user)
+func (u *UserCrudSerrvice) Update(_uuid uuid.UUID, user *model.User) (*model.User, error) {
+	userOld, err := u.Read(_uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	zap.S().Debugf("Updating user %+v", userOld)
+	userOld = userOld.Update(user)
+
+	rez := u.db.Where("uuid = ?", _uuid).Save(userOld)
 	if rez.Error != nil {
 		return nil, rez.Error
 	}
-	return user, nil
+	return userOld, nil
 }
 
 // Create implements IUserCrudService.
-func (u UserCrudSerrvice) Create(user *model.User, password string) (*model.User, error) {
+func (u *UserCrudSerrvice) Create(user *model.User, password string) (*model.User, error) {
 	// TODO: hash password
 	hash, err := auth.HashPassword(password)
 	if err != nil {

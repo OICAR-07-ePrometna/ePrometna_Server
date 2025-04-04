@@ -34,10 +34,10 @@ type User struct {
 	Cars             []Car          `gorm:"foreignKey:UserId"`
 	BorrowedCars     []CarDrivers   `gorm:"foreignKey:UserId"`
 	CarHistory       []OwnerHistory `gorm:"foreignKey:UserId"`
-	RegisteredDevice Mobile         `gorm:"foreignKey:UserId"`
+	RegisteredDevice *Mobile        `gorm:"foreignKey:UserId"`
 	CreatedDevices   []Mobile       `gorm:"foreignKey:CreatorId"`
-	TemporaryData    TempData       `gorm:"foreignKey:DriverId"`
-	License          DriverLicense  `gorm:"foreignKey:UserId"`
+	TemporaryData    *TempData      `gorm:"foreignKey:DriverId"`
+	License          *DriverLicense `gorm:"foreignKey:UserId"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) error {
@@ -50,4 +50,19 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 		return errors.New("invalid user role")
 	}
 	return nil
+}
+
+func (u *User) Update(user *User) *User {
+	u = &User{
+		Uuid:         u.Uuid,
+		PasswordHash: u.PasswordHash,
+		BirthDate:    user.BirthDate,
+		FirstName:    user.FirstName,
+		LastName:     user.LastName,
+		OIB:          user.OIB,
+		Residence:    user.Residence,
+		Email:        user.Email,
+		Role:         user.Role,
+	}
+	return u
 }

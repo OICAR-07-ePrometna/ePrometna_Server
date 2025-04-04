@@ -326,26 +326,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dto.DriverLicenseDto": {
-            "type": "object",
-            "properties": {
-                "category": {
-                    "type": "string"
-                },
-                "expiringDate": {
-                    "type": "string"
-                },
-                "issueDate": {
-                    "type": "string"
-                },
-                "licenseNumber": {
-                    "type": "string"
-                },
-                "uuid": {
-                    "type": "string"
-                }
-            }
-        },
         "dto.LoginDto": {
             "type": "object",
             "required": [
@@ -422,13 +402,7 @@ const docTemplate = `{
                 "lastName": {
                     "type": "string"
                 },
-                "license": {
-                    "$ref": "#/definitions/dto.DriverLicenseDto"
-                },
                 "oib": {
-                    "type": "string"
-                },
-                "password": {
                     "type": "string"
                 },
                 "residence": {
