@@ -24,7 +24,7 @@ const (
 func StoUserRole(text string) (UserRole, error) {
 	switch text {
 	case fmt.Sprint(RoleHAK):
-		return RoleAdmin, nil
+		return RoleHAK, nil
 
 	case fmt.Sprint(RoleAdmin):
 		return RoleAdmin, nil
