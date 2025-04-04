@@ -37,7 +37,7 @@ func (dto *UserDto) ToModel() (*model.User, error) {
 
 	role, err := model.StoUserRole(dto.Role)
 	if err != nil {
-		zap.S().Error("Failed to parse role = %+v, err = %+v", dto.Role, err)
+		zap.S().Errorf("Failed to parse role = %+v, err = %+v", dto.Role, err)
 		return nil, cerror.ErrUnknownRole
 	}
 
