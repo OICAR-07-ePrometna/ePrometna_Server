@@ -1,6 +1,7 @@
 package model
 
 import (
+	"ePrometna_Server/util/cerror"
 	"errors"
 	"fmt"
 	"time"
@@ -41,7 +42,7 @@ func StoUserRole(text string) (UserRole, error) {
 		return RoleSuperAdmin, nil
 
 	default:
-		return "", nil
+		return "", cerror.ErrUnknownRole
 	}
 }
 

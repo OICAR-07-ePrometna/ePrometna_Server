@@ -4,6 +4,7 @@ import (
 	"ePrometna_Server/model"
 	"ePrometna_Server/util/cerror"
 	"ePrometna_Server/util/format"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -57,7 +58,7 @@ func (dto *NewUserDto) FromModel(m *model.User) *NewUserDto {
 		Residence: m.Residence,
 		BirthDate: m.BirthDate.Format(format.DateFormat),
 		Email:     m.Email,
-		Role:      string(m.Role),
+		Role:      fmt.Sprint(m.Role),
 	}
 	return dto
 }
