@@ -70,7 +70,7 @@ func (u *UserController) get(c *gin.Context) {
 			return
 		}
 
-		zap.S().Errorf("Failed to delete user with uuid = %s", userUuid)
+		zap.S().Errorf("Failed to get user with uuid = %s", userUuid)
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
