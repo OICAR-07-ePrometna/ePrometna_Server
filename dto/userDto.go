@@ -25,17 +25,22 @@ type UserDto struct {
 func (dto *UserDto) ToModel() (*model.User, error) {
 	uuid, err := uuid.Parse(dto.Uuid)
 	if err != nil {
-		zap.S().Error("Failed to parse uuid err = %+v", err)
+		zap.S().Error("Failed to parse uuid = %s, err = %+v", dto.Uuid, err)
 		return nil, cerror.ErrBadUuid
 	}
 
 	bod, err := time.Parse(format.DateFormat, dto.BirthDate)
 	if err != nil {
-		zap.S().Error("Failed to parse BirthDate err = %+v", err)
+		zap.S().Error("Failed to parse BirthDate = %s, err = %+v", dto.BirthDate, err)
 		return nil, cerror.ErrBadDateFormat
 	}
 
-	role := model.RoleSuperAdmin
+	role, err := model.StoUserRole(dto.Role)
+	if err != nil {
+		zap.S().Error("Failed to parse role = %+v, err = %+v", dto.Role, err)
+		return nil, cerror.ErrUnknownRole
+	}
+
 	return &model.User{
 		Uuid:      uuid,
 		FirstName: dto.FirstName,

@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,6 +19,31 @@ const (
 	RolePolicija   UserRole = "policija"
 	RoleSuperAdmin UserRole = "superadmin"
 )
+
+func StoUserRole(text string) (UserRole, error) {
+	switch text {
+	case fmt.Sprint(RoleHAK):
+		return RoleAdmin, nil
+
+	case fmt.Sprint(RoleAdmin):
+		return RoleAdmin, nil
+
+	case fmt.Sprint(RoleOsoba):
+		return RoleOsoba, nil
+
+	case fmt.Sprint(RoleFirma):
+		return RoleFirma, nil
+
+	case fmt.Sprint(RolePolicija):
+		return RolePolicija, nil
+
+	case fmt.Sprint(RoleSuperAdmin):
+		return RoleSuperAdmin, nil
+
+	default:
+		return "", nil
+	}
+}
 
 type User struct {
 	gorm.Model
@@ -53,16 +79,13 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 }
 
 func (u *User) Update(user *User) *User {
-	u = &User{
-		Uuid:         u.Uuid,
-		PasswordHash: u.PasswordHash,
-		BirthDate:    user.BirthDate,
-		FirstName:    user.FirstName,
-		LastName:     user.LastName,
-		OIB:          user.OIB,
-		Residence:    user.Residence,
-		Email:        user.Email,
-		Role:         user.Role,
-	}
+	u.BirthDate = user.BirthDate
+	u.FirstName = user.FirstName
+	u.LastName = user.LastName
+	u.OIB = user.OIB
+	u.Residence = user.Residence
+	u.Email = user.Email
+	u.Role = user.Role
+
 	return u
 }

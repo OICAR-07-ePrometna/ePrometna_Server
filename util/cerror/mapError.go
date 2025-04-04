@@ -9,4 +9,5 @@ import (
 var (
 	ErrBadDateFormat = fmt.Errorf("bad date format, should be %s", format.DateFormat)
 	ErrBadUuid       = errors.New("failed to parse uuid")
+	ErrUnknownRole   = errors.New("unknown role")
 )

@@ -29,8 +29,11 @@ func (dto *NewUserDto) ToModel() (*model.User, error) {
 		zap.S().Errorf("Bad date time format need %s has %s", format.DateFormat, dto.BirthDate)
 		return nil, cerror.ErrBadDateFormat
 	}
-	// TODO: map role
-	role := model.RoleSuperAdmin
+	role, err := model.StoUserRole(dto.Role)
+	if err != nil {
+		zap.S().Error("Failed to parse role = %+v, err = %+v", dto.Role, err)
+		return nil, cerror.ErrUnknownRole
+	}
 
 	return &model.User{
 		Uuid:      uuid.New(),

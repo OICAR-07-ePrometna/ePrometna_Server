@@ -116,7 +116,7 @@ func (u *UserController) create(c *gin.Context) {
 //	@Summary	Update user with new dat
 //	@Tags		user
 //	@Produce	json
-//	@Success	200     dto.UserDto
+//	@Success	200	dto.UserDto
 //	@Failure	400
 //	@Failure	404
 //	@Failure	500

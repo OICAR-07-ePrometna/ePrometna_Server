@@ -14,7 +14,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	app.Setup()
 
 	app.Provide(service.NewTestService)
