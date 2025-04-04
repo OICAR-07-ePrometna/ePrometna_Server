@@ -1,7 +1,9 @@
 package model
 
 import (
+	"ePrometna_Server/util/cerror"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,6 +21,31 @@ const (
 	RoleSuperAdmin UserRole = "superadmin"
 )
 
+func StoUserRole(text string) (UserRole, error) {
+	switch text {
+	case fmt.Sprint(RoleHAK):
+		return RoleHAK, nil
+
+	case fmt.Sprint(RoleAdmin):
+		return RoleAdmin, nil
+
+	case fmt.Sprint(RoleOsoba):
+		return RoleOsoba, nil
+
+	case fmt.Sprint(RoleFirma):
+		return RoleFirma, nil
+
+	case fmt.Sprint(RolePolicija):
+		return RolePolicija, nil
+
+	case fmt.Sprint(RoleSuperAdmin):
+		return RoleSuperAdmin, nil
+
+	default:
+		return "", cerror.ErrUnknownRole
+	}
+}
+
 type User struct {
 	gorm.Model
 
@@ -34,10 +61,10 @@ type User struct {
 	Cars             []Car          `gorm:"foreignKey:UserId"`
 	BorrowedCars     []CarDrivers   `gorm:"foreignKey:UserId"`
 	CarHistory       []OwnerHistory `gorm:"foreignKey:UserId"`
-	RegisteredDevice Mobile         `gorm:"foreignKey:UserId"`
+	RegisteredDevice *Mobile        `gorm:"foreignKey:UserId"`
 	CreatedDevices   []Mobile       `gorm:"foreignKey:CreatorId"`
-	TemporaryData    TempData       `gorm:"foreignKey:DriverId"`
-	License          DriverLicense  `gorm:"foreignKey:UserId"`
+	TemporaryData    *TempData      `gorm:"foreignKey:DriverId"`
+	License          *DriverLicense `gorm:"foreignKey:UserId"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) error {
@@ -50,4 +77,16 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 		return errors.New("invalid user role")
 	}
 	return nil
+}
+
+func (u *User) Update(user *User) *User {
+	u.BirthDate = user.BirthDate
+	u.FirstName = user.FirstName
+	u.LastName = user.LastName
+	u.OIB = user.OIB
+	u.Residence = user.Residence
+	u.Email = user.Email
+	u.Role = user.Role
+
+	return u
 }

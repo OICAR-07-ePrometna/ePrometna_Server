@@ -9,11 +9,51 @@ definitions:
     - email
     - password
     type: object
+  dto.NewUserDto:
+    properties:
+      birthDate:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      oib:
+        type: string
+      password:
+        type: string
+      residence:
+        type: string
+      role:
+        type: string
+      uuid:
+        type: string
+    type: object
   dto.TmodelDto:
     properties:
       age:
         type: integer
       name:
+        type: string
+      uuid:
+        type: string
+    type: object
+  dto.UserDto:
+    properties:
+      birthDate:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      oib:
+        type: string
+      residence:
+        type: string
+      role:
         type: string
       uuid:
         type: string
@@ -40,16 +80,14 @@ paths:
           description: OK
       summary: User login
       tags:
-      - login
+      - auth
   /auth/refresh:
     post:
-      consumes:
-      - application/x-www-form-urlencoded
       description: Generates a new access token using a valid refresh token
       parameters:
       - description: Refresh Token
         in: body
-        name: refresh_token
+        name: refreshToken
         required: true
         schema:
           type: string
@@ -57,17 +95,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: access_token
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "401":
-          description: error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
+          description: OK
       summary: Refresh Access Token
       tags:
       - auth
@@ -134,4 +162,105 @@ paths:
       summary: Deletes test item
       tags:
       - test
+  /user:
+    post:
+      parameters:
+      - description: Data for new user
+        in: body
+        name: model
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewUserDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.UserDto'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Create new user
+      tags:
+      - user
+  /user/{uuid}:
+    delete:
+      description: get a user with uuid
+      parameters:
+      - description: user uuid
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: get user with uuid
+      tags:
+      - user
+    get:
+      description: get a user with uuid
+      parameters:
+      - description: user uuid
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserDto'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: get user with uuid
+      tags:
+      - user
+    put:
+      parameters:
+      - description: uuid of user to be updated
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: Data for updating user
+        in: body
+        name: model
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserDto'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Update user with new dat
+      tags:
+      - user
 swagger: "2.0"

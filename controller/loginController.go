@@ -55,15 +55,14 @@ func (c *LoginController) RegisterEndpoints(api *gin.RouterGroup) {
 func (l *LoginController) login(c *gin.Context) {
 	var loginDto dto.LoginDto
 
-	if err := c.ShouldBindJSON(&loginDto); err != nil {
-		zap.S().Error("Invalid login request", zap.Error(err))
-		c.JSON(http.StatusBadRequest, err.Error())
+	if err := c.BindJSON(&loginDto); err != nil {
+		zap.S().Error("Invalid login request err = %+v", err)
 		return
 	}
 
 	accessToken, refreshToken, err := l.loginService.Login(loginDto.Email, loginDto.Password)
 	if err != nil {
-		zap.S().Error("Login failed", zap.Error(err))
+		zap.S().Errorf("Login failed err = %+v", err)
 		c.JSON(http.StatusUnauthorized, err.Error())
 		return
 	}
@@ -79,42 +78,49 @@ func (l *LoginController) login(c *gin.Context) {
 //	@Summary		Refresh Access Token
 //	@Description	Generates a new access token using a valid refresh token
 //	@Tags			auth
-//	@Accept			x-www-form-urlencoded
 //	@Produce		json
-//	@Param			refresh_token	body		string				true	"Refresh Token"
-//	@Success		200				{object}	map[string]string	"access_token"
-//	@Failure		401				{object}	map[string]string	"error"
+//	@Param			refreshToken	body	string	true	"Refresh Token"
+//	@Success		200
 //	@Router			/auth/refresh [post]
 func (l *LoginController) RefreshToken(c *gin.Context) {
-	tokenString := ""
+	var rToken dto.RefreshDto
+	if err := c.BindJSON(&rToken); err != nil {
+		zap.S().Errorf("Failed to bind refresh token JSON, err %+v", err)
+		return
+	}
+	zap.S().Debugf("Parsed token from body token = %+v", rToken)
 
 	var claims auth.Claims
-	_, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (any, error) {
-		return []byte(config.AppConfig.JwtKey), nil
+
+	_, err := jwt.ParseWithClaims(rToken.RefreshToken, &claims, func(token *jwt.Token) (any, error) {
+		return []byte(config.AppConfig.RefreshKey), nil
 	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
-	}
-	userUuid, err := uuid.Parse(claims.Uuid)
-	if err != nil {
+		zap.S().Errorf("Error Parsing clames err = %+v", err)
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	jwt, refreshNew, err := l.loginService.RefreshTokens(&model.User{
+	userUuid, err := uuid.Parse(claims.Uuid)
+	if err != nil {
+		zap.S().Errorf("Error Parsing uuid err = %+v", err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	token, refreshNew, err := l.loginService.RefreshTokens(&model.User{
 		Uuid:  userUuid,
 		Email: claims.Email,
 		Role:  claims.Role,
 	})
 	if err != nil {
-		zap.S().Error("Refresh failed", zap.Error(err))
+		zap.S().Error("Refresh failed err = %+v", err)
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	c.JSON(http.StatusOK, dto.TokenResponse{
-		AccessToken:  jwt,
+		AccessToken:  token,
 		RefreshToken: refreshNew,
 	})
 }

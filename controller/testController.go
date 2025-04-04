@@ -122,7 +122,6 @@ func (c *TestController) delete(ctx *gin.Context) {
 //	@Param			model	body	dto.TmodelDto	true	"Test model"
 //	@Router			/test [post]
 func (c *TestController) create(ctx *gin.Context) {
-	// TODO: should use dto not Tmodel
 	var md dto.TmodelDto
 	if err := ctx.Bind(&md); err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)

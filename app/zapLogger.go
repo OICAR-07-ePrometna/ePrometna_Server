@@ -105,7 +105,7 @@ func (l *gormZapLogger) Trace(ctx context.Context, begin time.Time, fc func() (s
 }
 
 func devLoggerSetup() error {
-	logger, err := zap.NewDevelopment(zap.AddStacktrace(zap.ErrorLevel))
+	logger, err := zap.NewDevelopment(zap.AddStacktrace(zap.PanicLevel))
 	if err != nil {
 		return err
 	}
