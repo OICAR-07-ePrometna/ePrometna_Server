@@ -156,8 +156,8 @@ func (u *UserController) update(c *gin.Context) {
 
 // UserExample  godoc
 //
-//	@Summary		get user with uuid
-//	@Description	get a user with uuid
+//	@Summary		delete user with uuid
+//	@Description	delete a user with uuid
 //	@Tags			user
 //	@Produce		json
 //	@Success		204
