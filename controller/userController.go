@@ -105,7 +105,9 @@ func (u *UserController) create(c *gin.Context) {
 
 	user, err := u.UserCrud.Create(newUser, dto.Password)
 	if err != nil {
+	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 
 	c.JSON(http.StatusCreated, dto.FromModel(user))
