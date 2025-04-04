@@ -151,7 +151,7 @@ func (u *UserController) update(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, dto.FromModel(user))
+	c.JSON(http.StatusOK, dto.FromModel(user))
 }
 
 // UserExample  godoc
