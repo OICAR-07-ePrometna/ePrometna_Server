@@ -40,6 +40,7 @@ func (c *LoginController) RegisterEndpoints(api *gin.RouterGroup) {
 	// register Endpoints
 	group.POST("/login", c.login)
 	group.POST("/refresh", c.RefreshToken)
+	group.OPTIONS("/login", c.login)
 }
 
 // Login godoc
