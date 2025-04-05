@@ -65,9 +65,9 @@ func Protect(roles ...model.UserRole) gin.HandlerFunc {
 func corsHeader() gin.HandlerFunc {
 	// Define allowed origins
 	allowedOrigins := map[string]bool{
-		"http://localhost:8090": true,
-		"http://localhost:8080": true,
+		"http://localhost:3000": true,
 		"http://localhost:8081": true,
+		"http://localhost:8082": true,
 	}
 
 	return func(c *gin.Context) {
