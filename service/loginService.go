@@ -4,6 +4,7 @@ import (
 	"ePrometna_Server/app"
 	"ePrometna_Server/model"
 	"ePrometna_Server/util/auth"
+	"ePrometna_Server/util/cerror"
 	"errors"
 
 	"go.uber.org/zap"
@@ -36,7 +37,7 @@ func (s *LoginService) Login(email, password string) (string, string, error) {
 	if err := s.db.Where("email = ?", email).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			zap.S().Debugf("User not found Email = %s", email)
-			return "", "", errors.New("invalid email or password")
+			return "", "", cerror.ErrInvalidCredentials
 		}
 
 		zap.S().Errorf("Failed to query user, error = %+v", err)
@@ -45,7 +46,7 @@ func (s *LoginService) Login(email, password string) (string, string, error) {
 
 	if !auth.VerifyPassword(user.PasswordHash, password) {
 		zap.S().Debugf("Invalid password for user Email: %s, uuid: %s", user.Email, user.Uuid)
-		return "", "", errors.New("invalid email or password")
+		return "", "", cerror.ErrInvalidCredentials
 	}
 
 	token, refresh, err := auth.GenerateTokens(&user)
