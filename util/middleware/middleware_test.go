@@ -28,10 +28,17 @@ func startTESTServer() *gin.Engine {
 
 var once = sync.Once{}
 
+// Mock AppConfig for testing
+var mockAppConfig = &config.AppConfiguration{
+	JwtKey:     "test-jwt-key",
+	RefreshKey: "test-refresh-key",
+}
+
+// TODO: chnage to mock config
 func LoadConfigForTests() {
 	once.Do(func() {
 		// NOTE: Change directory
-		if err := os.Chdir("../"); err != nil {
+		if err := os.Chdir("../../"); err != nil {
 			panic(fmt.Errorf("Failed to change directory: %v", err))
 		}
 
