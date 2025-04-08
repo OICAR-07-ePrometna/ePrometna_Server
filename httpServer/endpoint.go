@@ -3,6 +3,7 @@ package httpServer
 import (
 	"ePrometna_Server/controller"
 	"ePrometna_Server/docs"
+	"ePrometna_Server/util/middleware"
 
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
@@ -13,8 +14,9 @@ import (
 func setupHandlers(router *gin.Engine) {
 	// TODO: Replace gin default logger with zap
 	// router.Use(gin.Recovery())
+
 	api := router.Group("/api")
-	api.Use(corsHeader())
+	api.Use(middleware.CorsHeader())
 
 	// register swagger
 	docs.SwaggerInfo.BasePath = "/api"
@@ -28,12 +30,4 @@ func setupHandlers(router *gin.Engine) {
 	controller.NewTestController().RegisterEndpoints(api)
 	controller.NewLoginController().RegisterEndpoints(api)
 	controller.NewUserController().RegisterEndpoints(api)
-
-	// api.Use(AllowAccess(model.RoleFirma, model.RoleAdmin))
-	/*
-		tp := controller.NewTestController()
-		protected := api.Group("/protected")
-		protected.Use(protect())
-		tp.RegisterEndpoints(protected)
-	*/
 }

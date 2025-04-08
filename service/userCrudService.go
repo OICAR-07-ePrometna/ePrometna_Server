@@ -19,14 +19,16 @@ type IUserCrudService interface {
 }
 
 type UserCrudService struct {
-	db *gorm.DB
+	db     *gorm.DB
+	logger *zap.SugaredLogger
 }
 
 func NewUserCrudService() IUserCrudService {
 	var service IUserCrudService
-	app.Invoke(func(db *gorm.DB) {
+	app.Invoke(func(db *gorm.DB, logger *zap.SugaredLogger) {
 		service = &UserCrudService{
-			db: db,
+			db:     db,
+			logger: logger,
 		}
 	})
 
@@ -46,7 +48,7 @@ func (u *UserCrudService) ReadAll() ([]model.User, error) {
 // Delete implements IUserCrudService.
 func (u *UserCrudService) Delete(_uuid uuid.UUID) error {
 	rez := u.db.Where("uuid = ?", _uuid).Delete(&model.User{})
-	zap.S().Debugf("Delete statment on uuid = %s, rez %+v", _uuid, rez)
+	u.logger.Debugf("Delete statment on uuid = %s, rez %+v", _uuid, rez)
 	if rez.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
 	}
@@ -70,7 +72,7 @@ func (u *UserCrudService) Update(_uuid uuid.UUID, user *model.User) (*model.User
 		return nil, err
 	}
 
-	zap.S().Debugf("Updating user %+v", userOld)
+	u.logger.Debugf("Updating user %+v", userOld)
 	userOld = userOld.Update(user)
 
 	rez := u.db.Where("uuid = ?", _uuid).Save(userOld)

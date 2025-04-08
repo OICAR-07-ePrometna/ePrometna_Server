@@ -291,14 +291,14 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "get a user with uuid",
+                "description": "delete a user with uuid",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "user"
                 ],
-                "summary": "get user with uuid",
+                "summary": "delete user with uuid",
                 "parameters": [
                     {
                         "type": "string",

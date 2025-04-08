@@ -189,7 +189,7 @@ paths:
       - user
   /user/{uuid}:
     delete:
-      description: get a user with uuid
+      description: delete a user with uuid
       parameters:
       - description: user uuid
         in: path
@@ -207,7 +207,7 @@ paths:
           description: Not Found
         "500":
           description: Internal Server Error
-      summary: get user with uuid
+      summary: delete user with uuid
       tags:
       - user
     get:
