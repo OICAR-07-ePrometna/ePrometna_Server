@@ -17,17 +17,15 @@ type ILoginService interface {
 }
 
 type LoginService struct {
-	db     *gorm.DB
-	logger *zap.SugaredLogger
+	db *gorm.DB
 }
 
 func NewLoginService() ILoginService {
 	var service ILoginService
 
-	app.Invoke(func(db *gorm.DB, logger *zap.SugaredLogger) {
+	app.Invoke(func(db *gorm.DB) {
 		service = &LoginService{
-			db:     db,
-			logger: logger,
+			db: db,
 		}
 	})
 
@@ -38,22 +36,22 @@ func (s *LoginService) Login(email, password string) (string, string, error) {
 	var user model.User
 	if err := s.db.Where("email = ?", email).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			s.logger.Debugf("User not found Email = %s", email)
+			zap.S().Debugf("User not found Email = %s", email)
 			return "", "", cerror.ErrInvalidCredentials
 		}
 
-		s.logger.Errorf("Failed to query user, error = %+v", err)
+		zap.S().Errorf("Failed to query user, error = %+v", err)
 		return "", "", err
 	}
 
 	if !auth.VerifyPassword(user.PasswordHash, password) {
-		s.logger.Debugf("Invalid password for user Email: %s, uuid: %s", user.Email, user.Uuid)
+		zap.S().Debugf("Invalid password for user Email: %s, uuid: %s", user.Email, user.Uuid)
 		return "", "", cerror.ErrInvalidCredentials
 	}
 
 	token, refresh, err := auth.GenerateTokens(&user)
 	if err != nil {
-		s.logger.Errorf("Failed to generate token error = %+v", err)
+		zap.S().Errorf("Failed to generate token error = %+v", err)
 		return "", "", err
 	}
 

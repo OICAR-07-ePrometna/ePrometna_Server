@@ -7,7 +7,6 @@ import (
 	"ePrometna_Server/model"
 	"ePrometna_Server/service"
 	"ePrometna_Server/util/auth"
-	"ePrometna_Server/util/middleware"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,18 +17,16 @@ import (
 
 type LoginController struct {
 	loginService service.ILoginService
-	logger       *zap.SugaredLogger
 }
 
 func NewLoginController() *LoginController {
 	var controller *LoginController
 
 	// Use the mock service for testing
-	app.Invoke(func(loginService service.ILoginService, logger *zap.SugaredLogger) {
+	app.Invoke(func(loginService service.ILoginService) {
 		// create controller
 		controller = &LoginController{
 			loginService: loginService,
-			logger:       logger,
 		}
 	})
 
@@ -43,9 +40,9 @@ func (c *LoginController) RegisterEndpoints(api *gin.RouterGroup) {
 	// register Endpoints
 	group.POST("/login", c.login)
 	group.POST("/refresh", c.RefreshToken)
-
-	group.OPTIONS("/login", middleware.OptionsHandler)
-	group.OPTIONS("/refresh", middleware.OptionsHandler)
+	group.OPTIONS("/login", func(c *gin.Context) {
+		c.Status(http.StatusNoContent)
+	})
 }
 
 // Login godoc
@@ -62,13 +59,13 @@ func (l *LoginController) login(c *gin.Context) {
 	var loginDto dto.LoginDto
 
 	if err := c.BindJSON(&loginDto); err != nil {
-		l.logger.Error("Invalid login request err = %+v", err)
+		zap.S().Error("Invalid login request err = %+v", err)
 		return
 	}
 
 	accessToken, refreshToken, err := l.loginService.Login(loginDto.Email, loginDto.Password)
 	if err != nil {
-		l.logger.Errorf("Login failed err = %+v", err)
+		zap.S().Errorf("Login failed err = %+v", err)
 		c.JSON(http.StatusUnauthorized, err.Error())
 		return
 	}
@@ -91,10 +88,10 @@ func (l *LoginController) login(c *gin.Context) {
 func (l *LoginController) RefreshToken(c *gin.Context) {
 	var rToken dto.RefreshDto
 	if err := c.BindJSON(&rToken); err != nil {
-		l.logger.Errorf("Failed to bind refresh token JSON, err %+v", err)
+		zap.S().Errorf("Failed to bind refresh token JSON, err %+v", err)
 		return
 	}
-	l.logger.Debugf("Parsed token from body token = %+v", rToken)
+	zap.S().Debugf("Parsed token from body token = %+v", rToken)
 
 	var claims auth.Claims
 
@@ -102,14 +99,14 @@ func (l *LoginController) RefreshToken(c *gin.Context) {
 		return []byte(config.AppConfig.RefreshKey), nil
 	})
 	if err != nil {
-		l.logger.Errorf("Error Parsing clames err = %+v", err)
+		zap.S().Errorf("Error Parsing clames err = %+v", err)
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	userUuid, err := uuid.Parse(claims.Uuid)
 	if err != nil {
-		l.logger.Errorf("Error Parsing uuid err = %+v", err)
+		zap.S().Errorf("Error Parsing uuid err = %+v", err)
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -120,7 +117,7 @@ func (l *LoginController) RefreshToken(c *gin.Context) {
 		Role:  claims.Role,
 	})
 	if err != nil {
-		l.logger.Error("Refresh failed err = %+v", err)
+		zap.S().Error("Refresh failed err = %+v", err)
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}

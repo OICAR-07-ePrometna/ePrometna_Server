@@ -18,17 +18,15 @@ type ITestService interface {
 }
 
 type TestService struct {
-	db     *gorm.DB
-	logger *zap.SugaredLogger
+	db *gorm.DB
 }
 
 func NewTestService() ITestService {
 	var service ITestService
 
-	app.Invoke(func(db *gorm.DB, logger *zap.SugaredLogger) {
+	app.Invoke(func(db *gorm.DB) {
 		service = TestService{
-			db:     db,
-			logger: logger,
+			db: db,
 		}
 	})
 
@@ -39,7 +37,7 @@ func NewTestService() ITestService {
 func (t TestService) Delete(id uuid.UUID) error {
 	// NOTE: this doesn't actually delete the entry rather sets deleted at field to now
 	rez := t.db.Delete(&model.Tmodel{}, "uuid = ?", id)
-	t.logger.Debugf("Delete statment on uuid = %s, rez %+v", id, rez)
+	zap.S().Debugf("Delete statment on uuid = %s, rez %+v", id, rez)
 	return rez.Error
 }
 

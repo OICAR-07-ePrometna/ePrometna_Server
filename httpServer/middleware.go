@@ -1,16 +1,35 @@
-package middleware
+package httpServer
 
 import (
+	"ePrometna_Server/config"
 	"ePrometna_Server/model"
 	"ePrometna_Server/util/auth"
+	"errors"
 	"net/http"
 	"slices"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 )
 
-var OptionsHandler gin.HandlerFunc = func(c *gin.Context) {
-	c.Status(http.StatusNoContent)
+var ErrInvalidTokenFormat = errors.New("invalid token format")
+
+// parseToken parses jwt token from header
+func parseToken(authHeader string) (*jwt.Token, *auth.Claims, error) {
+	// Parse token
+	if len(authHeader) <= len("Bearer ") || authHeader[:len("Bearer ")] != "Bearer " {
+		return nil, nil, ErrInvalidTokenFormat
+	}
+	tokenString := authHeader[len("Bearer "):]
+	var claims auth.Claims
+	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (any, error) {
+		return []byte(config.AppConfig.JwtKey), nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return token, &claims, nil
 }
 
 // Protect protects routes allowing access only to given roles (model.UserRole)
@@ -23,7 +42,7 @@ func Protect(roles ...model.UserRole) gin.HandlerFunc {
 			return
 		}
 
-		token, claims, err := auth.ParseToken(authHeader)
+		token, claims, err := parseToken(authHeader)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, "Invalid token format")
 			return
@@ -43,7 +62,7 @@ func Protect(roles ...model.UserRole) gin.HandlerFunc {
 	}
 }
 
-func CorsHeader() gin.HandlerFunc {
+func corsHeader() gin.HandlerFunc {
 	// Define allowed origins
 	allowedOrigins := map[string]bool{
 		"http://localhost:3000": true,

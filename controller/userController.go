@@ -15,18 +15,16 @@ import (
 
 type UserController struct {
 	UserCrud service.IUserCrudService
-	logger   *zap.SugaredLogger
 }
 
 func NewUserController() *UserController {
 	var controller *UserController
 
 	// Call dependency injection
-	app.Invoke(func(UserService service.IUserCrudService, logger *zap.SugaredLogger) {
+	app.Invoke(func(UserService service.IUserCrudService) {
 		// create controller
 		controller = &UserController{
 			UserCrud: UserService,
-			logger:   logger,
 		}
 	})
 
@@ -59,7 +57,7 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 func (u *UserController) get(c *gin.Context) {
 	userUuid, err := uuid.Parse(c.Param("uuid"))
 	if err != nil {
-		u.logger.Errorf("error parsing uuid value = %s", c.Param("uuid"))
+		zap.S().Errorf("error parsing uuid value = %s", c.Param("uuid"))
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
@@ -67,12 +65,12 @@ func (u *UserController) get(c *gin.Context) {
 	user, err := u.UserCrud.Read(userUuid)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			u.logger.Errorf("User with uuid = %s not found", userUuid)
+			zap.S().Errorf("User with uuid = %s not found", userUuid)
 			c.AbortWithError(http.StatusNotFound, err)
 			return
 		}
 
-		u.logger.Errorf("Failed to get user with uuid = %s", userUuid)
+		zap.S().Errorf("Failed to get user with uuid = %s", userUuid)
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
@@ -95,7 +93,7 @@ func (u *UserController) get(c *gin.Context) {
 func (u *UserController) create(c *gin.Context) {
 	var dto dto.NewUserDto
 	if err := c.BindJSON(&dto); err != nil {
-		u.logger.Errorf("Failed to bind error = %+v", err)
+		zap.S().Errorf("Failed to bind error = %+v", err)
 		return
 	}
 	newUser, err := dto.ToModel()
@@ -118,7 +116,7 @@ func (u *UserController) create(c *gin.Context) {
 //	@Summary	Update user with new dat
 //	@Tags		user
 //	@Produce	json
-//	@Success	200	{object}	dto.UserDto
+//	@Success	200	dto.UserDto
 //	@Failure	400
 //	@Failure	404
 //	@Failure	500
@@ -128,14 +126,14 @@ func (u *UserController) create(c *gin.Context) {
 func (u *UserController) update(c *gin.Context) {
 	userUuid, err := uuid.Parse(c.Param("uuid"))
 	if err != nil {
-		u.logger.Errorf("Error parsing UUID = %s", c.Param("uuid"))
+		zap.S().Errorf("Error parsing UUID = %s", c.Param("uuid"))
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
 	var dto dto.UserDto
 	if err := c.BindJSON(&dto); err != nil {
-		u.logger.Errorf("Failed to bind error = %+v", err)
+		zap.S().Errorf("Failed to bind error = %+v", err)
 		return
 	}
 
@@ -169,7 +167,7 @@ func (u *UserController) update(c *gin.Context) {
 func (u *UserController) delete(c *gin.Context) {
 	userUuid, err := uuid.Parse(c.Param("uuid"))
 	if err != nil {
-		u.logger.Errorf("error parsing uuid value = %s", c.Param("uuid"))
+		zap.S().Errorf("error parsing uuid value = %s", c.Param("uuid"))
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
@@ -177,12 +175,12 @@ func (u *UserController) delete(c *gin.Context) {
 	err = u.UserCrud.Delete(userUuid)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			u.logger.Errorf("User with uuid = %s not found", userUuid)
+			zap.S().Errorf("User with uuid = %s not found", userUuid)
 			c.AbortWithError(http.StatusNotFound, err)
 			return
 		}
 
-		u.logger.Errorf("Failed to delete user with uuid = %s", userUuid)
+		zap.S().Errorf("Failed to delete user with uuid = %s", userUuid)
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}

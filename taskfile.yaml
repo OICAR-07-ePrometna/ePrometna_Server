@@ -5,7 +5,6 @@ vars:
 
   # folders
   BIN_FOLDER: bin
-  TEST_PCKGS: ./util/* ./controller ./service
 
   # build options
   # -v  print the names of packages as they are compiled
@@ -51,12 +50,7 @@ tasks:
       - cmd: go run .
 
   test:
-    cmd: go test -v {{.TEST_PCKGS}}
-
-  coverage:
-    cmds:
-      - cmd: go test {{.TEST_PCKGS}} -coverprofile=coverage.out
-      - cmd: go tool cover -html=coverage.out
+    cmd: go test -v ./...
 
   start-db:
     cmd: docker-compose up -d
