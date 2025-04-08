@@ -14,4 +14,5 @@ var (
 	ErrUnknownRole        = errors.New("unknown role")
 	ErrInvalidCredentials = errors.New("invalid email or password")
 	ErrInvalidTokenFormat = errors.New("invalid token format")
+	ErrUserIsNil          = errors.New("user is nil")
 )

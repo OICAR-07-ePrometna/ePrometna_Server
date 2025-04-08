@@ -44,6 +44,9 @@ func ParseToken(authHeader string) (*jwt.Token, *Claims, error) {
 // Generate JWT access and refresh tokens
 func GenerateTokens(user *model.User) (string, string, error) {
 	// Create access token
+	if user == nil {
+		return "", "", cerror.ErrUserIsNil
+	}
 
 	accessTokenClaims := &Claims{
 		Email: user.Email,

@@ -62,7 +62,7 @@ func (l *LoginController) login(c *gin.Context) {
 	var loginDto dto.LoginDto
 
 	if err := c.BindJSON(&loginDto); err != nil {
-		l.logger.Error("Invalid login request err = %+v", err)
+		l.logger.Errorf("Invalid login request err = %+v", err)
 		return
 	}
 
