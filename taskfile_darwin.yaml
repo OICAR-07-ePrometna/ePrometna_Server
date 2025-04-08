@@ -1,4 +1,5 @@
 version: "3"
+
 tasks:
   build:
     platforms: [darwin]
@@ -14,6 +15,7 @@ tasks:
   tidy:
     cmds:
       - rm -rf ./{{.BIN_FOLDER}}
+      - rm -f coverage.out
       - go fmt ./...
       - go mod tidy -v
     silent: false

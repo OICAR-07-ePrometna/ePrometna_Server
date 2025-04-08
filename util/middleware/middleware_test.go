@@ -5,12 +5,9 @@ import (
 	"ePrometna_Server/model"
 	"ePrometna_Server/util/auth"
 	"ePrometna_Server/util/middleware"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
-	"sync"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -26,32 +23,21 @@ func startTESTServer() *gin.Engine {
 	return router
 }
 
-var once = sync.Once{}
-
 // Mock AppConfig for testing
 var mockAppConfig = &config.AppConfiguration{
-	JwtKey:     "test-jwt-key",
-	RefreshKey: "test-refresh-key",
+	JwtKey:        "test-jwt-key",
+	RefreshKey:    "test-refresh-key",
+	IsDevelopment: true,
+	Port:          8090,
+	DbConnection:  "",
 }
 
-// TODO: chnage to mock config
-func LoadConfigForTests() {
-	once.Do(func() {
-		// NOTE: Change directory
-		if err := os.Chdir("../../"); err != nil {
-			panic(fmt.Errorf("Failed to change directory: %v", err))
-		}
-
-		err := config.LoadConfig()
-		if err != nil {
-			panic(fmt.Errorf("Failed to load config %+v", err))
-		}
-	})
+func Setup() {
+	config.AppConfig = mockAppConfig
 }
 
 func TestGenerateTokens(t *testing.T) {
-	// Setup
-	LoadConfigForTests()
+	Setup()
 
 	router := startTESTServer()
 	router.Use(middleware.Protect())
