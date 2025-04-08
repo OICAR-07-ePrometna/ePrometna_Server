@@ -1,9 +1,10 @@
-package httpServer
+package middleware_test
 
 import (
 	"ePrometna_Server/config"
 	"ePrometna_Server/model"
 	"ePrometna_Server/util/auth"
+	"ePrometna_Server/util/middleware"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -46,7 +47,7 @@ func TestGenerateTokens(t *testing.T) {
 	LoadConfigForTests()
 
 	router := startTESTServer()
-	router.Use(Protect())
+	router.Use(middleware.Protect())
 
 	w := httptest.NewRecorder()
 	req, err := http.NewRequest("GET", "/ping", strings.NewReader(""))

@@ -11,4 +11,5 @@ var (
 	ErrBadUuid            = errors.New("failed to parse uuid")
 	ErrUnknownRole        = errors.New("unknown role")
 	ErrInvalidCredentials = errors.New("invalid email or password")
+	ErrInvalidTokenFormat = errors.New("invalid token format")
 )
