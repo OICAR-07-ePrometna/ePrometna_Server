@@ -30,12 +30,4 @@ func setupHandlers(router *gin.Engine) {
 	controller.NewTestController().RegisterEndpoints(api)
 	controller.NewLoginController().RegisterEndpoints(api)
 	controller.NewUserController().RegisterEndpoints(api)
-
-	// api.Use(AllowAccess(model.RoleFirma, model.RoleAdmin))
-	/*
-		tp := controller.NewTestController()
-		protected := api.Group("/protected")
-		protected.Use(protect())
-		tp.RegisterEndpoints(protected)
-	*/
 }
