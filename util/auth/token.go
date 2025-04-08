@@ -3,11 +3,11 @@ package auth
 import (
 	"ePrometna_Server/config"
 	"ePrometna_Server/model"
+	"ePrometna_Server/util/cerror"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"go.uber.org/zap"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type Claims struct {
@@ -23,13 +23,30 @@ const (
 	refreshTokenDuration = 7 * 24 * time.Hour
 )
 
-func ParseClaims(token string) (*Claims, error) {
-	return nil, nil
+// ParseToken parses jwt token from header
+func ParseToken(authHeader string) (*jwt.Token, *Claims, error) {
+	// Parse token
+	if len(authHeader) <= len("Bearer ") || authHeader[:len("Bearer ")] != "Bearer " {
+		return nil, nil, cerror.ErrInvalidTokenFormat
+	}
+	tokenString := authHeader[len("Bearer "):]
+	var claims Claims
+	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (any, error) {
+		return []byte(config.AppConfig.JwtKey), nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return token, &claims, nil
 }
 
 // Generate JWT access and refresh tokens
 func GenerateTokens(user *model.User) (string, string, error) {
 	// Create access token
+	if user == nil {
+		return "", "", cerror.ErrUserIsNil
+	}
 
 	accessTokenClaims := &Claims{
 		Email: user.Email,
@@ -42,6 +59,7 @@ func GenerateTokens(user *model.User) (string, string, error) {
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessTokenClaims)
 	accessTokenString, err := accessToken.SignedString([]byte(config.AppConfig.JwtKey))
 	if err != nil {
+		zap.S().Debugf("Failed to generate access token err = %+v", err)
 		return "", "", err
 	}
 
@@ -57,23 +75,9 @@ func GenerateTokens(user *model.User) (string, string, error) {
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshTokenClaims)
 	refreshTokenString, err := refreshToken.SignedString([]byte(config.AppConfig.RefreshKey))
 	if err != nil {
+		zap.S().Debugf("Failed to generate refresh token err = %+v", err)
 		return "", "", err
 	}
 
 	return accessTokenString, refreshTokenString, nil
-}
-
-func VerifyPassword(hashedPassword, plainPassword string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword))
-	return err == nil
-}
-
-func HashPassword(password string) (string, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		zap.S().Errorf("Failed to hash password err = %+v", err)
-		return "", err
-	}
-
-	return string(hash), nil
 }

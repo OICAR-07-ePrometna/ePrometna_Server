@@ -14,16 +14,18 @@ import (
 
 type TestController struct {
 	testService service.ITestService
+	logger      *zap.SugaredLogger
 }
 
 func NewTestController() *TestController {
 	var controller *TestController
 
 	// Call dependency injection
-	app.Invoke(func(testService service.ITestService) {
+	app.Invoke(func(testService service.ITestService, logger *zap.SugaredLogger) {
 		// create controller
 		controller = &TestController{
 			testService: testService,
+			logger:      logger,
 		}
 	})
 
@@ -96,7 +98,7 @@ func (c *TestController) insert(ctx *gin.Context) {
 func (c *TestController) delete(ctx *gin.Context) {
 	id, err := uuid.Parse(ctx.Param("uuid"))
 	if err != nil {
-		zap.S().Errorf("error parsing uuid value = %s", ctx.Param("uuid"))
+		c.logger.Errorf("error parsing uuid value = %s", ctx.Param("uuid"))
 		ctx.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
