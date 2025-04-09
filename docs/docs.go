@@ -419,6 +419,78 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/vehicle": {
+            "post": {
+                "description": "Create new vehicle with an owner",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vehicle"
+                ],
+                "summary": "Creates new vehicle",
+                "parameters": [
+                    {
+                        "description": "Vehicle model",
+                        "name": "model",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.NewVehicleDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.VehicleDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/vehicle/{uuid}": {
+            "delete": {
+                "description": "Preforms a soft delete",
+                "tags": [
+                    "vehicle"
+                ],
+                "summary": "Soft delete on vehicle",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vehicle UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -494,6 +566,14 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.NewVehicleDto": {
+            "type": "object",
+            "properties": {
+                "ownerUuid": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.TmodelDto": {
             "type": "object",
             "properties": {
@@ -533,6 +613,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uuid": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.VehicleDto": {
+            "type": "object",
+            "properties": {
+                "ownerUuid": {
                     "type": "string"
                 }
             }

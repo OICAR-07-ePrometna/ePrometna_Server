@@ -53,6 +53,11 @@ definitions:
     - residence
     - role
     type: object
+  dto.NewVehicleDto:
+    properties:
+      ownerUuid:
+        type: string
+    type: object
   dto.TmodelDto:
     properties:
       age:
@@ -79,6 +84,11 @@ definitions:
       role:
         type: string
       uuid:
+        type: string
+    type: object
+  dto.VehicleDto:
+    properties:
+      ownerUuid:
         type: string
     type: object
 info:
@@ -328,6 +338,7 @@ paths:
       summary: Get logged-in user data
       tags:
       - user
+<<<<<<< HEAD
   /user/police-officers:
     get:
       description: Fetches all police officers for MUP Admin
@@ -349,4 +360,53 @@ paths:
       summary: Get all police officers for MUP Admin
       tags:
       - user
+=======
+  /vehicle:
+    post:
+      description: Create new vehicle with an owner
+      parameters:
+      - description: Vehicle model
+        in: body
+        name: model
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewVehicleDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.VehicleDto'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Creates new vehicle
+      tags:
+      - vehicle
+  /vehicle/{uuid}:
+    delete:
+      description: Preforms a soft delete
+      parameters:
+      - description: Vehicle UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Soft delete on vehicle
+      tags:
+      - vehicle
+>>>>>>> 985737b (Create and delete enpoints)
 swagger: "2.0"
