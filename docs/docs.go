@@ -209,7 +209,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/me": {
+        "/user/my-data": {
             "get": {
                 "description": "Fetches the currently logged-in user's data based on the JWT token",
                 "produces": [

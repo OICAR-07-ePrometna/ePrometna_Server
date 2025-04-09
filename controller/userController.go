@@ -45,7 +45,7 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 	group.PUT("/:uuid", u.update)
 	group.DELETE("/:uuid", u.delete)
 
-	group.GET("/me", middleware.Protect(), u.getLoggedInUser)
+	group.GET("/my-data", middleware.Protect(), u.getLoggedInUser)
 }
 
 // UserExample godoc
@@ -205,7 +205,7 @@ func (u *UserController) delete(c *gin.Context) {
 //	@Failure		401
 //	@Failure		404
 //	@Failure		500
-//	@Router			/user/me [get]
+//	@Router			/user/my-data [get]
 func (u *UserController) getLoggedInUser(c *gin.Context) {
 
 	_, claims, err := auth.ParseToken(c.Request.Header.Get("Authorization"))
