@@ -4,6 +4,8 @@ import (
 	"ePrometna_Server/app"
 	"ePrometna_Server/dto"
 	"ePrometna_Server/service"
+	"ePrometna_Server/util/auth"
+	"ePrometna_Server/util/middleware"
 	"errors"
 	"net/http"
 
@@ -42,6 +44,8 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 	group.GET("/:uuid", u.get)
 	group.PUT("/:uuid", u.update)
 	group.DELETE("/:uuid", u.delete)
+
+	group.GET("/me", middleware.Protect(), u.getLoggedInUser)
 }
 
 // UserExample godoc
@@ -188,4 +192,49 @@ func (u *UserController) delete(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusNoContent, nil)
+}
+
+// GetLoggedInUser godoc
+//
+//	@Summary		Get logged-in user data
+//	@Description	Fetches the currently logged-in user's data based on the JWT token
+//	@Tags			user
+//	@Produce		json
+//	@Success		200
+//	@Failure		400
+//	@Failure		401
+//	@Failure		404
+//	@Failure		500
+//	@Router			/user/me [get]
+func (u *UserController) getLoggedInUser(c *gin.Context) {
+
+	_, claims, err := auth.ParseToken(c.Request.Header.Get("Authorization"))
+	if err != nil {
+		u.logger.Errorf("Failed to parse token: %v", err)
+		c.AbortWithError(http.StatusUnauthorized, err)
+		return
+	}
+
+	userUuid, err := uuid.Parse(claims.Uuid)
+	if err != nil {
+		u.logger.Errorf("Error parsing UUID = %s", err)
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	user, err := u.UserCrud.Read(userUuid)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			u.logger.Errorf("User with uuid = %s not found", userUuid)
+			c.AbortWithError(http.StatusNotFound, err)
+			return
+		}
+
+		u.logger.Errorf("Failed to fetch user with uuid = %s", userUuid, err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	dto := dto.UserDto{}
+	c.JSON(http.StatusOK, dto.FromModel(user))
 }
