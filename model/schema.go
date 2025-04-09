@@ -9,8 +9,8 @@ func GetAllModels() []any {
 	return []any{
 		&Tmodel{},
 		&User{},
-		&Car{},
-		&CarDrivers{},
+		&Vehicle{},
+		&VehicleDrivers{},
 		&DriverLicense{},
 		&OwnerHistory{},
 		&Mobile{},

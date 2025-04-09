@@ -7,7 +7,7 @@ import (
 
 type OwnerHistory struct {
 	gorm.Model
-	Uuid   uuid.UUID `gorm:"type:uuid;unique;not null"`
-	CarId  uint      `gorm:"type:uint;not null"`
-	UserId uint      `gorm:"type:uint;not null"`
+	Uuid      uuid.UUID `gorm:"type:uuid;unique;not null"`
+	VehicleId uint      `gorm:"type:uint;not null"`
+	UserId    uint      `gorm:"type:uint;not null"`
 }
