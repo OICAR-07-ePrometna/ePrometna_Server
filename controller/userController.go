@@ -46,6 +46,9 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 	group.DELETE("/:uuid", u.delete)
 
 	group.GET("/my-data", middleware.Protect(), u.getLoggedInUser)
+
+	group.GET("/all-users", middleware.Protect(), u.getAllUsersForSuperAdmin)
+	group.GET("/police-officers", middleware.Protect(), u.getAllPoliceOfficers)
 }
 
 // UserExample godoc
@@ -237,4 +240,87 @@ func (u *UserController) getLoggedInUser(c *gin.Context) {
 
 	dto := dto.UserDto{}
 	c.JSON(http.StatusOK, dto.FromModel(user))
+}
+
+// GetAllUsers godoc
+//
+//	@Summary		Get all users for superadmin
+//	@Description	Fetches all users for superadmin
+//	@Tags			user
+//	@Produce		json
+//	@Success		200	{array}	dto.UserDto
+//	@Failure		401
+//	@Failure		500
+//	@Router			/user/all-users [get]
+func (u *UserController) getAllUsersForSuperAdmin(c *gin.Context) {
+
+	_, claims, err := auth.ParseToken(c.Request.Header.Get("Authorization"))
+	if err != nil {
+		u.logger.Errorf("Failed to parse token: %v", err)
+		c.AbortWithError(http.StatusUnauthorized, err)
+		return
+	}
+
+	if claims.Role != "superadmin" {
+		u.logger.Warnf("Unauthorized access attempt by user with role: %s", claims.Role)
+		c.AbortWithError(http.StatusForbidden, err)
+		return
+	}
+
+	users, err := u.UserCrud.GetAllUsers()
+	if err != nil {
+		u.logger.Errorf("Failed to fetch users: %v", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	var userDtos []dto.UserDto
+	for _, user := range users {
+		dto := dto.UserDto{}
+		userDtos = append(userDtos, dto.FromModel(&user))
+	}
+
+	c.JSON(http.StatusOK, userDtos)
+}
+
+// GetAllPoliceOfficers godoc
+//
+//	@Summary		Get all police officers for MUP Admin
+//	@Description	Fetches all police officers for MUP Admin
+//	@Tags			user
+//	@Produce		json
+//	@Success		200	{array}	dto.UserDto
+//	@Failure		401
+//	@Failure		403
+//	@Failure		500
+//	@Router			/user/police-officers [get]
+func (u *UserController) getAllPoliceOfficers(c *gin.Context) {
+	_, claims, err := auth.ParseToken(c.Request.Header.Get("Authorization"))
+	if err != nil {
+		u.logger.Errorf("Failed to parse token: %v", err)
+		c.AbortWithError(http.StatusUnauthorized, err)
+		return
+	}
+
+	if claims.Role != "mupadmin" {
+		u.logger.Warnf("Unauthorized access attempt by user with role: %s", claims.Role)
+		c.AbortWithError(http.StatusForbidden, err)
+		return
+	}
+
+	users, err := u.UserCrud.GetAllPoliceOfficers()
+	if err != nil {
+		u.logger.Errorf("Failed to fetch police officers: %v", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	var userDtos []dto.UserDto
+	for _, user := range users {
+		dto := dto.UserDto{}
+		userDtos = append(userDtos, dto.FromModel(&user))
+	}
+
+	c.JSON(http.StatusOK, userDtos)
+
 }

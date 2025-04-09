@@ -14,7 +14,7 @@ type UserRole string
 
 const (
 	RoleHAK        UserRole = "hak"
-	RoleAdmin      UserRole = "admin"
+	RoleAdmin      UserRole = "mupadmin"
 	RoleOsoba      UserRole = "osoba"
 	RoleFirma      UserRole = "firma"
 	RolePolicija   UserRole = "policija"
