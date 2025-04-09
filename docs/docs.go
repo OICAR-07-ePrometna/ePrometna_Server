@@ -221,7 +221,7 @@ const docTemplate = `{
                 "summary": "Get logged-in user data",
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/dto.UserDto"
                         }

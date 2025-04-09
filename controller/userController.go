@@ -200,7 +200,7 @@ func (u *UserController) delete(c *gin.Context) {
 //	@Description	Fetches the currently logged-in user's data based on the JWT token
 //	@Tags			user
 //	@Produce		json
-//	@Success		200
+//	@Success		200	{object}	dto.UserDto
 //	@Failure		400
 //	@Failure		401
 //	@Failure		404
