@@ -3,6 +3,7 @@ package app
 import (
 	"ePrometna_Server/config"
 	"ePrometna_Server/model"
+	"os"
 	"sync"
 	"time"
 
@@ -45,7 +46,8 @@ func newDbConn() *gorm.DB {
 		Logger: NewGormZapLogger().LogMode(logger.Warn),
 	})
 	if err != nil {
-		zap.S().Panicf("failed to connect database err = %+v", err)
+		zap.S().Errorf("failed to connect database err = %+v", err)
+		os.Exit(5)
 	}
 	return db
 }
