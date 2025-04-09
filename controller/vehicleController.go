@@ -41,6 +41,8 @@ func (c *VehicleController) RegisterEndpoints(api *gin.RouterGroup) {
 	// group.Use(middleware.Protect(model.RoleHAK))
 
 	// register Endpoints
+	group.GET("/:uuid", c.get)
+	group.GET("/", c.myVehicles)
 	group.POST("/", c.create)
 	group.DELETE("/:uuid", c.delete)
 }
@@ -117,4 +119,35 @@ func (v *VehicleController) create(c *gin.Context) {
 
 	var dto dto.VehicleDto
 	c.JSON(http.StatusCreated, dto.FromModel(vehicle))
+}
+
+// GetVehicle godoc
+//
+//	@Summary	Gets a vehicle with uuid
+//	@Schemes
+//	@Tags			vehicle
+//	@Produce		json
+//	@Success		200 {object} dto.VehicleDetailsDto
+//	@Failure		400
+//	@Failure		404
+//	@Failure		500
+//	@Param			uuid	path	string	true	"Vehicle UUID"
+//	@Router			/vehicle/{uuid} [get]
+func (v *VehicleController) get(c *gin.Context) {
+	panic("unimplemented")
+}
+
+// myVehicle godoc
+//
+//	@Summary	Gets a your vehicles
+//	@Schemes
+//	@Tags			vehicle
+//	@Produce		json
+//	@Success		200 {object} []dto.VehicleDto
+//	@Failure		400
+//	@Failure		404
+//	@Failure		500
+//	@Param			uuid	path	string	true	"Vehicle UUID"
+//	@Router			/vehicle [get]
+func (v *VehicleController) myVehicles(c *gin.Context) {
 }
