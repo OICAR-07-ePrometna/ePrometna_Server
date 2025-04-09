@@ -12,15 +12,15 @@ import (
 )
 
 type NewUserDto struct {
-	Uuid      string
-	FirstName string
-	LastName  string
-	OIB       string
-	Residence string
-	BirthDate string
-	Email     string
-	Password  string
-	Role      string
+	Uuid      string `json:"uuid"`
+	FirstName string `json:"firstName" binding:"required,min=2,max=100"`
+	LastName  string `json:"lastName" binding:"required,min=2,max=100"`
+	OIB       string `json:"oib" binding:"required,len=11"`
+	Residence string `json:"residence" binding:"required,max=255"`
+	BirthDate string `json:"birthDate" binding:"required,datetime=2006-01-02"`
+	Email     string `json:"email" binding:"required,email"`
+	Password  string `json:"password" binding:"required,min=6"`
+	Role      string `json:"role" binding:"required,oneof=hak mupadmin osoba firma policija superadmin"`
 }
 
 // ToModel create a model from a dto
@@ -34,6 +34,13 @@ func (dto *NewUserDto) ToModel() (*model.User, error) {
 	if err != nil {
 		zap.S().Error("Failed to parse role = %+v, err = %+v", dto.Role, err)
 		return nil, cerror.ErrUnknownRole
+	}
+	if dto.Uuid != "" {
+		_, err := uuid.Parse(dto.Uuid)
+		if err != nil {
+			zap.S().Errorf("Failed to parse uuid = %s, err = %+v", dto.Uuid, err)
+			return nil, cerror.ErrBadUuid
+		}
 	}
 
 	return &model.User{

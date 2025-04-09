@@ -4,6 +4,7 @@ definitions:
       email:
         type: string
       password:
+        minLength: 6
         type: string
     required:
     - email
@@ -16,19 +17,41 @@ definitions:
       email:
         type: string
       firstName:
+        maxLength: 100
+        minLength: 2
         type: string
       lastName:
+        maxLength: 100
+        minLength: 2
         type: string
       oib:
         type: string
       password:
+        minLength: 6
         type: string
       residence:
+        maxLength: 255
         type: string
       role:
+        enum:
+        - hak
+        - mupadmin
+        - osoba
+        - firma
+        - policija
+        - superadmin
         type: string
       uuid:
         type: string
+    required:
+    - birthDate
+    - email
+    - firstName
+    - lastName
+    - oib
+    - password
+    - residence
+    - role
     type: object
   dto.TmodelDto:
     properties:
