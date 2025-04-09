@@ -26,14 +26,19 @@ tasks:
     silent: false
 
   rebuild:
+    deps: [clean-db, clean-modcache, clean-cache]
     cmds:
-      - cmd: go clean --modcache
-      - cmd: go clean -cache
       - task: tidy
       - task: verify
       - task: build
         vars: { TASK_OPTIONS: "-a" }
     silent: false
+
+  clean-modcache:
+    cmd: go clean --modcache
+
+  clean-cache:
+    cmd: go clean -cache
 
   verify:
     cmds:
@@ -59,10 +64,14 @@ tasks:
       - cmd: go tool cover -html=coverage.out
 
   start-db:
-    cmd: docker-compose up -d
+    cmds:
+      - cmd: docker-compose up -d
 
   stop-db:
     cmd: docker-compose stop
+
+  clean-db:
+    cmd: docker-compose down -v
 
   generate-swagger:
     internal: true

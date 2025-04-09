@@ -24,7 +24,6 @@ tasks:
     platforms: [linux/amd64]
     env:
       GIN_MODE: release
-    deps: [start-db]
     cmds:
       - rm -f log/{{.PROJECT_CODE}}*.log
       - ./{{.BIN_FOLDER}}/{{.PROJECT_CODE}} {{.CLI_ARGS}}
