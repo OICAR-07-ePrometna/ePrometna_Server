@@ -222,6 +222,9 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK"
+                        "schema": {
+                            "$ref": "#/definitions/dto.UserDto"
+                        }
                     },
                     "400": {
                         "description": "Bad Request"

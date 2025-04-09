@@ -230,7 +230,7 @@ func (u *UserController) getLoggedInUser(c *gin.Context) {
 			return
 		}
 
-		u.logger.Errorf("Failed to fetch user with uuid = %s", userUuid, err)
+		u.logger.Errorf("Failed to fetch user with uuid = %s: %v", userUuid, err)
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
