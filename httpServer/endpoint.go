@@ -30,4 +30,5 @@ func setupHandlers(router *gin.Engine) {
 	controller.NewTestController().RegisterEndpoints(api)
 	controller.NewLoginController().RegisterEndpoints(api)
 	controller.NewUserController().RegisterEndpoints(api)
+	controller.NewVehicleController().RegisterEndpoints(api)
 }
