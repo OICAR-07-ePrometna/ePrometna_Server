@@ -14,6 +14,7 @@ type VehicleDetailsDto struct {
 	Owner          UserDto
 	Drivers        []UserDto
 	PastOwners     []UserDto
+	// Registration   RegistrationDto
 	// PastRegistratins []RegistrationDto
 }
 
