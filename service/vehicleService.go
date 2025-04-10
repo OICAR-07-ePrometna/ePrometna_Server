@@ -11,10 +11,9 @@ import (
 
 type IVehicleService interface {
 	ReadAll() ([]model.Vehicle, error)
-	Read(id uuid.UUID) (*model.Vehicle, error)
-	Create(test *model.Vehicle) (*model.Vehicle, error)
-	Update(test *model.Vehicle) (*model.Vehicle, error)
-	Delete(id uuid.UUID) error
+	Read(uuid uuid.UUID) (*model.Vehicle, error)
+	Create(newVehicle *model.Vehicle) (*model.Vehicle, error)
+	Delete(uuid uuid.UUID) error
 }
 
 // TODO: implement service
@@ -51,10 +50,5 @@ func (v *VehicleService) Read(id uuid.UUID) (*model.Vehicle, error) {
 
 // ReadAll implements IVehicleService.
 func (v *VehicleService) ReadAll() ([]model.Vehicle, error) {
-	panic("unimplemented")
-}
-
-// Update implements IVehicleService.
-func (v *VehicleService) Update(test *model.Vehicle) (*model.Vehicle, error) {
 	panic("unimplemented")
 }

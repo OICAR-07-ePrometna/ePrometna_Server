@@ -4,6 +4,7 @@ import (
 	"ePrometna_Server/app"
 	"ePrometna_Server/dto"
 	"ePrometna_Server/service"
+	"ePrometna_Server/util/auth"
 	"errors"
 	"net/http"
 
@@ -78,7 +79,7 @@ func (v *VehicleController) delete(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, nil)
+	c.AbortWithStatus(http.StatusNoContent)
 }
 
 // CreateVehicle godoc
@@ -88,7 +89,7 @@ func (v *VehicleController) delete(c *gin.Context) {
 //	@Description	Create new vehicle with an owner
 //	@Tags			vehicle
 //	@Produce		json
-//	@Success		201 {object} dto.VehicleDto
+//	@Success		201	{object}	dto.VehicleDto
 //	@Failure		400
 //	@Failure		404
 //	@Failure		500
@@ -125,29 +126,56 @@ func (v *VehicleController) create(c *gin.Context) {
 //
 //	@Summary	Gets a vehicle with uuid
 //	@Schemes
-//	@Tags			vehicle
-//	@Produce		json
-//	@Success		200 {object} dto.VehicleDetailsDto
-//	@Failure		400
-//	@Failure		404
-//	@Failure		500
-//	@Param			uuid	path	string	true	"Vehicle UUID"
-//	@Router			/vehicle/{uuid} [get]
+//	@Tags		vehicle
+//	@Produce	json
+//	@Success	200	{object}	dto.VehicleDetailsDto
+//	@Failure	400
+//	@Failure	404
+//	@Failure	500
+//	@Param		uuid	path	string	true	"Vehicle UUID"
+//	@Router		/vehicle/{uuid} [get]
 func (v *VehicleController) get(c *gin.Context) {
-	panic("unimplemented")
+	vehicleUuid, err := uuid.Parse(c.Param("uuid"))
+	if err != nil {
+		v.logger.Errorf("error parsing uuid value = %s", c.Param("uuid"))
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	vehicle, err := v.VehicleService.Read(vehicleUuid)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			v.logger.Errorf("Vehicle with uuid = %s not found", vehicleUuid)
+			c.AbortWithError(http.StatusNotFound, err)
+			return
+		}
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	var dto dto.VehicleDetailsDto
+	c.JSON(http.StatusOK, dto.FromModel(vehicle))
 }
 
 // myVehicle godoc
 //
 //	@Summary	Gets a your vehicles
 //	@Schemes
-//	@Tags			vehicle
-//	@Produce		json
-//	@Success		200 {object} []dto.VehicleDto
-//	@Failure		400
-//	@Failure		404
-//	@Failure		500
-//	@Param			uuid	path	string	true	"Vehicle UUID"
-//	@Router			/vehicle [get]
+//	@Tags		vehicle
+//	@Produce	json
+//	@Success	200	{object}	[]dto.VehicleDto
+//	@Failure	400
+//	@Failure	404
+//	@Failure	500
+//	@Router		/vehicle [get]
 func (v *VehicleController) myVehicles(c *gin.Context) {
+	_, claims, err := auth.ParseToken(c.Request.Header.Get("Authorization"))
+	if err != nil {
+		v.logger.Errorf("Failed to parse token: %v", err)
+		c.AbortWithError(http.StatusUnauthorized, err)
+		return
+	}
+	uuid, err := uuid.Parse(claims.Uuid)
+	v.VehicleService.Read(uuid)
+	// TODO: Finish controller
 }

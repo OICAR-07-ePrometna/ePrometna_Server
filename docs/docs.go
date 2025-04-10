@@ -421,6 +421,35 @@ const docTemplate = `{
             }
         },
         "/vehicle": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vehicle"
+                ],
+                "summary": "Gets a your vehicles",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.VehicleDto"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
             "post": {
                 "description": "Create new vehicle with an owner",
                 "produces": [
@@ -461,6 +490,41 @@ const docTemplate = `{
             }
         },
         "/vehicle/{uuid}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vehicle"
+                ],
+                "summary": "Gets a vehicle with uuid",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vehicle UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.VehicleDetailsDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
             "delete": {
                 "description": "Preforms a soft delete",
                 "tags": [
@@ -617,10 +681,57 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.VehicleDetailsDto": {
+            "type": "object",
+            "properties": {
+                "drivers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.UserDto"
+                    }
+                },
+                "owner": {
+                    "$ref": "#/definitions/dto.UserDto"
+                },
+                "pastOwners": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.UserDto"
+                    }
+                },
+                "productionYear": {
+                    "type": "integer"
+                },
+                "registration": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                },
+                "vehicleModel": {
+                    "type": "string"
+                },
+                "vehicleType": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.VehicleDto": {
             "type": "object",
             "properties": {
-                "ownerUuid": {
+                "productionYear": {
+                    "type": "integer"
+                },
+                "registration": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                },
+                "vehicleModel": {
+                    "type": "string"
+                },
+                "vehicleType": {
                     "type": "string"
                 }
             }

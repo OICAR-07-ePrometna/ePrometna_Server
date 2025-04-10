@@ -86,9 +86,40 @@ definitions:
       uuid:
         type: string
     type: object
+  dto.VehicleDetailsDto:
+    properties:
+      drivers:
+        items:
+          $ref: '#/definitions/dto.UserDto'
+        type: array
+      owner:
+        $ref: '#/definitions/dto.UserDto'
+      pastOwners:
+        items:
+          $ref: '#/definitions/dto.UserDto'
+        type: array
+      productionYear:
+        type: integer
+      registration:
+        type: string
+      uuid:
+        type: string
+      vehicleModel:
+        type: string
+      vehicleType:
+        type: string
+    type: object
   dto.VehicleDto:
     properties:
-      ownerUuid:
+      productionYear:
+        type: integer
+      registration:
+        type: string
+      uuid:
+        type: string
+      vehicleModel:
+        type: string
+      vehicleType:
         type: string
     type: object
 info:
@@ -362,6 +393,25 @@ paths:
       - user
 =======
   /vehicle:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.VehicleDto'
+            type: array
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Gets a your vehicles
+      tags:
+      - vehicle
     post:
       description: Create new vehicle with an owner
       parameters:
@@ -408,5 +458,31 @@ paths:
       summary: Soft delete on vehicle
       tags:
       - vehicle
+<<<<<<< HEAD
 >>>>>>> 985737b (Create and delete enpoints)
+=======
+    get:
+      parameters:
+      - description: Vehicle UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.VehicleDetailsDto'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Gets a vehicle with uuid
+      tags:
+      - vehicle
+>>>>>>> db89da2 (Updated dtos and endpoints)
 swagger: "2.0"
