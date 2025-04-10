@@ -633,7 +633,25 @@ const docTemplate = `{
         "dto.NewVehicleDto": {
             "type": "object",
             "properties": {
+                "chassisNumber": {
+                    "type": "string"
+                },
                 "ownerUuid": {
+                    "type": "string"
+                },
+                "productionYear": {
+                    "type": "integer"
+                },
+                "registation": {
+                    "type": "string"
+                },
+                "treveledDistance": {
+                    "type": "integer"
+                },
+                "vehicleModel": {
+                    "type": "string"
+                },
+                "vehicleType": {
                     "type": "string"
                 }
             }

@@ -1,12 +1,35 @@
 package dto
 
-import "ePrometna_Server/model"
+import (
+	"ePrometna_Server/model"
+
+	"github.com/google/uuid"
+)
 
 type NewVehicleDto struct {
-	OwnerUuid string
+	VehicleType      string
+	VehicleModel     string
+	ProductionYear   int
+	ChassisNumber    string
+	OwnerUuid        string
+	Registation      string
+	TreveledDistance int
 }
 
 // ToModel create a model from a dto
 func (dto *NewVehicleDto) ToModel() (*model.Vehicle, error) {
-	panic("Unimplemented")
+	return &model.Vehicle{
+		Uuid:           uuid.New(),
+		VehicleType:    dto.VehicleType,
+		VehicleModel:   dto.VehicleModel,
+		ProductionYear: dto.ProductionYear,
+		ChassisNumber:  dto.ChassisNumber,
+
+		Registration: &model.RegistrationInfo{
+			Uuid:             uuid.New(),
+			PassTechnical:    true,
+			TraveledDistance: dto.TreveledDistance,
+			Registration:     dto.Registation,
+		},
+	}, nil
 }

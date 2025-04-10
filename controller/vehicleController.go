@@ -107,8 +107,8 @@ func (v *VehicleController) create(c *gin.Context) {
 		v.logger.Errorf("Failed to create model error = %+v", err)
 		c.AbortWithError(http.StatusBadRequest, err)
 	}
-
-	vehicle, err = v.VehicleService.Create(vehicle)
+	ownerUuid, err := uuid.Parse(newDto.OwnerUuid)
+	vehicle, err = v.VehicleService.Create(vehicle, ownerUuid)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			v.logger.Errorf("User with uuid = %s not found", newDto.OwnerUuid)
@@ -153,7 +153,8 @@ func (v *VehicleController) get(c *gin.Context) {
 		return
 	}
 
-	var dto dto.VehicleDetailsDto
+	// var dto dto.VehicleDetailsDto
+	var dto dto.VehicleDto
 	c.JSON(http.StatusOK, dto.FromModel(vehicle))
 }
 
