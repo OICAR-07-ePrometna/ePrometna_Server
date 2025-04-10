@@ -2,6 +2,10 @@ package dto
 
 import (
 	"ePrometna_Server/model"
+	"ePrometna_Server/util/cerror"
+
+	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type VehicleDto struct {
@@ -14,9 +18,27 @@ type VehicleDto struct {
 
 // ToModel create a model from a dto
 func (dto *VehicleDto) ToModel() (*model.Vehicle, error) {
-	panic("unimplemented")
+	uuid, err := uuid.Parse(dto.Uuid)
+	if err != nil {
+		zap.S().Error("Failed to parse uuid = %s, err = %+v", dto.Uuid, err)
+		return nil, cerror.ErrBadUuid
+	}
+
+	return &model.Vehicle{
+		Uuid:           uuid,
+		VehicleType:    dto.VehicleType,
+		VehicleModel:   dto.VehicleModel,
+		ProductionYear: dto.ProductionYear,
+	}, nil
 }
 
 func (dto VehicleDto) FromModel(m *model.Vehicle) VehicleDto {
-	panic("unimplemented")
+	dto = VehicleDto{
+		Uuid:           m.Uuid.String(),
+		VehicleType:    m.VehicleType,
+		VehicleModel:   m.VehicleModel,
+		ProductionYear: m.ProductionYear,
+		Registration:   m.Registration.Registration,
+	}
+	return dto
 }
