@@ -177,6 +177,17 @@ func (v *VehicleController) myVehicles(c *gin.Context) {
 		return
 	}
 	uuid, err := uuid.Parse(claims.Uuid)
-	v.VehicleService.Read(uuid)
-	// TODO: Finish controller
+	vehicles, err := v.VehicleService.ReadAll(uuid)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			v.logger.Errorf("Vehicle with owner uuid = %s not found", uuid)
+			c.AbortWithError(http.StatusNotFound, err)
+			return
+		}
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	var dtos dto.VehiclesDto
+
+	c.JSON(http.StatusOK, dtos.FromModel(vehicles))
 }

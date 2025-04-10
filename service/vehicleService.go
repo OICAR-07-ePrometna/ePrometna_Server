@@ -11,7 +11,7 @@ import (
 )
 
 type IVehicleService interface {
-	ReadAll() ([]model.Vehicle, error)
+	ReadAll(driverUuid uuid.UUID) ([]model.Vehicle, error)
 	Read(uuid uuid.UUID) (*model.Vehicle, error)
 	Create(newVehicle *model.Vehicle, ownerUuid uuid.UUID) (*model.Vehicle, error)
 	Delete(uuid uuid.UUID) error
@@ -81,6 +81,13 @@ func (v *VehicleService) Read(_uuid uuid.UUID) (*model.Vehicle, error) {
 }
 
 // ReadAll implements IVehicleService.
-func (v *VehicleService) ReadAll() ([]model.Vehicle, error) {
-	panic("unimplemented")
+func (v *VehicleService) ReadAll(driverUuid uuid.UUID) ([]model.Vehicle, error) {
+	vehicles := make([]model.Vehicle, 0)
+
+	// TODO: read vehicles that other people borrowed you
+	rez := v.db.InnerJoins("Registration").Joins("inner join users on vehicles.user_id = users.id").Where("users.uuid = ?", driverUuid).Find(&vehicles)
+	if rez.Error != nil {
+		return nil, rez.Error
+	}
+	return vehicles, nil
 }

@@ -42,3 +42,14 @@ func (dto VehicleDto) FromModel(m *model.Vehicle) VehicleDto {
 	}
 	return dto
 }
+
+type VehiclesDto []VehicleDto
+
+func (dto VehiclesDto) FromModel(m []model.Vehicle) VehiclesDto {
+	dto = make([]VehicleDto, 0, len(m))
+	for _, v := range m {
+		dto = append(dto, VehicleDto{}.FromModel(&v))
+	}
+
+	return dto
+}
