@@ -14,7 +14,7 @@ type UserRole string
 
 const (
 	RoleHAK        UserRole = "hak"
-	RoleAdmin      UserRole = "admin"
+	RoleMupADMIN   UserRole = "mupadmin"
 	RoleOsoba      UserRole = "osoba"
 	RoleFirma      UserRole = "firma"
 	RolePolicija   UserRole = "policija"
@@ -26,8 +26,8 @@ func StoUserRole(text string) (UserRole, error) {
 	case fmt.Sprint(RoleHAK):
 		return RoleHAK, nil
 
-	case fmt.Sprint(RoleAdmin):
-		return RoleAdmin, nil
+	case fmt.Sprint(RoleMupADMIN):
+		return RoleMupADMIN, nil
 
 	case fmt.Sprint(RoleOsoba):
 		return RoleOsoba, nil
@@ -69,7 +69,7 @@ type User struct {
 
 func (u *User) BeforeCreate(tx *gorm.DB) error {
 	validRoles := map[UserRole]bool{
-		RoleHAK: true, RoleAdmin: true, RoleOsoba: true,
+		RoleHAK: true, RoleMupADMIN: true, RoleOsoba: true,
 		RoleFirma: true, RolePolicija: true, RoleSuperAdmin: true,
 	}
 

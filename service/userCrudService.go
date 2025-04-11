@@ -16,6 +16,8 @@ type IUserCrudService interface {
 	ReadAll() ([]model.User, error)
 	Update(uuid uuid.UUID, user *model.User) (*model.User, error)
 	Delete(uuid uuid.UUID) error
+	GetAllUsers() ([]model.User, error)
+	GetAllPoliceOfficers() ([]model.User, error)
 }
 
 type UserCrudService struct {
@@ -95,4 +97,24 @@ func (u *UserCrudService) Create(user *model.User, password string) (*model.User
 		return nil, rez.Error
 	}
 	return user, nil
+}
+
+// Gets all users except super admin
+func (u *UserCrudService) GetAllUsers() ([]model.User, error) {
+	var users []model.User
+	rez := u.db.Where("role != ?", model.RoleSuperAdmin).Find(&users)
+	if rez.Error != nil {
+		return nil, rez.Error
+	}
+	return users, nil
+}
+
+// Gets all police officers users
+func (u *UserCrudService) GetAllPoliceOfficers() ([]model.User, error) {
+	var users []model.User
+	rez := u.db.Where("role = ?", model.RolePolicija).Find(&users)
+	if rez.Error != nil {
+		return nil, rez.Error
+	}
+	return users, nil
 }
