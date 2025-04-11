@@ -369,12 +369,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 6
                 }
             }
         },
         "dto.NewUserDto": {
             "type": "object",
+            "required": [
+                "birthDate",
+                "email",
+                "firstName",
+                "lastName",
+                "oib",
+                "password",
+                "residence",
+                "role"
+            ],
             "properties": {
                 "birthDate": {
                     "type": "string"
@@ -383,22 +394,36 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "firstName": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2
                 },
                 "lastName": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2
                 },
                 "oib": {
                     "type": "string"
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 6
                 },
                 "residence": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255
                 },
                 "role": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "hak",
+                        "mupadmin",
+                        "osoba",
+                        "firma",
+                        "policija",
+                        "superadmin"
+                    ]
                 },
                 "uuid": {
                     "type": "string"
