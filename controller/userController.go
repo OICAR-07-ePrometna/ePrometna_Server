@@ -3,6 +3,7 @@ package controller
 import (
 	"ePrometna_Server/app"
 	"ePrometna_Server/dto"
+	"ePrometna_Server/model"
 	"ePrometna_Server/service"
 	"ePrometna_Server/util/auth"
 	"ePrometna_Server/util/middleware"
@@ -250,6 +251,7 @@ func (u *UserController) getLoggedInUser(c *gin.Context) {
 //	@Produce		json
 //	@Success		200	{array}	dto.UserDto
 //	@Failure		401
+//	@Failure		403
 //	@Failure		500
 //	@Router			/user/all-users [get]
 func (u *UserController) getAllUsersForSuperAdmin(c *gin.Context) {
@@ -261,9 +263,9 @@ func (u *UserController) getAllUsersForSuperAdmin(c *gin.Context) {
 		return
 	}
 
-	if claims.Role != "superadmin" {
+	if claims.Role != model.RoleSuperAdmin {
 		u.logger.Warnf("Unauthorized access attempt by user with role: %s", claims.Role)
-		c.AbortWithError(http.StatusForbidden, err)
+		c.AbortWithStatus(http.StatusForbidden)
 		return
 	}
 
@@ -274,7 +276,7 @@ func (u *UserController) getAllUsersForSuperAdmin(c *gin.Context) {
 		return
 	}
 
-	var userDtos []dto.UserDto
+	userDtos := make([]dto.UserDto, 0, len(users))
 	for _, user := range users {
 		dto := dto.UserDto{}
 		userDtos = append(userDtos, dto.FromModel(&user))
@@ -302,9 +304,9 @@ func (u *UserController) getAllPoliceOfficers(c *gin.Context) {
 		return
 	}
 
-	if claims.Role != "mupadmin" {
+	if claims.Role != model.RoleMupADMIN {
 		u.logger.Warnf("Unauthorized access attempt by user with role: %s", claims.Role)
-		c.AbortWithError(http.StatusForbidden, err)
+		c.AbortWithStatus(http.StatusForbidden)
 		return
 	}
 
@@ -315,7 +317,7 @@ func (u *UserController) getAllPoliceOfficers(c *gin.Context) {
 		return
 	}
 
-	var userDtos []dto.UserDto
+	userDtos := make([]dto.UserDto, 0, len(users))
 	for _, user := range users {
 		dto := dto.UserDto{}
 		userDtos = append(userDtos, dto.FromModel(&user))

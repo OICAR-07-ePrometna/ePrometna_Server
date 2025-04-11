@@ -143,7 +143,7 @@ func TestGenerateTokens(t *testing.T) {
 	user := &model.User{
 		Email: "test@example.com",
 		Uuid:  uuid.New(),
-		Role:  model.RoleAdmin,
+		Role:  model.RoleMupADMIN,
 	}
 
 	accessTokenDuration := 5 * time.Minute
