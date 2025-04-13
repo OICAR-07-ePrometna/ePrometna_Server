@@ -74,102 +74,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/test": {
-            "get": {
-                "description": "do ping",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "test"
-                ],
-                "summary": "ping example",
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                }
-            },
-            "put": {
-                "description": "do a insert into databse with test user and returns inserted struct",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "test"
-                ],
-                "summary": "Insert new test struct",
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a test model",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "test"
-                ],
-                "summary": "Creates test item",
-                "parameters": [
-                    {
-                        "description": "Test model",
-                        "name": "model",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.TmodelDto"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created"
-                    }
-                }
-            }
-        },
-        "/test/{uuid}": {
-            "delete": {
-                "description": "Deletes an item with uuid",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "test"
-                ],
-                "summary": "Deletes test item",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Test model UUID",
-                        "name": "uuid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                }
-            }
-        },
         "/user": {
             "post": {
                 "produces": [
@@ -652,20 +556,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "vehicleType": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.TmodelDto": {
-            "type": "object",
-            "properties": {
-                "age": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "uuid": {
                     "type": "string"
                 }
             }

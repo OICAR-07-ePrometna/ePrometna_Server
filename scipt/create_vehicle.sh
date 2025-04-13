@@ -7,84 +7,52 @@
 # !!! REPLACE WITH YOUR ACTUAL API BASE URL !!!
 API_BASE_URL="http://localhost:8090/api" # Example: might be http://localhost:8080
 
-# --- New User Details ---
-# Generate a somewhat unique identifier for testing
-UNIQUE_ID=$(date +%s)$RANDOM
-FIRST_NAME="BashTest"
-LAST_NAME="User${UNIQUE_ID: -5}"
-EMAIL="bash.user.${UNIQUE_ID}@example.com"
-PASSWORD="aBashSecurePassword123!" # Use a strong password
-OIB="987654321${UNIQUE_ID: -2}"    # Example OIB, ensure format is valid
-BIRTH_DATE="1991-02-20"            # Ensure correct ISO 8601 format if needed
-RESIDENCE="Bashville, Script Street 101"
-ROLE="osoba" # Assuming 'user' is a valid role
+# --- Existing User Credentials and UUID ---
+# !!! REPLACE WITH THE DETAILS OF AN EXISTING USER !!!
+EXISTING_USER_EMAIL="bash.user@example.com"
+EXISTING_USER_PASSWORD='Pa$$w0rd'
+EXISTING_USER_UUID="128db529-67bd-4367-8aec-7ae04fdd1875" # e.g., "a1b2c3d4-e5f6-7890-1234-567890abcdef"
 
 # --- New Vehicle Details ---
+# Generate a somewhat unique identifier for testing vehicle details
+UNIQUE_ID=$(date +%s)$RANDOM
 CHASSIS_NUMBER="BASHCHASSIS${UNIQUE_ID: -6}"
 PROD_YEAR=2024
 REGISTRATION="ZG${UNIQUE_ID: -5}"
 DISTANCE=5000
 VEHICLE_MODEL="BashRunner V8"
 VEHICLE_TYPE="Truck"
-# ownerUuid will be added dynamically
+# ownerUuid will be taken from EXISTING_USER_UUID above
 
-echo "--- Starting Vehicle Creation Script ---"
+# --- Sanity Check ---
+if [ -z "$EXISTING_USER_EMAIL" ] || [ "$EXISTING_USER_EMAIL" == "existing.user@example.com" ]; then
+    echo "Error: Please configure EXISTING_USER_EMAIL in the script."
+    exit 1
+fi
+if [ -z "$EXISTING_USER_PASSWORD" ] || [ "$EXISTING_USER_PASSWORD" == "usersActualPassword" ]; then
+    echo "Error: Please configure EXISTING_USER_PASSWORD in the script."
+    exit 1
+fi
+if [ -z "$EXISTING_USER_UUID" ] || [ "$EXISTING_USER_UUID" == "put-the-existing-user-uuid-here" ]; then
+    echo "Error: Please configure EXISTING_USER_UUID in the script."
+    exit 1
+fi
 
-# --- Step 1: Create User ---
-echo "Attempting to create user..."
-# Construct JSON payload using printf for safety with quotes
-USER_PAYLOAD=$(printf '{
-  "firstName": "%s",
-  "lastName": "%s",
-  "email": "%s",
-  "password": "%s",
-  "oib": "%s",
-  "birthDate": "%s",
-  "residence": "%s",
-  "role": "%s"
-}' "$FIRST_NAME" "$LAST_NAME" "$EMAIL" "$PASSWORD" "$OIB" "$BIRTH_DATE" "$RESIDENCE" "$ROLE")
+echo "--- Starting Vehicle Creation Script (Login First) ---"
+
+# --- Step 1: Login User ---
+echo "Attempting to log in user: $EXISTING_USER_EMAIL ..."
+LOGIN_PAYLOAD=$(printf '{"email": "%s", "password": "%s"}' "$EXISTING_USER_EMAIL" "$EXISTING_USER_PASSWORD")
 
 # Make the API call, capture HTTP status code and response body separately
-HTTP_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
-    -X POST "${API_BASE_URL}/user/" \
-    -H "Content-Type: application/json" \
-    -d "$USER_PAYLOAD")
-
-# Extract status code and body
-HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed '$d')                 # Remove last line (status code)
-HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tail -n1 | cut -d: -f2) # Extract status code
-
-echo "Create User Status Code: $HTTP_STATUS"
-echo "Create User Response Body: $HTTP_BODY"
-
-# Check if user creation was successful (expecting 201 Created)
-if [ "$HTTP_STATUS" -ne 201 ]; then
-    echo "Error: Failed to create user. Status: $HTTP_STATUS"
-    exit 1
-fi
-
-# Extract UUID using jq (-r removes quotes)
-USER_UUID=$(echo "$HTTP_BODY" | jq -r '.Uuid')
-
-if [ -z "$USER_UUID" ] || [ "$USER_UUID" == "null" ]; then
-    echo "Error: Could not extract user UUID from response."
-    exit 1
-fi
-
-echo "User created successfully. UUID: $USER_UUID"
-
-# --- Step 2: Login User ---
-echo -e "\nAttempting to log in user..."
-LOGIN_PAYLOAD=$(printf '{"email": "%s", "password": "%s"}' "$EMAIL" "$PASSWORD")
-
 HTTP_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
     -X POST "${API_BASE_URL}/auth/login" \
     -H "Content-Type: application/json" \
     -d "$LOGIN_PAYLOAD")
 
 # Extract status code and body
-HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed '$d')
-HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tail -n1 | cut -d: -f2)
+HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed '$d')                 # Remove last line (status code)
+HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tail -n1 | cut -d: -f2) # Extract status code
 
 echo "Login Status Code: $HTTP_STATUS"
 # echo "Login Response Body: $HTTP_BODY" # Optional: can be verbose
@@ -98,10 +66,11 @@ fi
 
 # --- IMPORTANT ---
 # Extract Access Token using jq. Adjust '.accessToken' if your API uses a different key!
+# Common keys: .accessToken, .access_token, .token
 ACCESS_TOKEN=$(echo "$HTTP_BODY" | jq -r '.accessToken') # MODIFY KEY '.accessToken' IF NEEDED
 
 if [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" == "null" ]; then
-    echo "Error: Could not extract access token from login response."
+    echo "Error: Could not extract access token (tried key '.accessToken') from login response."
     echo "Response Body: $HTTP_BODY"
     exit 1
 fi
@@ -109,8 +78,9 @@ fi
 echo "Login successful."
 # echo "Access Token: $ACCESS_TOKEN" # Optional: print full token
 
-# --- Step 3: Create Vehicle ---
+# --- Step 2: Create Vehicle ---
 echo -e "\nAttempting to create vehicle..."
+# Use the pre-configured EXISTING_USER_UUID as ownerUuid
 VEHICLE_PAYLOAD=$(printf '{
   "ownerUuid": "%s",
   "chassisNumber": "%s",
@@ -119,7 +89,7 @@ VEHICLE_PAYLOAD=$(printf '{
   "treveledDistance": %d,
   "vehicleModel": "%s",
   "vehicleType": "%s"
-}' "$USER_UUID" "$CHASSIS_NUMBER" "$PROD_YEAR" "$REGISTRATION" "$DISTANCE" "$VEHICLE_MODEL" "$VEHICLE_TYPE")
+}' "$EXISTING_USER_UUID" "$CHASSIS_NUMBER" "$PROD_YEAR" "$REGISTRATION" "$DISTANCE" "$VEHICLE_MODEL" "$VEHICLE_TYPE")
 
 # Note the added -H "Authorization: Bearer $ACCESS_TOKEN"
 HTTP_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
