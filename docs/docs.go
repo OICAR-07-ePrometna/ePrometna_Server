@@ -41,7 +41,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.TokenDto"
+                        }
                     }
                 }
             }
@@ -69,7 +72,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.TokenDto"
+                        }
                     }
                 }
             }
@@ -556,6 +562,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "vehicleType": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.TokenDto": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "refreshToken": {
                     "type": "string"
                 }
             }

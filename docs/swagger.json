@@ -30,7 +30,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.TokenDto"
+                        }
                     }
                 }
             }
@@ -58,7 +61,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.TokenDto"
+                        }
                     }
                 }
             }
@@ -545,6 +551,17 @@
                     "type": "string"
                 },
                 "vehicleType": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.TokenDto": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "refreshToken": {
                     "type": "string"
                 }
             }

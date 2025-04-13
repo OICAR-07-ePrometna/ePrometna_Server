@@ -55,8 +55,8 @@ func (c *LoginController) RegisterEndpoints(api *gin.RouterGroup) {
 //	@Tags			auth
 //	@Accept			json
 //	@Produce		json
-//	@Param			loginDto	body	dto.LoginDto	true	"Login credentials"
-//	@Success		200
+//	@Param			loginDto	body		dto.LoginDto	true	"Login credentials"
+//	@Success		200			{object}	dto.TokenDto
 //	@Router			/auth/login [post]
 func (l *LoginController) login(c *gin.Context) {
 	var loginDto dto.LoginDto
@@ -73,7 +73,7 @@ func (l *LoginController) login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.TokenResponse{
+	c.JSON(http.StatusOK, dto.TokenDto{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	})
@@ -85,8 +85,8 @@ func (l *LoginController) login(c *gin.Context) {
 //	@Description	Generates a new access token using a valid refresh token
 //	@Tags			auth
 //	@Produce		json
-//	@Param			refreshToken	body	string	true	"Refresh Token"
-//	@Success		200
+//	@Param			refreshToken	body		string	true	"Refresh Token"
+//	@Success		200				{object}	dto.TokenDto
 //	@Router			/auth/refresh [post]
 func (l *LoginController) RefreshToken(c *gin.Context) {
 	var rToken dto.RefreshDto
@@ -125,7 +125,7 @@ func (l *LoginController) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.TokenResponse{
+	c.JSON(http.StatusOK, dto.TokenDto{
 		AccessToken:  token,
 		RefreshToken: refreshNew,
 	})
