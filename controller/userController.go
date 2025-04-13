@@ -40,16 +40,18 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 	// create a group with the name of the router
 	group := api.Group("/user")
 
+	group.GET("/my-data", middleware.Protect(), u.getLoggedInUser)
+	group.GET("/police-officers", middleware.Protect(model.RoleMupADMIN), u.getAllPoliceOfficers)
+
 	// register Endpoints
+	group.OPTIONS("/", middleware.OptionsHandler)
+	group.Use(middleware.Protect(model.RoleSuperAdmin))
 	group.POST("/", u.create)
 	group.GET("/:uuid", u.get)
 	group.PUT("/:uuid", u.update)
 	group.DELETE("/:uuid", u.delete)
-
-	group.GET("/my-data", middleware.Protect(), u.getLoggedInUser)
-
 	group.GET("/all-users", middleware.Protect(), u.getAllUsersForSuperAdmin)
-	group.GET("/police-officers", middleware.Protect(), u.getAllPoliceOfficers)
+
 }
 
 // UserExample godoc
