@@ -16,5 +16,5 @@ type Vehicle struct {
 	Drivers        []VehicleDrivers  `gorm:"foreignKey:VehicleId"`
 	PastOwners     []OwnerHistory    `gorm:"foreignKey:VehicleId"`
 	TemporaryData  *TempData         `gorm:"foreignKey:VehicleId"`
-	Registration   *RegistrationInfo `gorm:"foreignKey:VehicleId;not null"`
+	Registration   *RegistrationInfo `gorm:"foreignKey:VehicleId;null"`
 }

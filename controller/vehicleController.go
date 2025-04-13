@@ -100,14 +100,23 @@ func (v *VehicleController) create(c *gin.Context) {
 	if err := c.Bind(&newDto); err != nil {
 		v.logger.Errorf("Failed to bind error = %+v", err)
 		c.AbortWithError(http.StatusBadRequest, err)
+		return
 	}
 
 	vehicle, err := newDto.ToModel()
 	if err != nil {
 		v.logger.Errorf("Failed to create model error = %+v", err)
 		c.AbortWithError(http.StatusBadRequest, err)
+		return
 	}
+
 	ownerUuid, err := uuid.Parse(newDto.OwnerUuid)
+	if err != nil {
+		v.logger.Errorf("Failed to parse uuid = %s, err + %+v", newDto.OwnerUuid, err)
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
 	vehicle, err = v.VehicleService.Create(vehicle, ownerUuid)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -116,6 +125,7 @@ func (v *VehicleController) create(c *gin.Context) {
 			return
 		}
 		c.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 
 	var dto dto.VehicleDto
@@ -177,6 +187,12 @@ func (v *VehicleController) myVehicles(c *gin.Context) {
 		return
 	}
 	uuid, err := uuid.Parse(claims.Uuid)
+	if err != nil {
+		v.logger.Errorf("Failed to parse uuid = %s, err + %+v", claims.Uuid, err)
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
 	vehicles, err := v.VehicleService.ReadAll(uuid)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

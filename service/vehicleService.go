@@ -17,7 +17,6 @@ type IVehicleService interface {
 	Delete(uuid uuid.UUID) error
 }
 
-// TODO: implement service
 type VehicleService struct {
 	db          *gorm.DB
 	userService IUserCrudService
@@ -38,15 +37,13 @@ func NewVehicleService() IVehicleService {
 
 // Create implements IVehicleService.
 func (v *VehicleService) Create(vehicle *model.Vehicle, ownerUuid uuid.UUID) (*model.Vehicle, error) {
-	// TODO: Create other objects
-
 	owner, err := v.userService.Read(ownerUuid)
 	if err != nil {
 		v.logger.Errorf("Error reading user with uuid = %s, err = %+v", ownerUuid, err)
 		return nil, cerror.ErrUserIsNil
 	}
 
-	// NOTE: Users that are not roles Firma or Osoba are now allowed to own a car
+	//  NOTE: Users that are not roles Firma or Osoba are now allowed to own a car
 	if owner.Role != model.RoleFirma && owner.Role != model.RoleOsoba {
 		v.logger.Errorf("User with role %+v can't own a car", owner.Role)
 		return nil, cerror.ErrBadRole
@@ -54,9 +51,11 @@ func (v *VehicleService) Create(vehicle *model.Vehicle, ownerUuid uuid.UUID) (*m
 
 	vehicle.UserId = owner.ID
 
-	v.logger.Debugf("Creating new vehicle %+v", vehicle)
+	v.logger.Debugf("Creating new registration = %+v", vehicle.Registration)
+	v.logger.Debugf("Creating new vehicle = %+v", vehicle)
 	rez := v.db.Create(&vehicle)
 	if rez.Error != nil {
+		v.logger.Errorf("Failed creating new vehicle = %+v", vehicle)
 		return nil, rez.Error
 	}
 
@@ -65,7 +64,12 @@ func (v *VehicleService) Create(vehicle *model.Vehicle, ownerUuid uuid.UUID) (*m
 
 // Delete implements IVehicleService.
 func (v *VehicleService) Delete(_uuid uuid.UUID) error {
-	panic("unimplemented")
+	rez := v.db.Where("uuid = ?", _uuid).Delete(&model.Vehicle{})
+	v.logger.Debugf("Delete statement on uuid = %s, rez = %+v", _uuid, rez)
+	if rez.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return rez.Error
 }
 
 // Read implements IVehicleService.
