@@ -214,7 +214,6 @@ func (u *UserController) delete(c *gin.Context) {
 //	@Failure		500
 //	@Router			/user/my-data [get]
 func (u *UserController) getLoggedInUser(c *gin.Context) {
-
 	_, claims, err := auth.ParseToken(c.Request.Header.Get("Authorization"))
 	if err != nil {
 		u.logger.Errorf("Failed to parse token: %v", err)

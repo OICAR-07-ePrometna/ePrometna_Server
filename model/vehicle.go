@@ -13,8 +13,9 @@ type Vehicle struct {
 	ProductionYear int               `gorm:"type:int;not null"`
 	ChassisNumber  string            `gorm:"type:varchar(50);unique;not null"`
 	UserId         uint              `gorm:"type:uint;not null"`
+	Owner          *User             `gorm:"foreignKey:UserId;OnDelete:SET NULL"`
 	Drivers        []VehicleDrivers  `gorm:"foreignKey:VehicleId"`
 	PastOwners     []OwnerHistory    `gorm:"foreignKey:VehicleId"`
 	TemporaryData  *TempData         `gorm:"foreignKey:VehicleId"`
-	Registration   *RegistrationInfo `gorm:"foreignKey:VehicleId;not null"`
+	Registration   *RegistrationInfo `gorm:"foreignKey:VehicleId;null"`
 }

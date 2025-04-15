@@ -41,7 +41,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.TokenDto"
+                        }
                     }
                 }
             }
@@ -69,103 +72,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
-                    }
-                }
-            }
-        },
-        "/test": {
-            "get": {
-                "description": "do ping",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "test"
-                ],
-                "summary": "ping example",
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                }
-            },
-            "put": {
-                "description": "do a insert into databse with test user and returns inserted struct",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "test"
-                ],
-                "summary": "Insert new test struct",
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a test model",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "test"
-                ],
-                "summary": "Creates test item",
-                "parameters": [
-                    {
-                        "description": "Test model",
-                        "name": "model",
-                        "in": "body",
-                        "required": true,
+                        "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.TmodelDto"
+                            "$ref": "#/definitions/dto.TokenDto"
                         }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created"
-                    }
-                }
-            }
-        },
-        "/test/{uuid}": {
-            "delete": {
-                "description": "Deletes an item with uuid",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "test"
-                ],
-                "summary": "Deletes test item",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Test model UUID",
-                        "name": "uuid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
                     }
                 }
             }
@@ -419,6 +329,142 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/vehicle": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vehicle"
+                ],
+                "summary": "Gets your vehicles",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.VehicleDto"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "post": {
+                "description": "Create new vehicle with an owner",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vehicle"
+                ],
+                "summary": "Creates new vehicle",
+                "parameters": [
+                    {
+                        "description": "Vehicle model",
+                        "name": "model",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.NewVehicleDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.VehicleDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/vehicle/{uuid}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vehicle"
+                ],
+                "summary": "Gets a vehicle with uuid",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vehicle UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.VehicleDetailsDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Preforms a soft delete",
+                "tags": [
+                    "vehicle"
+                ],
+                "summary": "Soft delete on vehicle",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vehicle UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -494,16 +540,39 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.TmodelDto": {
+        "dto.NewVehicleDto": {
             "type": "object",
             "properties": {
-                "age": {
-                    "type": "integer"
-                },
-                "name": {
+                "chassisNumber": {
                     "type": "string"
                 },
-                "uuid": {
+                "ownerUuid": {
+                    "type": "string"
+                },
+                "productionYear": {
+                    "type": "integer"
+                },
+                "registration": {
+                    "type": "string"
+                },
+                "traveledDistance": {
+                    "type": "integer"
+                },
+                "vehicleModel": {
+                    "type": "string"
+                },
+                "vehicleType": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.TokenDto": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "refreshToken": {
                     "type": "string"
                 }
             }
@@ -533,6 +602,61 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "uuid": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.VehicleDetailsDto": {
+            "type": "object",
+            "properties": {
+                "drivers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.UserDto"
+                    }
+                },
+                "owner": {
+                    "$ref": "#/definitions/dto.UserDto"
+                },
+                "pastOwners": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.UserDto"
+                    }
+                },
+                "productionYear": {
+                    "type": "integer"
+                },
+                "registration": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                },
+                "vehicleModel": {
+                    "type": "string"
+                },
+                "vehicleType": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.VehicleDto": {
+            "type": "object",
+            "properties": {
+                "productionYear": {
+                    "type": "integer"
+                },
+                "registration": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                },
+                "vehicleModel": {
+                    "type": "string"
+                },
+                "vehicleType": {
                     "type": "string"
                 }
             }

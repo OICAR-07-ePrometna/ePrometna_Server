@@ -7,7 +7,6 @@ package model
 // GetAllModels returns an array of all registered models
 func GetAllModels() []any {
 	return []any{
-		&Tmodel{},
 		&User{},
 		&Vehicle{},
 		&VehicleDrivers{},
