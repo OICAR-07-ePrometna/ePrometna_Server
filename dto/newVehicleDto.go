@@ -12,8 +12,8 @@ type NewVehicleDto struct {
 	ProductionYear   int
 	ChassisNumber    string
 	OwnerUuid        string
-	Registation      string
-	TreveledDistance int
+	Registration     string
+	TraveledDistance int
 }
 
 // ToModel create a model from a dto
@@ -28,8 +28,8 @@ func (dto *NewVehicleDto) ToModel() (*model.Vehicle, error) {
 		Registration: &model.RegistrationInfo{
 			Uuid:             uuid.New(),
 			PassTechnical:    true,
-			TraveledDistance: dto.TreveledDistance,
-			Registration:     dto.Registation,
+			TraveledDistance: dto.TraveledDistance,
+			Registration:     dto.Registration,
 		},
 	}, nil
 }
