@@ -5,6 +5,7 @@ import (
 	"ePrometna_Server/dto"
 	"ePrometna_Server/service"
 	"ePrometna_Server/util/auth"
+	"ePrometna_Server/util/cerror"
 	"errors"
 	"net/http"
 
@@ -23,10 +24,10 @@ func NewVehicleController() *VehicleController {
 	var controller *VehicleController
 
 	// Call dependency injection
-	app.Invoke(func(testService service.IVehicleService, logger *zap.SugaredLogger) {
+	app.Invoke(func(vehicleService service.IVehicleService, logger *zap.SugaredLogger) {
 		// create controller
 		controller = &VehicleController{
-			VehicleService: testService,
+			VehicleService: vehicleService,
 			logger:         logger,
 		}
 	})
@@ -119,6 +120,12 @@ func (v *VehicleController) create(c *gin.Context) {
 
 	vehicle, err = v.VehicleService.Create(vehicle, ownerUuid)
 	if err != nil {
+		if errors.Is(err, cerror.ErrBadRole) {
+			v.logger.Errorf("Role or user is invalid, err = %+v", err)
+			c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			v.logger.Errorf("User with uuid = %s not found", newDto.OwnerUuid)
 			c.AbortWithError(http.StatusNotFound, err)
@@ -163,14 +170,14 @@ func (v *VehicleController) get(c *gin.Context) {
 		return
 	}
 
-	// var dto dto.VehicleDetailsDto
-	var dto dto.VehicleDto
+	var dto dto.VehicleDetailsDto
+	// var dto dto.VehicleDto
 	c.JSON(http.StatusOK, dto.FromModel(vehicle))
 }
 
 // myVehicle godoc
 //
-//	@Summary	Gets a your vehicles
+//	@Summary	Gets your vehicles
 //	@Schemes
 //	@Tags		vehicle
 //	@Produce	json

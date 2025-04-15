@@ -327,7 +327,7 @@
                 "tags": [
                     "vehicle"
                 ],
-                "summary": "Gets a your vehicles",
+                "summary": "Gets your vehicles",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -541,10 +541,10 @@
                 "productionYear": {
                     "type": "integer"
                 },
-                "registation": {
+                "registration": {
                     "type": "string"
                 },
-                "treveledDistance": {
+                "traveledDistance": {
                     "type": "integer"
                 },
                 "vehicleModel": {

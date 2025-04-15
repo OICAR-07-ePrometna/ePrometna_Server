@@ -85,8 +85,8 @@ VEHICLE_PAYLOAD=$(printf '{
   "ownerUuid": "%s",
   "chassisNumber": "%s",
   "productionYear": %d,
-  "registation": "%s",
-  "treveledDistance": %d,
+  "registration": "%s",
+  "traveledDistance": %d,
   "vehicleModel": "%s",
   "vehicleType": "%s"
 }' "$EXISTING_USER_UUID" "$CHASSIS_NUMBER" "$PROD_YEAR" "$REGISTRATION" "$DISTANCE" "$VEHICLE_MODEL" "$VEHICLE_TYPE")

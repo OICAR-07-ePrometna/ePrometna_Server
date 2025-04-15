@@ -338,7 +338,7 @@ const docTemplate = `{
                 "tags": [
                     "vehicle"
                 ],
-                "summary": "Gets a your vehicles",
+                "summary": "Gets your vehicles",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -552,10 +552,10 @@ const docTemplate = `{
                 "productionYear": {
                     "type": "integer"
                 },
-                "registation": {
+                "registration": {
                     "type": "string"
                 },
-                "treveledDistance": {
+                "traveledDistance": {
                     "type": "integer"
                 },
                 "vehicleModel": {

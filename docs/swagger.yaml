@@ -61,9 +61,9 @@ definitions:
         type: string
       productionYear:
         type: integer
-      registation:
+      registration:
         type: string
-      treveledDistance:
+      traveledDistance:
         type: integer
       vehicleModel:
         type: string
@@ -358,7 +358,7 @@ paths:
           description: Not Found
         "500":
           description: Internal Server Error
-      summary: Gets a your vehicles
+      summary: Gets your vehicles
       tags:
       - vehicle
     post:

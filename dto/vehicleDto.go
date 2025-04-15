@@ -20,7 +20,7 @@ type VehicleDto struct {
 func (dto *VehicleDto) ToModel() (*model.Vehicle, error) {
 	uuid, err := uuid.Parse(dto.Uuid)
 	if err != nil {
-		zap.S().Error("Failed to parse uuid = %s, err = %+v", dto.Uuid, err)
+		zap.S().Errorf("Failed to parse uuid = %s, err = %+v", dto.Uuid, err)
 		return nil, cerror.ErrBadUuid
 	}
 
@@ -29,6 +29,7 @@ func (dto *VehicleDto) ToModel() (*model.Vehicle, error) {
 		VehicleType:    dto.VehicleType,
 		VehicleModel:   dto.VehicleModel,
 		ProductionYear: dto.ProductionYear,
+		Registration:   nil,
 	}, nil
 }
 

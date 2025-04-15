@@ -17,6 +17,7 @@ type IVehicleService interface {
 	Delete(uuid uuid.UUID) error
 }
 
+// TODO: implement service
 type VehicleService struct {
 	db          *gorm.DB
 	userService IUserCrudService
@@ -37,13 +38,15 @@ func NewVehicleService() IVehicleService {
 
 // Create implements IVehicleService.
 func (v *VehicleService) Create(vehicle *model.Vehicle, ownerUuid uuid.UUID) (*model.Vehicle, error) {
+	// TODO: Create other objects
+
 	owner, err := v.userService.Read(ownerUuid)
 	if err != nil {
 		v.logger.Errorf("Error reading user with uuid = %s, err = %+v", ownerUuid, err)
-		return nil, cerror.ErrUserIsNil
+		return nil, err
 	}
 
-	//  NOTE: Users that are not roles Firma or Osoba are now allowed to own a car
+	// NOTE: Users that are not roles Firma or Osoba are now allowed to own a car
 	if owner.Role != model.RoleFirma && owner.Role != model.RoleOsoba {
 		v.logger.Errorf("User with role %+v can't own a car", owner.Role)
 		return nil, cerror.ErrBadRole
@@ -51,11 +54,9 @@ func (v *VehicleService) Create(vehicle *model.Vehicle, ownerUuid uuid.UUID) (*m
 
 	vehicle.UserId = owner.ID
 
-	v.logger.Debugf("Creating new registration = %+v", vehicle.Registration)
-	v.logger.Debugf("Creating new vehicle = %+v", vehicle)
+	v.logger.Debugf("Creating new vehicle %+v", vehicle)
 	rez := v.db.Create(&vehicle)
 	if rez.Error != nil {
-		v.logger.Errorf("Failed creating new vehicle = %+v", vehicle)
 		return nil, rez.Error
 	}
 
@@ -64,19 +65,20 @@ func (v *VehicleService) Create(vehicle *model.Vehicle, ownerUuid uuid.UUID) (*m
 
 // Delete implements IVehicleService.
 func (v *VehicleService) Delete(_uuid uuid.UUID) error {
-	rez := v.db.Where("uuid = ?", _uuid).Delete(&model.Vehicle{})
-	v.logger.Debugf("Delete statement on uuid = %s, rez = %+v", _uuid, rez)
-	if rez.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
-	}
-	return rez.Error
+	panic("unimplemented")
 }
 
 // Read implements IVehicleService.
 func (v *VehicleService) Read(_uuid uuid.UUID) (*model.Vehicle, error) {
 	var user model.Vehicle
 	// TODO: see what to do with other objects
-	rez := v.db.InnerJoins("Registration").Where("vehicles.uuid = ?", _uuid).First(&user)
+
+	rez := v.db.
+		InnerJoins("Registration").
+		Preload("Owner").
+		Where("vehicles.uuid = ?", _uuid).
+		First(&user)
+
 	if rez.Error != nil {
 		return nil, rez.Error
 	}
@@ -88,8 +90,13 @@ func (v *VehicleService) Read(_uuid uuid.UUID) (*model.Vehicle, error) {
 func (v *VehicleService) ReadAll(driverUuid uuid.UUID) ([]model.Vehicle, error) {
 	vehicles := make([]model.Vehicle, 0)
 
-	// TODO: read vehicles that other people borrowed you
-	rez := v.db.InnerJoins("Registration").Joins("inner join users on vehicles.user_id = users.id").Where("users.uuid = ?", driverUuid).Find(&vehicles)
+	// TODO: read vehicles that other people borrowd you
+	rez := v.db.
+		InnerJoins("Registration").
+		Joins("inner join users on vehicles.user_id = users.id").
+		Where("users.uuid = ?", driverUuid).
+		Find(&vehicles)
+
 	if rez.Error != nil {
 		return nil, rez.Error
 	}
