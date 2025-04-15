@@ -33,12 +33,18 @@ func (dto *VehicleDto) ToModel() (*model.Vehicle, error) {
 }
 
 func (dto VehicleDto) FromModel(m *model.Vehicle) VehicleDto {
+	reg := ""
+	if m.Registration != nil {
+		reg = m.Registration.Registration
+		zap.S().Errorf("Registration is nil on car with uuid = %s", m.Uuid)
+	}
+
 	dto = VehicleDto{
 		Uuid:           m.Uuid.String(),
 		VehicleType:    m.VehicleType,
 		VehicleModel:   m.VehicleModel,
 		ProductionYear: m.ProductionYear,
-		Registration:   m.Registration.Registration,
+		Registration:   reg,
 	}
 	return dto
 }

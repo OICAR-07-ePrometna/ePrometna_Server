@@ -9,7 +9,15 @@ tasks:
     vars:
       OUTPUT_FILE: "{{.BIN_FOLDER}}/{{.PROJECT_CODE}}"
     cmds:
-      # - cmd: go build {{.BUILD_OPTIONS}} {{.TASK_OPTIONS}} -o {{.OUTPUT_FILE}}
+      - cmd: go build {{.BUILD_OPTIONS}} {{.TASK_OPTIONS}} -o {{.OUTPUT_FILE}}
+    internal: false
+
+  build-docker:
+    platforms: [linux/amd64]
+    env:
+      GOOS: linux
+      GOARCH: amd64
+    cmds:
       - cmd: docker build -t eprometna-server:latest .
       - cmd: docker save -o eprometna-server-latest.tar eprometna-server:latest
     internal: false
