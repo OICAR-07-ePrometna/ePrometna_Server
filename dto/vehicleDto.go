@@ -9,14 +9,13 @@ import (
 )
 
 type VehicleDto struct {
-	Uuid           string
-	VehicleType    string
-	VehicleModel   string
-	ProductionYear int
-	Registration   string
+	Uuid           string `json:"uuid"`
+	VehicleType    string `json:"vehicleType"`
+	VehicleModel   string `json:"vehicleModel"`
+	ProductionYear int    `json:"productionYear"`
+	Registration   string `json:"registration"`
 }
 
-// ToModel create a model from a dto
 func (dto *VehicleDto) ToModel() (*model.Vehicle, error) {
 	uuid, err := uuid.Parse(dto.Uuid)
 	if err != nil {

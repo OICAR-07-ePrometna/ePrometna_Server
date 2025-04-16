@@ -10,11 +10,11 @@ import (
 )
 
 type DriverLicenseDto struct {
-	Uuid          string
-	LicenseNumber string
-	IssueDate     string
-	ExpiringDate  string
-	Category      string
+	Uuid          string `json:"uuid"`
+	LicenseNumber string `json:"licenseNumber"`
+	IssueDate     string `json:"issueDate"`
+	ExpiringDate  string `json:"expiringDate"`
+	Category      string `json:"category"`
 }
 
 // ToModel create a model from a dto

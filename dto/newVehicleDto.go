@@ -7,16 +7,15 @@ import (
 )
 
 type NewVehicleDto struct {
-	VehicleType      string
-	VehicleModel     string
-	ProductionYear   int
-	ChassisNumber    string
-	OwnerUuid        string
-	Registration     string
-	TraveledDistance int
+	VehicleType      string `json:"vehicleType"`
+	VehicleModel     string `json:"vehicleModel"`
+	ProductionYear   int    `json:"productionYear"`
+	ChassisNumber    string `json:"chassisNumber"`
+	OwnerUuid        string `json:"ownerUuid"`
+	Registration     string `json:"registration"`
+	TraveledDistance int    `json:"traveledDistance"`
 }
 
-// ToModel create a model from a dto
 func (dto *NewVehicleDto) ToModel() (*model.Vehicle, error) {
 	return &model.Vehicle{
 		Uuid:           uuid.New(),

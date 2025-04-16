@@ -9,14 +9,14 @@ import (
 
 // TODO: add more properties
 type VehicleDetailsDto struct {
-	Uuid           string
-	VehicleType    string
-	VehicleModel   string
-	ProductionYear int
-	Registration   string
-	Owner          UserDto
-	Drivers        []UserDto
-	PastOwners     []UserDto
+	Uuid           string    `json:"uuid"`
+	VehicleType    string    `json:"vehicleType"`
+	VehicleModel   string    `json:"vehicleModel"`
+	ProductionYear int       `json:"productionYear"`
+	Registration   string    `json:"registration"`
+	Owner          UserDto   `json:"owner"`
+	Drivers        []UserDto `json:"drivers"`
+	PastOwners     []UserDto `json:"pastOwners"`
 	// Registration   RegistrationDto
 	// PastRegistratins []RegistrationDto
 }
