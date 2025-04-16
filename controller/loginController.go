@@ -7,7 +7,6 @@ import (
 	"ePrometna_Server/model"
 	"ePrometna_Server/service"
 	"ePrometna_Server/util/auth"
-	"ePrometna_Server/util/middleware"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -43,9 +42,6 @@ func (c *LoginController) RegisterEndpoints(api *gin.RouterGroup) {
 	// register Endpoints
 	group.POST("/login", c.login)
 	group.POST("/refresh", c.RefreshToken)
-
-	group.OPTIONS("/login", middleware.OptionsHandler)
-	group.OPTIONS("/refresh", middleware.OptionsHandler)
 }
 
 // Login godoc

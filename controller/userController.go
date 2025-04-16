@@ -40,19 +40,16 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 	// create a group with the name of the router
 	group := api.Group("/user")
 
-	group.OPTIONS("/my-data", middleware.OptionsHandler)
 	group.GET("/my-data", middleware.Protect(), u.getLoggedInUser)
 	group.GET("/police-officers", middleware.Protect(model.RoleMupADMIN), u.getAllPoliceOfficers)
 
 	// register Endpoints
-	group.OPTIONS("/", middleware.OptionsHandler)
 	group.Use(middleware.Protect(model.RoleSuperAdmin))
 	group.POST("/", u.create)
 	group.GET("/:uuid", u.get)
 	group.PUT("/:uuid", u.update)
 	group.DELETE("/:uuid", u.delete)
 	group.GET("/all-users", middleware.Protect(), u.getAllUsersForSuperAdmin)
-
 }
 
 // UserExample godoc
@@ -257,7 +254,6 @@ func (u *UserController) getLoggedInUser(c *gin.Context) {
 //	@Failure		500
 //	@Router			/user/all-users [get]
 func (u *UserController) getAllUsersForSuperAdmin(c *gin.Context) {
-
 	_, claims, err := auth.ParseToken(c.Request.Header.Get("Authorization"))
 	if err != nil {
 		u.logger.Errorf("Failed to parse token: %v", err)
@@ -326,5 +322,4 @@ func (u *UserController) getAllPoliceOfficers(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, userDtos)
-
 }

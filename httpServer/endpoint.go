@@ -14,8 +14,8 @@ func setupHandlers(router *gin.Engine) {
 	// TODO: Replace gin default logger with zap
 	// router.Use(gin.Recovery())
 
+	router.Use(middleware.CorsHeader())
 	api := router.Group("/api")
-	api.Use(middleware.CorsHeader())
 
 	// register swagger
 	docs.SwaggerInfo.BasePath = "/api"
