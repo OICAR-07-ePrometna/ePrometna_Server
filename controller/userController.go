@@ -47,11 +47,13 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 	// register Endpoints
 	group.OPTIONS("/", middleware.OptionsHandler)
 	group.Use(middleware.Protect(model.RoleSuperAdmin))
-	group.POST("/", u.create)
+	api.POST("/user/", u.create)
 	group.GET("/:uuid", u.get)
 	group.PUT("/:uuid", u.update)
 	group.DELETE("/:uuid", u.delete)
 	group.GET("/all-users", middleware.Protect(), u.getAllUsersForSuperAdmin)
+
+	api.GET("/user/search", u.searchUsersByName)
 
 }
 
@@ -328,4 +330,41 @@ func (u *UserController) getAllPoliceOfficers(c *gin.Context) {
 
 	c.JSON(http.StatusOK, userDtos)
 
+}
+
+// SearchUsersByName godoc
+//
+//	@Summary		Search users by name
+//	@Description	Performs a fuzzy search for users by first name, last name, or full name with similarity matching
+//	@Tags			user
+//	@Produce		json
+//	@Param			query	query	string	true	"Search query"
+//	@Success		200		{array}	dto.UserDto
+//	@Failure		400
+//	@Failure		500
+//	@Router			/user/search [get]
+func (u *UserController) searchUsersByName(c *gin.Context) {
+	query := c.Query("query")
+	if query == "" {
+		u.logger.Warn("Search query is empty")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Search query is required"})
+		return
+	}
+
+	u.logger.Infof("Searching users with query: %s", query)
+
+	users, err := u.UserCrud.SearchUsersByName(query)
+	if err != nil {
+		u.logger.Errorf("Failed to search users: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to search users"})
+		return
+	}
+
+	userDtos := make([]dto.UserDto, 0, len(users))
+	for _, user := range users {
+		dto := dto.UserDto{}
+		userDtos = append(userDtos, dto.FromModel(&user))
+	}
+
+	c.JSON(http.StatusOK, userDtos)
 }

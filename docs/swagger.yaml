@@ -349,4 +349,30 @@ paths:
       summary: Get all police officers for MUP Admin
       tags:
       - user
+  /user/search:
+    get:
+      description: Performs a fuzzy search for users by first name, last name, or
+        full name with similarity matching
+      parameters:
+      - description: Search query
+        in: query
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.UserDto'
+            type: array
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Search users by name
+      tags:
+      - user
 swagger: "2.0"
