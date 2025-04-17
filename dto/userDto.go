@@ -12,17 +12,16 @@ import (
 )
 
 type UserDto struct {
-	Uuid      string
-	FirstName string
-	LastName  string
-	OIB       string
-	Residence string
-	BirthDate string
-	Email     string
-	Role      string
+	Uuid      string `json:"uuid"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	OIB       string `json:"oib"`
+	Residence string `json:"residence"`
+	BirthDate string `json:"birthDate"`
+	Email     string `json:"email"`
+	Role      string `json:"role"`
 }
 
-// ToModel create a model from a dto
 func (dto *UserDto) ToModel() (*model.User, error) {
 	uuid, err := uuid.Parse(dto.Uuid)
 	if err != nil {

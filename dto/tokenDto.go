@@ -1,7 +1,7 @@
 package dto
 
 // Response structure
-type TokenResponse struct {
+type TokenDto struct {
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
 }

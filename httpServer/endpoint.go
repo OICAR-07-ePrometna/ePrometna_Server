@@ -10,13 +10,12 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// TODO: this will not be used like this only temporary
 func setupHandlers(router *gin.Engine) {
 	// TODO: Replace gin default logger with zap
 	// router.Use(gin.Recovery())
 
+	router.Use(middleware.CorsHeader())
 	api := router.Group("/api")
-	api.Use(middleware.CorsHeader())
 
 	// register swagger
 	docs.SwaggerInfo.BasePath = "/api"
@@ -26,8 +25,7 @@ func setupHandlers(router *gin.Engine) {
 		ginSwagger.DefaultModelsExpandDepth(2))
 	router.GET("/swagger/*any", swagger)
 
-	// TODO: remove test controller
-	controller.NewTestController().RegisterEndpoints(api)
 	controller.NewLoginController().RegisterEndpoints(api)
 	controller.NewUserController().RegisterEndpoints(api)
+	controller.NewVehicleController().RegisterEndpoints(api)
 }

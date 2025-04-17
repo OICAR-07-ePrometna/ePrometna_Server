@@ -19,9 +19,9 @@ func main() {
 	// Provided logger
 	app.Provide(zap.S)
 
-	app.Provide(service.NewTestService)
 	app.Provide(service.NewLoginService)
 	app.Provide(service.NewUserCrudService)
+	app.Provide(service.NewVehicleService)
 
 	zap.S().Infof("Database: http://localhost:8080")
 	zap.S().Infof("swagger: http://localhost:8090/swagger/index.html")
