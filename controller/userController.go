@@ -47,7 +47,7 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 	// register Endpoints
 	group.OPTIONS("/", middleware.OptionsHandler)
 	group.Use(middleware.Protect(model.RoleSuperAdmin))
-	api.POST("/user/", u.create)
+	group.POST("/user/", u.create)
 	group.GET("/:uuid", u.get)
 	group.PUT("/:uuid", u.update)
 	group.DELETE("/:uuid", u.delete)
