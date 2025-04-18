@@ -4,6 +4,7 @@ import (
 	"ePrometna_Server/app"
 	"ePrometna_Server/model"
 	"ePrometna_Server/util/auth"
+	"math"
 	"sort"
 	"strings"
 
@@ -143,7 +144,14 @@ func (u *UserCrudService) SearchUsersByName(query string) ([]model.User, error) 
 	var scoredUsers []UserWithScore
 	for _, user := range users {
 		fullName := strings.ToLower(user.FirstName + " " + user.LastName)
-		score := smetrics.JaroWinkler(normalizedQuery, fullName, 0.7, 4)
+		firstName := strings.ToLower(user.FirstName)
+		lastName := strings.ToLower(user.LastName)
+
+		fullNameScore := smetrics.JaroWinkler(normalizedQuery, fullName, 0.7, 4)
+		firstNameScore := smetrics.JaroWinkler(normalizedQuery, firstName, 0.7, 4)
+		lastNameScore := smetrics.JaroWinkler(normalizedQuery, lastName, 0.7, 4)
+
+		score := math.Max(fullNameScore, math.Max(firstNameScore, lastNameScore))
 		scoredUsers = append(scoredUsers, UserWithScore{User: user, Score: score})
 	}
 

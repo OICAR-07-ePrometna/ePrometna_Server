@@ -349,7 +349,24 @@ paths:
       - description: Search query
         in: query
         name: query
-
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.UserDto'
+            type: array
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Search users by name
+      tags:
+      - user
   /vehicle:
     get:
       produces:
@@ -429,16 +446,6 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/dto.UserDto'
-            type: array
-        "400":
-          description: Bad Request
-        "500":
-          description: Internal Server Error
-      summary: Search users by name
-      tags:
-      - user
             $ref: '#/definitions/dto.VehicleDetailsDto'
         "400":
           description: Bad Request
