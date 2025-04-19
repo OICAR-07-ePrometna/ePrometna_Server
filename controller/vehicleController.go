@@ -42,10 +42,10 @@ func (c *VehicleController) RegisterEndpoints(api *gin.RouterGroup) {
 	group := api.Group("/vehicle")
 
 	// Osoba firma i Hak mogu dohvatiti detalje vozila
-	group.GET("/:uuid", c.get, middleware.Protect(model.RoleHAK, model.RoleFirma, model.RoleOsoba))
+	group.GET("/:uuid", middleware.Protect(model.RoleHAK, model.RoleFirma, model.RoleOsoba), c.get)
 
 	// Osoba i firma mogu dohvatiti svoja vozila
-	group.GET("/", c.myVehicles, middleware.Protect(model.RoleFirma, model.RoleOsoba))
+	group.GET("/", middleware.Protect(model.RoleFirma, model.RoleOsoba), c.myVehicles)
 
 	// samo Hak endpoints
 	group.Use(middleware.Protect(model.RoleHAK))

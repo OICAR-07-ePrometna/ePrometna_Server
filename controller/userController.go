@@ -49,7 +49,7 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 	group.GET("/:uuid", u.get)
 	group.PUT("/:uuid", u.update)
 	group.DELETE("/:uuid", u.delete)
-	group.GET("/all-users", middleware.Protect(), u.getAllUsersForSuperAdmin)
+	group.GET("/all-users", u.getAllUsersForSuperAdmin)
 	group.GET("/search", u.searchUsersByName)
 }
 
