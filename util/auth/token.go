@@ -27,6 +27,7 @@ const (
 func ParseToken(authHeader string) (*jwt.Token, *Claims, error) {
 	// Parse token
 	if len(authHeader) <= len("Bearer ") || authHeader[:len("Bearer ")] != "Bearer " {
+		zap.S().Debugf("token: %s", authHeader)
 		return nil, nil, cerror.ErrInvalidTokenFormat
 	}
 	tokenString := authHeader[len("Bearer "):]

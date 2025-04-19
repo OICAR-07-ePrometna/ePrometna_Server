@@ -7,6 +7,7 @@ import (
 	"slices"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 var OptionsHandler gin.HandlerFunc = func(c *gin.Context) {
@@ -25,6 +26,7 @@ func Protect(roles ...model.UserRole) gin.HandlerFunc {
 
 		token, claims, err := auth.ParseToken(authHeader)
 		if err != nil {
+			zap.S().Debugf("Auth faild with err = %+v", err)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, "Invalid token format")
 			return
 		}
