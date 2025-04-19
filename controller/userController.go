@@ -43,7 +43,7 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 	// Protected endpint
 	group.GET("/my-data", middleware.Protect(), u.getLoggedInUser)
 
-	// Mup admin endpiont
+	// Mup admin endpiont TODO: see pagination or search and or bothe
 	group.GET("/police-officers", middleware.Protect(model.RoleMupADMIN), u.getAllPoliceOfficers)
 
 	// Super admin user crud

@@ -130,7 +130,6 @@ func (u *UserCrudService) GetAllPoliceOfficers() ([]model.User, error) {
 }
 
 // SearchUsersByName searches for users by name and surname
-
 func (u *UserCrudService) SearchUsersByName(query string) ([]model.User, error) {
 	normalizedQuery := strings.ToLower(strings.TrimSpace(query))
 
