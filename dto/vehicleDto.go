@@ -11,7 +11,7 @@ import (
 type VehicleDto struct {
 	Uuid         string `json:"uuid"`
 	VehicleType  string `json:"vehicleType"`
-	Model        string `json:"vehicleModel"`
+	Model        string `json:"model"`
 	Registration string `json:"registration"`
 
 	// NOTE: can be date or empty if empty then it is allowed forever

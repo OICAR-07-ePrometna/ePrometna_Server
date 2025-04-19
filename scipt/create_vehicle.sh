@@ -122,90 +122,92 @@ echo "Login successful."
 echo -e "\nAttempting to create vehicle..."
 # --> UPDATED PAYLOAD with all fields <--
 # Using multiple lines inside printf format string for readability
+
 VEHICLE_PAYLOAD=$(
     printf '{
   "ownerUuid": "%s",
-  "chassisNumber": "%s",
-  "productionYear": %d,
   "registration": "%s",
   "traveledDistance": %d,
-  "model": "%s",
-  "vehicleCategory": "%s",
-  "mark": "%s",
-  "homologationType": "%s",
-  "tradeName": "%s",
-  "bodyShape": "%s",
-  "vehicleUse": "%s",
-  "dateFirstRegistration": "%s",
-  "firstRegistrationInCroatia": "%s",
-  "technicallyPermissibleMaximumLadenMass": "%s",
-  "permissibleMaximumLadenMass": "%s",
-  "unladenMass": "%s",
-  "permissiblePayload": "%s",
-  "typeApprovalNumber": "%s",
-  "engineCapacity": "%s",
-  "enginePower": "%s",
-  "fuelOrPowerSource": "%s",
-  "ratedEngineSpeed": "%s",
-  "numberOfSeats": "%s",
-  "colourOfVehicle": "%s",
-  "length": "%s",
-  "width": "%s",
-  "height": "%s",
-  "maximumNetPower": "%s",
-  "numberOfAxles": "%s",
-  "numberOfDrivenAxles": "%s",
-  "mb": "%s",
-  "stationaryNoiseLevel": "%s",
-  "engineSpeedForStationaryNoiseTest": "%s",
-  "co2Emissions": "%s",
-  "ecCategory": "%s",
-  "tireSize": "%s",
-  "uniqueModelCode": "%s",
-  "additionalTireSizes": "%s",
-  "vehicleType": "%s"
+  "summary": {
+    "additionalTireSizes": "%s",
+    "bodyShape": "%s",
+    "chassisNumber": "%s",
+    "co2Emissions": "%s",
+    "colourOfVehicle": "%s",
+    "dateFirstRegistration": "%s",
+    "ecCategory": "%s",
+    "engineCapacity": "%s",
+    "enginePower": "%s",
+    "engineSpeedForStationaryNoiseTest": "%s",
+    "firstRegistrationInCroatia": "%s",
+    "fuelOrPowerSource": "%s",
+    "height": "%s",
+    "homologationType": "%s",
+    "length": "%s",
+    "mark": "%s",
+    "maximumNetPower": "%s",
+    "mb": "%s",
+    "model": "%s",
+    "numberOfAxles": "%s",
+    "numberOfDrivenAxles": "%s",
+    "numberOfSeats": "%s",
+    "permissibleMaximumLadenMass": "%s",
+    "permissiblePayload": "%s",
+    "ratedEngineSpeed": "%s",
+    "stationaryNoiseLevel": "%s",
+    "technicallyPermissibleMaximumLadenMass": "%s",
+    "tireSize": "%s",
+    "tradeName": "%s",
+    "typeApprovalNumber": "%s",
+    "uniqueModelCode": "%s",
+    "unladenMass": "%s",
+    "vehicleCategory": "%s",
+    "vehicleType": "%s",
+    "vehicleUse": "%s",
+    "width": "%s"
+  }
 }' \
         "$EXISTING_USER_UUID" \
-        "$CHASSIS_NUMBER" \
-        "$PROD_YEAR" \
         "$REGISTRATION" \
         "$DISTANCE" \
-        "$VEHICLE_MODEL" \
-        "$VEHICLE_CATEGORY" \
-        "$MARK" \
-        "$HOMOLOGATION_TYPE" \
-        "$TRADE_NAME" \
+        "$ADDITIONAL_TIRE_SIZES" \
         "$BODY_SHAPE" \
-        "$VEHICLE_USE" \
+        "$CHASSIS_NUMBER" \
+        "$CO2_EMISSIONS" \
+        "$COLOUR" \
         "$DATE_FIRST_REGISTRATION" \
-        "$FIRST_REGISTRATION_IN_CROATIA" \
-        "$TECH_MAX_MASS" \
-        "$PERM_MAX_MASS" \
-        "$UNLADEN_MASS" \
-        "$PERM_PAYLOAD" \
-        "$TYPE_APPROVAL_NUMBER" \
+        "$EC_CATEGORY" \
         "$ENGINE_CAPACITY" \
         "$ENGINE_POWER" \
+        "$NOISE_TEST_SPEED" \
+        "$FIRST_REGISTRATION_IN_CROATIA" \
         "$FUEL_SOURCE" \
-        "$RATED_ENGINE_SPEED" \
-        "$NUM_SEATS" \
-        "$COLOUR" \
-        "$LENGTH" \
-        "$WIDTH" \
         "$HEIGHT" \
+        "$HOMOLOGATION_TYPE" \
+        "$LENGTH" \
+        "$MARK" \
         "$MAX_NET_POWER" \
+        "$MB_FIELD" \
+        "$VEHICLE_MODEL" \
         "$NUM_AXLES" \
         "$NUM_DRIVEN_AXLES" \
-        "$MB_FIELD" \
+        "$NUM_SEATS" \
+        "$PERM_MAX_MASS" \
+        "$PERM_PAYLOAD" \
+        "$RATED_ENGINE_SPEED" \
         "$STATIONARY_NOISE" \
-        "$NOISE_TEST_SPEED" \
-        "$CO2_EMISSIONS" \
-        "$EC_CATEGORY" \
+        "$TECH_MAX_MASS" \
         "$TIRE_SIZE" \
+        "$TRADE_NAME" \
+        "$TYPE_APPROVAL_NUMBER" \
         "$UNIQUE_MODEL_CODE" \
-        "$ADDITIONAL_TIRE_SIZES" \
-        "$VEHICLE_TYPE"
-) # Note the added -H "Authorization: Bearer $ACCESS_TOKEN"
+        "$UNLADEN_MASS" \
+        "$VEHICLE_CATEGORY" \
+        "$VEHICLE_TYPE" \
+        "$VEHICLE_USE" \
+        "$WIDTH"
+) # End of printf arguments
+
 HTTP_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
     -X POST "${API_BASE_URL}/vehicle/" \
     -H "Content-Type: application/json" \

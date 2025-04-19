@@ -40,10 +40,10 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 	// create a group with the name of the router
 	group := api.Group("/user")
 
-	// Protected enpint
+	// Protected endpint
 	group.GET("/my-data", middleware.Protect(), u.getLoggedInUser)
 
-	// Mup admin enpiont
+	// Mup admin endpiont
 	group.GET("/police-officers", middleware.Protect(model.RoleMupADMIN), u.getAllPoliceOfficers)
 
 	// Super admin user crud
