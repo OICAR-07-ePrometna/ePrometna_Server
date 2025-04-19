@@ -581,26 +581,17 @@ const docTemplate = `{
         "dto.NewVehicleDto": {
             "type": "object",
             "properties": {
-                "chassisNumber": {
-                    "type": "string"
-                },
                 "ownerUuid": {
                     "type": "string"
-                },
-                "productionYear": {
-                    "type": "integer"
                 },
                 "registration": {
                     "type": "string"
                 },
+                "summary": {
+                    "$ref": "#/definitions/dto.VehicleSummary"
+                },
                 "traveledDistance": {
                     "type": "integer"
-                },
-                "vehicleModel": {
-                    "type": "string"
-                },
-                "vehicleType": {
-                    "type": "string"
                 }
             }
         },
@@ -662,19 +653,18 @@ const docTemplate = `{
                         "$ref": "#/definitions/dto.UserDto"
                     }
                 },
-                "productionYear": {
-                    "type": "integer"
-                },
                 "registration": {
                     "type": "string"
                 },
+                "summary": {
+                    "description": "Registration   RegistrationDto\nPastRegistratins []RegistrationDto",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.VehicleSummary"
+                        }
+                    ]
+                },
                 "uuid": {
-                    "type": "string"
-                },
-                "vehicleModel": {
-                    "type": "string"
-                },
-                "vehicleType": {
                     "type": "string"
                 }
             }
@@ -682,8 +672,12 @@ const docTemplate = `{
         "dto.VehicleDto": {
             "type": "object",
             "properties": {
-                "productionYear": {
-                    "type": "integer"
+                "allowedTo": {
+                    "description": "NOTE: can be date or empty if empty then it is allowed forever",
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
                 },
                 "registration": {
                     "type": "string"
@@ -691,10 +685,156 @@ const docTemplate = `{
                 "uuid": {
                     "type": "string"
                 },
-                "vehicleModel": {
+                "vehicleType": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.VehicleSummary": {
+            "type": "object",
+            "properties": {
+                "additionalTireSizes": {
+                    "description": "Dodatne dimenzije guma // (15)",
+                    "type": "string"
+                },
+                "bodyShape": {
+                    "description": "Oblik karoserije // (2)",
+                    "type": "string"
+                },
+                "chassisNumber": {
+                    "description": "Broj šasije // E",
+                    "type": "string"
+                },
+                "co2Emissions": {
+                    "description": "Emisija CO2 // V7",
+                    "type": "string"
+                },
+                "colourOfVehicle": {
+                    "description": "Boja vozila // R",
+                    "type": "string"
+                },
+                "dateFirstRegistration": {
+                    "description": "Datum prve registracije // B",
+                    "type": "string"
+                },
+                "ecCategory": {
+                    "description": "EC kategorija // V9",
+                    "type": "string"
+                },
+                "engineCapacity": {
+                    "description": "Obujam motora // P1",
+                    "type": "string"
+                },
+                "enginePower": {
+                    "description": "Snaga motora // P2",
+                    "type": "string"
+                },
+                "engineSpeedForStationaryNoiseTest": {
+                    "description": "Broj okretaja motora pri ispitivanju buke u stacionarnom stanju // U2",
+                    "type": "string"
+                },
+                "firstRegistrationInCroatia": {
+                    "description": "Prva registracija u Hrvatskoj // (4)",
+                    "type": "string"
+                },
+                "fuelOrPowerSource": {
+                    "description": "Gorivo ili izvor energije // P3",
+                    "type": "string"
+                },
+                "height": {
+                    "description": "Visina // (8)",
+                    "type": "string"
+                },
+                "homologationType": {
+                    "description": "Homologacijski tip // D2",
+                    "type": "string"
+                },
+                "length": {
+                    "description": "Dužina // (6)",
+                    "type": "string"
+                },
+                "mark": {
+                    "description": "Marka // D1",
+                    "type": "string"
+                },
+                "maximumNetPower": {
+                    "description": "Najveća neto snaga // T",
+                    "type": "string"
+                },
+                "mb": {
+                    "description": "MB (pretpostavka: proizvođač) // (13)",
+                    "type": "string"
+                },
+                "model": {
+                    "description": "Model // (14)",
+                    "type": "string"
+                },
+                "numberOfAxles": {
+                    "description": "Broj osovina // L",
+                    "type": "string"
+                },
+                "numberOfDrivenAxles": {
+                    "description": "Broj pogonskih osovina // (9)",
+                    "type": "string"
+                },
+                "numberOfSeats": {
+                    "description": "Broj sjedala // S1",
+                    "type": "string"
+                },
+                "permissibleMaximumLadenMass": {
+                    "description": "Dopuštena najveća masa // F2",
+                    "type": "string"
+                },
+                "permissiblePayload": {
+                    "description": "Dopuštena nosivost // (5)",
+                    "type": "string"
+                },
+                "ratedEngineSpeed": {
+                    "description": "Nazivni broj okretaja motora // P4",
+                    "type": "string"
+                },
+                "stationaryNoiseLevel": {
+                    "description": "Razina buke u stacionarnom stanju // U1",
+                    "type": "string"
+                },
+                "technicallyPermissibleMaximumLadenMass": {
+                    "description": "Tehnički dopuštena najveća masa // F1",
+                    "type": "string"
+                },
+                "tireSize": {
+                    "description": "Dimenzije guma // (11)",
+                    "type": "string"
+                },
+                "tradeName": {
+                    "description": "Trgovački naziv // D3",
+                    "type": "string"
+                },
+                "typeApprovalNumber": {
+                    "description": "Broj homologacije // K",
+                    "type": "string"
+                },
+                "uniqueModelCode": {
+                    "description": "Jedinstvena oznaka modela // (12)",
+                    "type": "string"
+                },
+                "unladenMass": {
+                    "description": "Masa praznog vozila // G",
+                    "type": "string"
+                },
+                "vehicleCategory": {
+                    "description": "Kategorija vozila // J",
                     "type": "string"
                 },
                 "vehicleType": {
+                    "description": "Tip vozila (16) // (16)",
+                    "type": "string"
+                },
+                "vehicleUse": {
+                    "description": "Namjena vozila // (3)",
+                    "type": "string"
+                },
+                "width": {
+                    "description": "Širina // (7)",
                     "type": "string"
                 }
             }
