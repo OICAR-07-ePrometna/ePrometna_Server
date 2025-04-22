@@ -3,6 +3,7 @@ package service
 import (
 	"ePrometna_Server/app"
 	"ePrometna_Server/model"
+	"ePrometna_Server/util/cerror"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -10,31 +11,46 @@ import (
 )
 
 type IDriverLicenseCrudService interface {
-	Create(license *model.DriverLicense) (*model.DriverLicense, error)
-	GetById(uuid uuid.UUID) (*model.DriverLicense, error)
+	Create(license *model.DriverLicense, ownerUuid uuid.UUID) (*model.DriverLicense, error)
+	GetByUuid(uuid uuid.UUID) (*model.DriverLicense, error)
 	GetAll() ([]model.DriverLicense, error)
 	Update(uuid uuid.UUID, updated *model.DriverLicense) (*model.DriverLicense, error)
 	Delete(uuid uuid.UUID) error
 }
 
 type DriverLicenseCrudService struct {
-	db     *gorm.DB
-	logger *zap.SugaredLogger
+	db          *gorm.DB
+	userService IUserCrudService
+	logger      *zap.SugaredLogger
 }
 
 func NewDriverLicenseService(db *gorm.DB) IDriverLicenseCrudService {
 	var service IDriverLicenseCrudService
-	app.Invoke(func(db *gorm.DB, logger *zap.SugaredLogger) {
+	app.Invoke(func(db *gorm.DB, logger *zap.SugaredLogger, uService IUserCrudService) {
 		service = &DriverLicenseCrudService{
-			db:     db,
-			logger: logger,
+			db:          db,
+			logger:      logger,
+			userService: uService,
 		}
 	})
 	return service
 }
 
 // Create implements IDriverLicenseService.
-func (s *DriverLicenseCrudService) Create(license *model.DriverLicense) (*model.DriverLicense, error) {
+func (s *DriverLicenseCrudService) Create(license *model.DriverLicense, ownerUuid uuid.UUID) (*model.DriverLicense, error) {
+	owner, err := s.userService.Read(ownerUuid)
+	if err != nil {
+		s.logger.Errorf("Error reading user with uuid = %s, err = %+v", ownerUuid, err)
+		return nil, err
+	}
+
+	if owner.Role != model.RoleFirma && owner.Role != model.RoleOsoba {
+		s.logger.Errorf("User with role %+v can't own a driver license", owner.Role)
+		return nil, cerror.ErrBadRole
+	}
+
+	license.UserId = owner.ID
+
 	s.logger.Debugf("Createing driver license: %v", license)
 	if err := s.db.Create(&license).Error; err != nil {
 		s.logger.Errorf("Error creating driver license: %v", err)
@@ -44,7 +60,7 @@ func (s *DriverLicenseCrudService) Create(license *model.DriverLicense) (*model.
 }
 
 // GetById implements IDriverLicenseService
-func (s *DriverLicenseCrudService) GetById(uuid uuid.UUID) (*model.DriverLicense, error) {
+func (s *DriverLicenseCrudService) GetByUuid(uuid uuid.UUID) (*model.DriverLicense, error) {
 	var license model.DriverLicense
 	s.logger.Debugf("Getting driver license with UUID: %s", uuid)
 	if err := s.db.Where("uuid = ?", uuid).First(&license).Error; err != nil {
@@ -67,23 +83,21 @@ func (s *DriverLicenseCrudService) GetAll() ([]model.DriverLicense, error) {
 
 // Update implements IDriverLicenseService.
 func (s *DriverLicenseCrudService) Update(uuid uuid.UUID, updated *model.DriverLicense) (*model.DriverLicense, error) {
-	var license model.DriverLicense
-	s.logger.Debugf("Updating driver license with UUID: %s", uuid)
-	if err := s.db.Where("uuid = ?", uuid).First(&license).Error; err != nil {
-		s.logger.Errorf("Error finding driver license: %+v", err)
+	license, err := s.GetByUuid(uuid)
+	if err != nil {
+		s.logger.Errorf("Error getting driver license: %+v", err)
 		return nil, err
 	}
 
-	license.LicenseNumber = updated.LicenseNumber
-	license.Category = updated.Category
-	license.IssueDate = updated.IssueDate
-	license.ExpiringDate = updated.ExpiringDate
+	s.logger.Debugf("Updating driver license: %+v", license)
+	license = license.Update(updated)
 
-	if err := s.db.Save(&license).Error; err != nil {
-		s.logger.Errorf("Error updating driver license: %+v", err)
-		return nil, err
+	rez := s.db.Where("uuid = ?", uuid).Save(license)
+	if rez.Error != nil {
+		s.logger.Errorf("Error updating driver license: %+v", rez.Error)
+		return nil, rez.Error
 	}
-	return &license, nil
+	return license, nil
 }
 
 // Delete implements IDriverLicenseService.

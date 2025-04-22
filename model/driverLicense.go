@@ -16,3 +16,11 @@ type DriverLicense struct {
 	ExpiringDate  time.Time `gorm:"type:date;not null"`
 	Category      string    `gorm:"type:varchar(50);not null"`
 }
+
+func (u *DriverLicense) Update(license *DriverLicense) *DriverLicense {
+	u.LicenseNumber = license.LicenseNumber
+	u.Category = license.Category
+	u.IssueDate = license.IssueDate
+	u.ExpiringDate = license.ExpiringDate
+	return u
+}
