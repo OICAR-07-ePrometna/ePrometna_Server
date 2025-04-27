@@ -23,7 +23,7 @@ jobs:
         uses: arduino/setup-task@v2
 
       - name: SetupEnv
-        run: cp ePrometna.example.json ePrometna.json
+        run: cp env.example .env
 
       - name: Build
         run: task build
