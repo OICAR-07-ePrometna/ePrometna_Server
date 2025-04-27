@@ -25,7 +25,7 @@ func startTESTServer() *gin.Engine {
 
 // Mock AppConfig for testing
 var mockAppConfig = &config.AppConfiguration{
-	JwtKey:        "test-jwt-key",
+	AccessKey:     "test-jwt-key",
 	RefreshKey:    "test-refresh-key",
 	IsDevelopment: true,
 	Port:          8090,

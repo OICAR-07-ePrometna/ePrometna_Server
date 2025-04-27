@@ -1,0 +1,30 @@
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# build
+[Bb]uild/
+[Ll]og/
+*.log
+[Bb]in/
+
+
+# env file
+*.env
+.DS_Store
+*.swap
+*.old
+tmp/
+*.tmp
+.vscode/
+.idea/
+# project confi
+ePrometna.json
+*.tar

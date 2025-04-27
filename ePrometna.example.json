@@ -1,7 +1,0 @@
-{
-    "IsDevelopment": false,
-    "Port": 8090,
-    "DbConnection": "host=localhost user=postgres password=postgres dbname=eprometna port=5332 sslmode=disable",
-    "JwtKey": "9LKUCZBXDOKB8023ihjijbnaosiuy8dgtf7gb",
-    "RefreshKey": "9lkajsbndfjhKJHB893YU1naosiuy8dgtf7gb"
-}

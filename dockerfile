@@ -26,10 +26,6 @@ FROM alpine:latest
 # Set the working directory
 WORKDIR /app
 
-# Copy the configuration file from the source (assuming it's needed at runtime)
-# Adjust the path if ePrometna.json is located elsewhere or generated
-COPY ePrometna.example.json ePrometna.json
-
 # Copy the built binary from the builder stage
 COPY --from=builder /app/bin/ePrometna_Server .
 
