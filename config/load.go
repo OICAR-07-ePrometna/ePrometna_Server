@@ -16,11 +16,16 @@ func LoadConfig() error {
 		fmt.Printf("Can't load config using real env\n")
 		fmt.Printf("Env load err = %+v\n", err)
 	}
-	loadData()
+	if err := loadData(); err != nil {
+		fmt.Printf("Error loading config, err = %+v\n", err)
+		return err
+	}
+
+	fmt.Println("Configuration loaded successfully")
 	return nil
 }
 
-func loadData() {
+func loadData() error {
 	conf := &AppConfiguration{}
 	conf.IsDevelopment = isDevEnvironment()
 	conf.DbConnection = loadString("DB_CONN")
@@ -28,7 +33,15 @@ func loadData() {
 	conf.RefreshKey = loadString("REFRESH_KEY")
 	conf.Port = loadInt("PORT")
 
+	if conf.AccessKey == "" {
+		return fmt.Errorf("ACCESS_KEY environment variable is required")
+	}
+	if conf.RefreshKey == "" {
+		return fmt.Errorf("REFRESH_KEY environment variable is required")
+	}
+
 	AppConfig = conf
+	return nil
 }
 
 func loadInt(name string) int {
@@ -38,7 +51,8 @@ func loadInt(name string) int {
 	}
 	num, err := strconv.Atoi(rez)
 	if err != nil {
-		fmt.Printf("Failed to parse int %s, will use default (0)\n", rez)
+		fmt.Printf("Failed to parse int %s, will use default (8080)\n", rez)
+		return 8080
 	}
 
 	return num
