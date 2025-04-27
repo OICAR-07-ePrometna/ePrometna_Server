@@ -38,7 +38,7 @@ func loadInt(name string) int {
 	}
 	num, err := strconv.Atoi(rez)
 	if err != nil {
-		fmt.Printf("Failed to parse int %s, will use defult (0)\n", rez)
+		fmt.Printf("Failed to parse int %s, will use default (0)\n", rez)
 	}
 
 	return num
