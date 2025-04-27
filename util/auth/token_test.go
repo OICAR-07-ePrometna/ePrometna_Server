@@ -16,7 +16,7 @@ import (
 
 // Mock AppConfig for testing
 var mockAppConfig = &config.AppConfiguration{
-	JwtKey:     "test-jwt-key",
+	AccessKey:  "test-jwt-key",
 	RefreshKey: "test-refresh-key",
 }
 
@@ -34,7 +34,7 @@ func TestParseToken(t *testing.T) {
 		},
 	}
 	validToken := jwt.NewWithClaims(jwt.SigningMethodHS256, validClaims)
-	validTokenString, _ := validToken.SignedString([]byte(mockAppConfig.JwtKey))
+	validTokenString, _ := validToken.SignedString([]byte(mockAppConfig.AccessKey))
 	validAuthHeader := "Bearer " + validTokenString
 
 	invalidSignatureToken := jwt.NewWithClaims(jwt.SigningMethodHS256, validClaims)
@@ -50,7 +50,7 @@ func TestParseToken(t *testing.T) {
 		},
 	}
 	expiredToken := jwt.NewWithClaims(jwt.SigningMethodHS256, expiredClaims)
-	expiredTokenString, _ := expiredToken.SignedString([]byte(mockAppConfig.JwtKey))
+	expiredTokenString, _ := expiredToken.SignedString([]byte(mockAppConfig.AccessKey))
 	expiredAuthHeader := "Bearer " + expiredTokenString
 
 	tests := []struct {

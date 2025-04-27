@@ -1,30 +1,62 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
+
+	"github.com/joho/godotenv"
 )
 
 // LoadConfig loads in program configuration should be a first thing called in the program
 func LoadConfig() error {
 	fmt.Println("Loading configuration")
 
-	data, err := os.ReadFile(_CONFIG_FILE)
-	if err != nil {
-		return err
+	if err := godotenv.Load(); err != nil {
+		fmt.Printf("Can't load config using real env\n")
+		fmt.Printf("Env load err = %+v\n", err)
 	}
-	var conf AppConfiguration
-	err = json.Unmarshal(data, &conf)
-	if err != nil {
-		return err
-	}
-	AppConfig = &conf
-
-	fmt.Println("Configuration loaded in successfully")
-	if AppConfig.IsDevelopment {
-		fmt.Printf("AppConfig: %+v\n", AppConfig)
-	}
-
+	loadData()
 	return nil
+}
+
+func loadData() {
+	conf := &AppConfiguration{}
+	conf.IsDevelopment = isDevEnvironment()
+	conf.DbConnection = loadString("DB_CONN")
+	conf.AccessKey = loadString("ACCESS_KEY")
+	conf.RefreshKey = loadString("REFRESH_KEY")
+	conf.Port = loadInt("PORT")
+
+	AppConfig = conf
+}
+
+func loadInt(name string) int {
+	rez := os.Getenv(name)
+	if rez == "" {
+		fmt.Printf("Env variable %s is empty\n", name)
+	}
+	num, err := strconv.Atoi(rez)
+	if err != nil {
+		fmt.Printf("Failed to parse int %s, will use defult (0)\n", rez)
+	}
+
+	return num
+}
+
+func loadString(name string) string {
+	rez := os.Getenv(name)
+	if rez == "" {
+		fmt.Printf("Env variable %s is empty\n", name)
+	}
+	return rez
+}
+
+func isDevEnvironment() bool {
+	name := "APP_ENV"
+	rez := os.Getenv(name)
+	if rez == "" {
+		fmt.Printf("Env variable %s is empty\n", name)
+	}
+	return rez == "development"
 }
