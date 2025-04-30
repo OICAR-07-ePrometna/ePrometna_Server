@@ -51,7 +51,7 @@ func (s *DriverLicenseCrudService) Create(license *model.DriverLicense, ownerUui
 
 	license.UserId = owner.ID
 
-	s.logger.Debugf("Createing driver license: %v", license)
+	s.logger.Debugf("Creating driver license: %v", license)
 	if err := s.db.Create(&license).Error; err != nil {
 		s.logger.Errorf("Error creating driver license: %v", err)
 		return nil, err

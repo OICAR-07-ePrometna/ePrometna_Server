@@ -28,4 +28,5 @@ func setupHandlers(router *gin.Engine) {
 	controller.NewLoginController().RegisterEndpoints(api)
 	controller.NewUserController().RegisterEndpoints(api)
 	controller.NewVehicleController().RegisterEndpoints(api)
+	controller.NewLicenseController().RegisterEndpoints(api)
 }

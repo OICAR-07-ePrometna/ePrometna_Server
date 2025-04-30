@@ -44,7 +44,7 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 	group.GET("/police-officers", middleware.Protect(model.RoleMupADMIN), u.getAllPoliceOfficers)
 
 	// register Endpoints
-	group.Use(middleware.Protect(model.RoleSuperAdmin))
+	//group.Use(middleware.Protect(model.RoleSuperAdmin))
 	group.POST("/", u.create)
 	group.GET("/:uuid", u.get)
 	group.PUT("/:uuid", u.update)
