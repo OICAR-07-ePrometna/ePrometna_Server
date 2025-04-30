@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -17,10 +18,14 @@ type DriverLicense struct {
 	Category      string    `gorm:"type:varchar(50);not null"`
 }
 
-func (u *DriverLicense) Update(license *DriverLicense) *DriverLicense {
-	u.LicenseNumber = license.LicenseNumber
-	u.Category = license.Category
-	u.IssueDate = license.IssueDate
-	u.ExpiringDate = license.ExpiringDate
-	return u
+func (dl *DriverLicense) Update(license *DriverLicense) (*DriverLicense, error) {
+	if license.ExpiringDate.Before(license.IssueDate) {
+		return nil, errors.New("expiring date must be after issue date")
+	}
+
+	dl.LicenseNumber = license.LicenseNumber
+	dl.Category = license.Category
+	dl.IssueDate = license.IssueDate
+	dl.ExpiringDate = license.ExpiringDate
+	return dl, nil
 }

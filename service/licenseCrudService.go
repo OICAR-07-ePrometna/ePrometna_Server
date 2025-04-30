@@ -89,8 +89,18 @@ func (s *DriverLicenseCrudService) Update(uuid uuid.UUID, updated *model.DriverL
 		return nil, err
 	}
 
+	if updated.UserId != 0 && updated.UserId != license.UserId {
+		s.logger.Errorf("Attempt to change license ownership denied")
+		return nil, cerror.ErrBadRole
+	}
+
 	s.logger.Debugf("Updating driver license: %+v", license)
-	license = license.Update(updated)
+	updatedLicense, err := license.Update(updated)
+	if err != nil {
+		s.logger.Errorf("Error updating driver license: %+v", err)
+		return nil, err
+	}
+	license = updatedLicense
 
 	rez := s.db.Where("uuid = ?", uuid).Save(license)
 	if rez.Error != nil {
@@ -102,6 +112,12 @@ func (s *DriverLicenseCrudService) Update(uuid uuid.UUID, updated *model.DriverL
 
 // Delete implements IDriverLicenseService.
 func (s *DriverLicenseCrudService) Delete(uuid uuid.UUID) error {
+	_, err := s.GetByUuid(uuid)
+	if err != nil {
+		s.logger.Errorf("Error getting driver license: %+v", err)
+		return err
+	}
+
 	s.logger.Debugf("Deleting driver license with UUID: %s", uuid)
 	if err := s.db.Where("uuid = ?", uuid).Delete(&model.DriverLicense{}).Error; err != nil {
 		s.logger.Errorf("Error deleting driver license: %+v", err)
