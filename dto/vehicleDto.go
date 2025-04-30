@@ -9,11 +9,13 @@ import (
 )
 
 type VehicleDto struct {
-	Uuid           string `json:"uuid"`
-	VehicleType    string `json:"vehicleType"`
-	VehicleModel   string `json:"vehicleModel"`
-	ProductionYear int    `json:"productionYear"`
-	Registration   string `json:"registration"`
+	Uuid         string `json:"uuid"`
+	VehicleType  string `json:"vehicleType"`
+	Model        string `json:"model"`
+	Registration string `json:"registration"`
+
+	// NOTE: can be date or empty if empty then it is allowed forever
+	AllowedTo string `json:"allowedTo"`
 }
 
 func (dto *VehicleDto) ToModel() (*model.Vehicle, error) {
@@ -24,27 +26,26 @@ func (dto *VehicleDto) ToModel() (*model.Vehicle, error) {
 	}
 
 	return &model.Vehicle{
-		Uuid:           uuid,
-		VehicleType:    dto.VehicleType,
-		VehicleModel:   dto.VehicleModel,
-		ProductionYear: dto.ProductionYear,
-		Registration:   nil,
+		Uuid:         uuid,
+		VehicleType:  dto.VehicleType,
+		VehicleModel: dto.Model,
+		Registration: nil,
 	}, nil
 }
 
 func (dto VehicleDto) FromModel(m *model.Vehicle) VehicleDto {
 	reg := ""
-	if m.Registration != nil {
-		reg = m.Registration.Registration
+	if m.Registration == nil {
 		zap.S().Errorf("Registration is nil on car with uuid = %s", m.Uuid)
+	} else {
+		reg = m.Registration.Registration
 	}
 
 	dto = VehicleDto{
-		Uuid:           m.Uuid.String(),
-		VehicleType:    m.VehicleType,
-		VehicleModel:   m.VehicleModel,
-		ProductionYear: m.ProductionYear,
-		Registration:   reg,
+		Uuid:         m.Uuid.String(),
+		VehicleType:  m.VehicleType,
+		Model:        m.VehicleModel,
+		Registration: reg,
 	}
 	return dto
 }

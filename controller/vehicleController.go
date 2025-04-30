@@ -3,9 +3,11 @@ package controller
 import (
 	"ePrometna_Server/app"
 	"ePrometna_Server/dto"
+	"ePrometna_Server/model"
 	"ePrometna_Server/service"
 	"ePrometna_Server/util/auth"
 	"ePrometna_Server/util/cerror"
+	"ePrometna_Server/util/middleware"
 	"errors"
 	"net/http"
 
@@ -39,12 +41,14 @@ func (c *VehicleController) RegisterEndpoints(api *gin.RouterGroup) {
 	// create a group with the name of the router
 	group := api.Group("/vehicle")
 
-	// TODO: uncomment after testing
-	// group.Use(middleware.Protect(model.RoleHAK))
+	// Osoba firma i Hak mogu dohvatiti detalje vozila
+	group.GET("/:uuid", middleware.Protect(model.RoleHAK, model.RoleFirma, model.RoleOsoba), c.get)
 
-	// register Endpoints
-	group.GET("/:uuid", c.get)
-	group.GET("/", c.myVehicles)
+	// Osoba i firma mogu dohvatiti svoja vozila
+	group.GET("/", middleware.Protect(model.RoleFirma, model.RoleOsoba), c.myVehicles)
+
+	// samo Hak endpoints
+	group.Use(middleware.Protect(model.RoleHAK))
 	group.POST("/", c.create)
 	group.DELETE("/:uuid", c.delete)
 }

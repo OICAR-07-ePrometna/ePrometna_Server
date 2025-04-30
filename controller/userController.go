@@ -40,16 +40,20 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 	// create a group with the name of the router
 	group := api.Group("/user")
 
+	// Protected endpint
 	group.GET("/my-data", middleware.Protect(), u.getLoggedInUser)
+
+	// Mup admin endpiont TODO: see pagination or search and or bothe
 	group.GET("/police-officers", middleware.Protect(model.RoleMupADMIN), u.getAllPoliceOfficers)
 
-	// register Endpoints
+	// Super admin user crud
 	group.Use(middleware.Protect(model.RoleSuperAdmin))
 	group.POST("/", u.create)
 	group.GET("/:uuid", u.get)
 	group.PUT("/:uuid", u.update)
 	group.DELETE("/:uuid", u.delete)
-	group.GET("/all-users", middleware.Protect(), u.getAllUsersForSuperAdmin)
+	group.GET("/all-users", u.getAllUsersForSuperAdmin)
+	group.GET("/search", u.searchUsersByName)
 }
 
 // UserExample godoc
@@ -312,6 +316,43 @@ func (u *UserController) getAllPoliceOfficers(c *gin.Context) {
 	if err != nil {
 		u.logger.Errorf("Failed to fetch police officers: %v", err)
 		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	userDtos := make([]dto.UserDto, 0, len(users))
+	for _, user := range users {
+		dto := dto.UserDto{}
+		userDtos = append(userDtos, dto.FromModel(&user))
+	}
+
+	c.JSON(http.StatusOK, userDtos)
+}
+
+// SearchUsersByName godoc
+//
+//	@Summary		Search users by name
+//	@Description	Performs a fuzzy search for users by first name, last name, or full name with similarity matching
+//	@Tags			user
+//	@Produce		json
+//	@Param			query	query	string	true	"Search query"
+//	@Success		200		{array}	dto.UserDto
+//	@Failure		400
+//	@Failure		500
+//	@Router			/user/search [get]
+func (u *UserController) searchUsersByName(c *gin.Context) {
+	query := c.Query("query")
+	if query == "" {
+		u.logger.Warn("Search query is empty")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Search query is required"})
+		return
+	}
+
+	u.logger.Infof("Searching users with query: %s", query)
+
+	users, err := u.UserCrud.SearchUsersByName(query)
+	if err != nil {
+		u.logger.Errorf("Failed to search users: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to search users"})
 		return
 	}
 

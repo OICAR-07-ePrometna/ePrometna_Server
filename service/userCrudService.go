@@ -4,6 +4,10 @@ import (
 	"ePrometna_Server/app"
 	"ePrometna_Server/model"
 	"ePrometna_Server/util/auth"
+	"sort"
+	"strings"
+
+	"github.com/xrash/smetrics"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -18,11 +22,17 @@ type IUserCrudService interface {
 	Delete(uuid uuid.UUID) error
 	GetAllUsers() ([]model.User, error)
 	GetAllPoliceOfficers() ([]model.User, error)
+	SearchUsersByName(query string) ([]model.User, error)
 }
 
 type UserCrudService struct {
 	db     *gorm.DB
 	logger *zap.SugaredLogger
+}
+
+type UserWithScore struct {
+	User  model.User
+	Score float64
 }
 
 func NewUserCrudService() IUserCrudService {
@@ -117,4 +127,35 @@ func (u *UserCrudService) GetAllPoliceOfficers() ([]model.User, error) {
 		return nil, rez.Error
 	}
 	return users, nil
+}
+
+// SearchUsersByName searches for users by name and surname
+func (u *UserCrudService) SearchUsersByName(query string) ([]model.User, error) {
+	normalizedQuery := strings.ToLower(strings.TrimSpace(query))
+
+	var users []model.User
+	err := u.db.Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var scoredUsers []UserWithScore
+	for _, user := range users {
+		fullName := strings.ToLower(user.FirstName + " " + user.LastName)
+		score := smetrics.JaroWinkler(normalizedQuery, fullName, 0.7, 4)
+		scoredUsers = append(scoredUsers, UserWithScore{User: user, Score: score})
+	}
+
+	sort.Slice(scoredUsers, func(i, j int) bool {
+		return scoredUsers[i].Score > scoredUsers[j].Score
+	})
+
+	var filteredUsers []model.User
+	for _, scoredUser := range scoredUsers {
+		if scoredUser.Score >= 0.8 {
+			filteredUsers = append(filteredUsers, scoredUser.User)
+		}
+	}
+
+	return filteredUsers, nil
 }
