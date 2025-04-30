@@ -62,7 +62,7 @@ func (c *LicenseController) RegisterEndpoints(api *gin.RouterGroup) {
 //	@Router			/license [post]
 func (c *LicenseController) createLicense(ctx *gin.Context) {
 	var licenseDto dto.DriverLicenseDto
-	if err := ctx.Bind(&licenseDto); err != nil {
+	if err := ctx.ShouldBindJSON(&licenseDto); err != nil {
 		c.logger.Errorf("Failed to bind error = %+v", err)
 		ctx.AbortWithError(http.StatusBadRequest, err)
 		return
@@ -97,8 +97,8 @@ func (c *LicenseController) createLicense(ctx *gin.Context) {
 		return
 	}
 
-	var dto dto.DriverLicenseDto
-	ctx.JSON(http.StatusCreated, dto.FromModel(license))
+	var resp dto.DriverLicenseDto
+	ctx.JSON(http.StatusCreated, resp.FromModel(license))
 }
 
 // GetLicense godoc
