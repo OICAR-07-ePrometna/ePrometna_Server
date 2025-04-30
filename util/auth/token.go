@@ -27,12 +27,13 @@ const (
 func ParseToken(authHeader string) (*jwt.Token, *Claims, error) {
 	// Parse token
 	if len(authHeader) <= len("Bearer ") || authHeader[:len("Bearer ")] != "Bearer " {
+		zap.S().Debugf("token: %s", authHeader)
 		return nil, nil, cerror.ErrInvalidTokenFormat
 	}
 	tokenString := authHeader[len("Bearer "):]
 	var claims Claims
 	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (any, error) {
-		return []byte(config.AppConfig.JwtKey), nil
+		return []byte(config.AppConfig.AccessKey), nil
 	})
 	if err != nil {
 		return nil, nil, err
@@ -57,7 +58,7 @@ func GenerateTokens(user *model.User) (string, string, error) {
 		},
 	}
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessTokenClaims)
-	accessTokenString, err := accessToken.SignedString([]byte(config.AppConfig.JwtKey))
+	accessTokenString, err := accessToken.SignedString([]byte(config.AppConfig.AccessKey))
 	if err != nil {
 		zap.S().Debugf("Failed to generate access token err = %+v", err)
 		return "", "", err
