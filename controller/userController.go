@@ -46,7 +46,7 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 	// Mup admin endpiont TODO: see pagination or search and or bothe
 	group.GET("/police-officers", middleware.Protect(model.RoleMupADMIN), u.getAllPoliceOfficers)
 
-	// Super admin user crud
+	// register Endpoints
 	group.Use(middleware.Protect(model.RoleSuperAdmin))
 	group.POST("/", u.create)
 	group.GET("/:uuid", u.get)

@@ -1,4 +1,17 @@
 definitions:
+  dto.DriverLicenseDto:
+    properties:
+      category:
+        type: string
+      expiringDate:
+        type: string
+      issueDate:
+        type: string
+      licenseNumber:
+        type: string
+      uuid:
+        type: string
+    type: object
   dto.LoginDto:
     properties:
       email:
@@ -284,6 +297,123 @@ paths:
       summary: Refresh Access Token
       tags:
       - auth
+  /license:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.DriverLicenseDto'
+            type: array
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Gets your licenses
+      tags:
+      - license
+    post:
+      description: Create a new license with an owner
+      parameters:
+      - description: License model
+        in: body
+        name: model
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DriverLicenseDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.DriverLicenseDto'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Creates a new license
+      tags:
+      - license
+  /license/{uuid}:
+    delete:
+      parameters:
+      - description: License UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Deletes a license
+      tags:
+      - license
+    get:
+      parameters:
+      - description: License UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.DriverLicenseDto'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Gets a license with uuid
+      tags:
+      - license
+    put:
+      parameters:
+      - description: License UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: License model
+        in: body
+        name: model
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DriverLicenseDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.DriverLicenseDto'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Updates a license
+      tags:
+      - license
   /user:
     post:
       parameters:
