@@ -52,7 +52,7 @@ func (v *VehicleService) Create(vehicle *model.Vehicle, ownerUuid uuid.UUID) (*m
 		return nil, cerror.ErrBadRole
 	}
 
-	vehicle.UserId = owner.ID
+	vehicle.UserId = &owner.ID
 
 	v.logger.Debugf("Creating new vehicle %+v", vehicle)
 	rez := v.db.Create(&vehicle)
@@ -65,7 +65,42 @@ func (v *VehicleService) Create(vehicle *model.Vehicle, ownerUuid uuid.UUID) (*m
 
 // Delete implements IVehicleService.
 func (v *VehicleService) Delete(_uuid uuid.UUID) error {
-	panic("unimplemented")
+	vehicle := model.Vehicle{}
+
+	rez := v.db.
+		Where("uuid = ?", _uuid).
+		First(&vehicle)
+
+	if rez.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	if rez.Error != nil {
+		return rez.Error
+	}
+
+	// TODO: write a service for removing users and putting them into past woners
+	vehicle.UserId = nil
+
+	rez = v.db.
+		Save(&vehicle)
+
+	v.logger.Debugf("Update statment on uuid = %s, rez %+v", _uuid, rez)
+	if rez.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	if rez.Error != nil {
+		return rez.Error
+	}
+
+	rez = v.db.
+		Delete(&vehicle)
+
+	v.logger.Debugf("Delete statment on uuid = %s, rez %+v", _uuid, rez)
+	if rez.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return rez.Error
 }
 
 // Read implements IVehicleService.

@@ -60,7 +60,10 @@ func (u *UserCrudService) ReadAll() ([]model.User, error) {
 
 // Delete implements IUserCrudService.
 func (u *UserCrudService) Delete(_uuid uuid.UUID) error {
-	rez := u.db.Where("uuid = ?", _uuid).Delete(&model.User{})
+	rez := u.db.
+		Where("uuid = ?", _uuid).
+		Delete(&model.User{})
+
 	u.logger.Debugf("Delete statment on uuid = %s, rez %+v", _uuid, rez)
 	if rez.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
@@ -71,10 +74,13 @@ func (u *UserCrudService) Delete(_uuid uuid.UUID) error {
 // Read implements IUserCrudService.
 func (u *UserCrudService) Read(_uuid uuid.UUID) (*model.User, error) {
 	var user model.User
-	rez := u.db.Where("uuid = ?", _uuid).First(&user)
+	rez := u.db.
+		Where("uuid = ?", _uuid).
+		First(&user)
 	if rez.Error != nil {
 		return nil, rez.Error
 	}
+
 	return &user, nil
 }
 
@@ -88,7 +94,10 @@ func (u *UserCrudService) Update(_uuid uuid.UUID, user *model.User) (*model.User
 	u.logger.Debugf("Updating user %+v", userOld)
 	userOld = userOld.Update(user)
 
-	rez := u.db.Where("uuid = ?", _uuid).Save(userOld)
+	rez := u.db.
+		Where("uuid = ?", _uuid).
+		Save(userOld)
+
 	if rez.Error != nil {
 		return nil, rez.Error
 	}
@@ -113,7 +122,9 @@ func (u *UserCrudService) Create(user *model.User, password string) (*model.User
 // Gets all users except super admin
 func (u *UserCrudService) GetAllUsers() ([]model.User, error) {
 	var users []model.User
-	rez := u.db.Where("role != ?", model.RoleSuperAdmin).Find(&users)
+	rez := u.db.
+		Where("role != ?", model.RoleSuperAdmin).
+		Find(&users)
 	if rez.Error != nil {
 		return nil, rez.Error
 	}
@@ -123,7 +134,9 @@ func (u *UserCrudService) GetAllUsers() ([]model.User, error) {
 // Gets all police officers users
 func (u *UserCrudService) GetAllPoliceOfficers() ([]model.User, error) {
 	var users []model.User
-	rez := u.db.Where("role = ?", model.RolePolicija).Find(&users)
+	rez := u.db.
+		Where("role = ?", model.RolePolicija).
+		Find(&users)
 	if rez.Error != nil {
 		return nil, rez.Error
 	}
