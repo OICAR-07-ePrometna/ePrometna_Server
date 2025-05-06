@@ -49,6 +49,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/login-mobile": {
+            "post": {
+                "description": "Authenticates a user on a mobile device and registers the device",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Mobile login with device registration",
+                "parameters": [
+                    {
+                        "description": "Mobile login credentials",
+                        "name": "mobileLoginDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.MobileLoginDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/controller.MobileLoginResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/refresh": {
             "post": {
                 "description": "Generates a new access token using a valid refresh token",
@@ -685,6 +719,39 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "controller.MobileLoginDto": {
+            "type": "object",
+            "required": [
+                "deviceInfo",
+                "email",
+                "password"
+            ],
+            "properties": {
+                "deviceInfo": {
+                    "$ref": "#/definitions/service.DeviceInfo"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "controller.MobileLoginResponse": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "deviceToken": {
+                    "type": "string"
+                },
+                "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.DriverLicenseDto": {
             "type": "object",
             "properties": {
@@ -1034,6 +1101,23 @@ const docTemplate = `{
                 },
                 "width": {
                     "description": "Širina // (7)",
+                    "type": "string"
+                }
+            }
+        },
+        "service.DeviceInfo": {
+            "type": "object",
+            "properties": {
+                "brand": {
+                    "type": "string"
+                },
+                "deviceId": {
+                    "type": "string"
+                },
+                "modelName": {
+                    "type": "string"
+                },
+                "platform": {
                     "type": "string"
                 }
             }

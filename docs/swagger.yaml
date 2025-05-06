@@ -1,4 +1,26 @@
 definitions:
+  controller.MobileLoginDto:
+    properties:
+      deviceInfo:
+        $ref: '#/definitions/service.DeviceInfo'
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - deviceInfo
+    - email
+    - password
+    type: object
+  controller.MobileLoginResponse:
+    properties:
+      accessToken:
+        type: string
+      deviceToken:
+        type: string
+      refreshToken:
+        type: string
+    type: object
   dto.DriverLicenseDto:
     properties:
       category:
@@ -252,6 +274,17 @@ definitions:
         description: Širina // (7)
         type: string
     type: object
+  service.DeviceInfo:
+    properties:
+      brand:
+        type: string
+      deviceId:
+        type: string
+      modelName:
+        type: string
+      platform:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -275,6 +308,28 @@ paths:
           schema:
             $ref: '#/definitions/dto.TokenDto'
       summary: User login
+      tags:
+      - auth
+  /auth/login-mobile:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user on a mobile device and registers the device
+      parameters:
+      - description: Mobile login credentials
+        in: body
+        name: mobileLoginDto
+        required: true
+        schema:
+          $ref: '#/definitions/controller.MobileLoginDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.MobileLoginResponse'
+      summary: Mobile login with device registration
       tags:
       - auth
   /auth/refresh:

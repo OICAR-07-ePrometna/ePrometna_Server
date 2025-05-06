@@ -15,6 +15,20 @@ import (
 	"go.uber.org/zap"
 )
 
+// MobileLoginDto contains login credentials and device info
+type MobileLoginDto struct {
+	Email      string             `json:"email" binding:"required"`
+	Password   string             `json:"password" binding:"required"`
+	DeviceInfo service.DeviceInfo `json:"deviceInfo" binding:"required"`
+}
+
+// MobileLoginResponse contains all tokens for a mobile login
+type MobileLoginResponse struct {
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
+	DeviceToken  string `json:"deviceToken"`
+}
+
 type LoginController struct {
 	loginService service.ILoginService
 	logger       *zap.SugaredLogger
@@ -42,6 +56,9 @@ func (c *LoginController) RegisterEndpoints(api *gin.RouterGroup) {
 	// register Endpoints
 	group.POST("/login", c.login)
 	group.POST("/refresh", c.RefreshToken)
+
+	// Add mobile-specific endpoints
+	group.POST("/login-mobile", c.loginMobile)
 }
 
 // Login godoc
@@ -72,6 +89,46 @@ func (l *LoginController) login(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.TokenDto{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
+	})
+}
+
+// LoginMobile godoc
+//
+//	@Summary		Mobile login with device registration
+//	@Description	Authenticates a user on a mobile device and registers the device
+//	@Tags			auth
+//	@Accept			json
+//	@Produce		json
+//	@Param			mobileLoginDto	body		MobileLoginDto	true	"Mobile login credentials"
+//	@Success		200				{object}	MobileLoginResponse
+//	@Router			/auth/login-mobile [post]
+func (l *LoginController) loginMobile(c *gin.Context) {
+	var loginDto MobileLoginDto
+
+	if err := c.BindJSON(&loginDto); err != nil {
+		l.logger.Errorf("Invalid mobile login request err = %+v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid request format"})
+		return
+	}
+
+	// Use the service to handle mobile login
+	result, err := l.loginService.LoginMobile(
+		loginDto.Email,
+		loginDto.Password,
+		loginDto.DeviceInfo,
+	)
+
+	if err != nil {
+		l.logger.Errorf("Mobile login failed err = %+v", err)
+		c.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
+		return
+	}
+
+	// Return all tokens
+	c.JSON(http.StatusOK, MobileLoginResponse{
+		AccessToken:  result.AccessToken,
+		RefreshToken: result.RefreshToken,
+		DeviceToken:  result.DeviceToken,
 	})
 }
 

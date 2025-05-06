@@ -11,5 +11,5 @@ type Mobile struct {
 	UserId           uint      `gorm:"type:uint;unique;null"`
 	CreatorId        uint      `gorm:"type:uint;not null"`
 	RegisteredDevice string    `gorm:"type:varchar(50);null"`
-	ActivationToken  string    `gorm:"type:varchar(50);unique;not null"`
+	ActivationToken  string    `gorm:"type:varchar(255);unique;not null"`
 }
