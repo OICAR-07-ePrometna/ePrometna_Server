@@ -11,3 +11,7 @@ type OwnerHistory struct {
 	VehicleId uint      `gorm:"type:uint;not null"`
 	UserId    uint      `gorm:"type:uint;not null"`
 }
+
+func (m *OwnerHistory) FromUser(user User) *OwnerHistory {
+	return m
+}

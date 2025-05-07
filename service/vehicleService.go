@@ -15,6 +15,7 @@ type IVehicleService interface {
 	Read(uuid uuid.UUID) (*model.Vehicle, error)
 	Create(newVehicle *model.Vehicle, ownerUuid uuid.UUID) (*model.Vehicle, error)
 	Delete(uuid uuid.UUID) error
+	ChangeOwner(vehicle uuid.UUID, newOwner *uuid.UUID) error
 }
 
 // TODO: implement service
@@ -136,4 +137,44 @@ func (v *VehicleService) ReadAll(driverUuid uuid.UUID) ([]model.Vehicle, error) 
 		return nil, rez.Error
 	}
 	return vehicles, nil
+}
+
+// ChangeOwner implements IVehicleService.
+func (v *VehicleService) ChangeOwner(vehicleUUID uuid.UUID, newOwner *uuid.UUID) error {
+	var user model.User
+	rez := v.db.
+		Where("uuid = ?", newOwner).
+		First(&user)
+
+	if rez.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	if rez.Error != nil {
+		return rez.Error
+	}
+
+	var vehicle model.Vehicle
+	rez = v.db.
+		Preload("Owner").
+		Preload("PaswOwners").
+		Where("uuid = ?", vehicleUUID).
+		First(&vehicle)
+
+	if rez.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	if rez.Error != nil {
+		return rez.Error
+	}
+
+	// TODO: test
+	// Moving current user to past user
+	oldUser := model.OwnerHistory{}
+	oldUser.FromUser(*vehicle.Owner)
+	vehicle.PastOwners = append(vehicle.PastOwners, oldUser)
+
+	// assingn new user
+	vehicle.UserId = &user.ID
+
+	return nil
 }
