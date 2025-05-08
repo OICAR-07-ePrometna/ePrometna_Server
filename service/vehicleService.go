@@ -188,5 +188,6 @@ func (v *VehicleService) ChangeOwner(vehicleUUID uuid.UUID, newOwner uuid.UUID) 
 
 // Registration implements IVehicleService.
 func (v *VehicleService) Registration(reg model.RegistrationInfo) error {
+	panic("unimplemented")
 	return nil
 }
