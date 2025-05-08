@@ -15,4 +15,5 @@ type RegistrationInfo struct {
 	TraveledDistance int       `gorm:"type:int;not null"`
 	TechnicalDate    time.Time `gorm:"type:date;not null"`
 	Registration     string    `gorm:"type:varchar(20);not null"`
+	Note             *string   `gorm:"type:varchar(500);null"`
 }

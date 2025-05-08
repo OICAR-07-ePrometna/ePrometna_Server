@@ -616,6 +616,39 @@ const docTemplate = `{
                 }
             }
         },
+        "/vehicle/change-owner": {
+            "put": {
+                "tags": [
+                    "vehicle"
+                ],
+                "summary": "changes owner to new owner with uuid",
+                "parameters": [
+                    {
+                        "description": "Dto for changing ownership",
+                        "name": "vehicleUuid",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ChangeOwnerDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/vehicle/{uuid}": {
             "get": {
                 "produces": [
@@ -685,6 +718,21 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.ChangeOwnerDto": {
+            "type": "object",
+            "required": [
+                "newOwnerUuid",
+                "vehicleUuid"
+            ],
+            "properties": {
+                "newOwnerUuid": {
+                    "type": "string"
+                },
+                "vehicleUuid": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.DriverLicenseDto": {
             "type": "object",
             "properties": {

@@ -1,4 +1,14 @@
 definitions:
+  dto.ChangeOwnerDto:
+    properties:
+      newOwnerUuid:
+        type: string
+      vehicleUuid:
+        type: string
+    required:
+    - newOwnerUuid
+    - vehicleUuid
+    type: object
   dto.DriverLicenseDto:
     properties:
       category:
@@ -691,6 +701,27 @@ paths:
         "500":
           description: Internal Server Error
       summary: Gets a vehicle with uuid
+      tags:
+      - vehicle
+  /vehicle/change-owner:
+    put:
+      parameters:
+      - description: Dto for changing ownership
+        in: body
+        name: vehicleUuid
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChangeOwnerDto'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: changes owner to new owner with uuid
       tags:
       - vehicle
 swagger: "2.0"
