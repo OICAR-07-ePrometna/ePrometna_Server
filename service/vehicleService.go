@@ -15,7 +15,8 @@ type IVehicleService interface {
 	Read(uuid uuid.UUID) (*model.Vehicle, error)
 	Create(newVehicle *model.Vehicle, ownerUuid uuid.UUID) (*model.Vehicle, error)
 	Delete(uuid uuid.UUID) error
-	ChangeOwner(vehicle uuid.UUID, newOwner *uuid.UUID) error
+	ChangeOwner(vehicle uuid.UUID, newOwner uuid.UUID) error
+	Registration(model.RegistrationInfo) error
 }
 
 // TODO: implement service
@@ -139,8 +140,9 @@ func (v *VehicleService) ReadAll(driverUuid uuid.UUID) ([]model.Vehicle, error) 
 	return vehicles, nil
 }
 
+// TODO: test
 // ChangeOwner implements IVehicleService.
-func (v *VehicleService) ChangeOwner(vehicleUUID uuid.UUID, newOwner *uuid.UUID) error {
+func (v *VehicleService) ChangeOwner(vehicleUUID uuid.UUID, newOwner uuid.UUID) error {
 	var user model.User
 	rez := v.db.
 		Where("uuid = ?", newOwner).
@@ -167,7 +169,6 @@ func (v *VehicleService) ChangeOwner(vehicleUUID uuid.UUID, newOwner *uuid.UUID)
 		return rez.Error
 	}
 
-	// TODO: test
 	// Moving current user to past user
 	oldUser := model.OwnerHistory{}
 	oldUser.FromUser(*vehicle.Owner)
@@ -176,5 +177,16 @@ func (v *VehicleService) ChangeOwner(vehicleUUID uuid.UUID, newOwner *uuid.UUID)
 	// assingn new user
 	vehicle.UserId = &user.ID
 
+	rez = v.db.
+		Save(&vehicle)
+	if rez.Error != nil {
+		return rez.Error
+	}
+
+	return nil
+}
+
+// Registration implements IVehicleService.
+func (v *VehicleService) Registration(reg model.RegistrationInfo) error {
 	return nil
 }

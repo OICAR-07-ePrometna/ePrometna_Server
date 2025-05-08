@@ -677,6 +677,39 @@
                 }
             }
         },
+        "/vehicle/change-owner": {
+            "put": {
+                "tags": [
+                    "vehicle"
+                ],
+                "summary": "changes owner to new owner with uuid",
+                "parameters": [
+                    {
+                        "description": "Dto for changing ownership",
+                        "name": "vehicleUuid",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ChangeOwnerDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/vehicle/{uuid}": {
             "get": {
                 "produces": [
@@ -792,362 +825,373 @@
                     "type": "string"
                 },
                 "platform": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.DriverLicenseDto": {
-            "type": "object",
-            "properties": {
-                "category": {
-                    "type": "string"
-                },
-                "expiringDate": {
-                    "type": "string"
-                },
-                "issueDate": {
-                    "type": "string"
-                },
-                "licenseNumber": {
-                    "type": "string"
-                },
-                "uuid": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.LoginDto": {
-            "type": "object",
-            "required": [
-                "email",
-                "password"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 6
-                }
-            }
-        },
-        "dto.NewUserDto": {
-            "type": "object",
-            "required": [
-                "birthDate",
-                "email",
-                "firstName",
-                "lastName",
-                "oib",
-                "password",
-                "residence",
-                "role"
-            ],
-            "properties": {
-                "birthDate": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "firstName": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 2
-                },
-                "lastName": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 2
-                },
-                "oib": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 6
-                },
-                "residence": {
-                    "type": "string",
-                    "maxLength": 255
-                },
-                "role": {
-                    "type": "string",
-                    "enum": [
-                        "hak",
-                        "mupadmin",
-                        "osoba",
-                        "firma",
-                        "policija",
-                        "superadmin"
-                    ]
-                },
-                "uuid": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.NewVehicleDto": {
-            "type": "object",
-            "properties": {
-                "ownerUuid": {
-                    "type": "string"
-                },
-                "registration": {
-                    "type": "string"
-                },
-                "summary": {
-                    "$ref": "#/definitions/dto.VehicleSummary"
-                },
-                "traveledDistance": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.TokenDto": {
-            "type": "object",
-            "properties": {
-                "accessToken": {
-                    "type": "string"
-                },
-                "refreshToken": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.UserDto": {
-            "type": "object",
-            "properties": {
-                "birthDate": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "firstName": {
-                    "type": "string"
-                },
-                "lastName": {
-                    "type": "string"
-                },
-                "oib": {
-                    "type": "string"
-                },
-                "residence": {
-                    "type": "string"
-                },
-                "role": {
-                    "type": "string"
-                },
-                "uuid": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.VehicleDetailsDto": {
-            "type": "object",
-            "properties": {
-                "drivers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.UserDto"
-                    }
-                },
-                "owner": {
-                    "$ref": "#/definitions/dto.UserDto"
-                },
-                "pastOwners": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.UserDto"
-                    }
-                },
-                "registration": {
-                    "type": "string"
-                },
-                "summary": {
-                    "description": "Registration   RegistrationDto\nPastRegistratins []RegistrationDto",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/dto.VehicleSummary"
+                    "dto.ChangeOwnerDto": {
+                        "type": "object",
+                        "required": [
+                            "newOwnerUuid",
+                            "vehicleUuid"
+                        ],
+                        "properties": {
+                            "newOwnerUuid": {
+                                "type": "string"
+                            },
+                            "vehicleUuid": {
+                                "type": "string"
+                            }
                         }
-                    ]
-                },
-                "uuid": {
-                    "type": "string"
+                    },
+                    "dto.DriverLicenseDto": {
+                        "type": "object",
+                        "properties": {
+                            "category": {
+                                "type": "string"
+                            },
+                            "expiringDate": {
+                                "type": "string"
+                            },
+                            "issueDate": {
+                                "type": "string"
+                            },
+                            "licenseNumber": {
+                                "type": "string"
+                            },
+                            "uuid": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "dto.LoginDto": {
+                        "type": "object",
+                        "required": [
+                            "email",
+                            "password"
+                        ],
+                        "properties": {
+                            "email": {
+                                "type": "string"
+                            },
+                            "password": {
+                                "type": "string",
+                                "minLength": 6
+                            }
+                        }
+                    },
+                    "dto.NewUserDto": {
+                        "type": "object",
+                        "required": [
+                            "birthDate",
+                            "email",
+                            "firstName",
+                            "lastName",
+                            "oib",
+                            "password",
+                            "residence",
+                            "role"
+                        ],
+                        "properties": {
+                            "birthDate": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string",
+                                "maxLength": 100,
+                                "minLength": 2
+                            },
+                            "lastName": {
+                                "type": "string",
+                                "maxLength": 100,
+                                "minLength": 2
+                            },
+                            "oib": {
+                                "type": "string"
+                            },
+                            "password": {
+                                "type": "string",
+                                "minLength": 6
+                            },
+                            "residence": {
+                                "type": "string",
+                                "maxLength": 255
+                            },
+                            "role": {
+                                "type": "string",
+                                "enum": [
+                                    "hak",
+                                    "mupadmin",
+                                    "osoba",
+                                    "firma",
+                                    "policija",
+                                    "superadmin"
+                                ]
+                            },
+                            "uuid": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "dto.NewVehicleDto": {
+                        "type": "object",
+                        "properties": {
+                            "ownerUuid": {
+                                "type": "string"
+                            },
+                            "registration": {
+                                "type": "string"
+                            },
+                            "summary": {
+                                "$ref": "#/definitions/dto.VehicleSummary"
+                            },
+                            "traveledDistance": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "dto.TokenDto": {
+                        "type": "object",
+                        "properties": {
+                            "accessToken": {
+                                "type": "string"
+                            },
+                            "refreshToken": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "dto.UserDto": {
+                        "type": "object",
+                        "properties": {
+                            "birthDate": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "oib": {
+                                "type": "string"
+                            },
+                            "residence": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "uuid": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "dto.VehicleDetailsDto": {
+                        "type": "object",
+                        "properties": {
+                            "drivers": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/dto.UserDto"
+                                }
+                            },
+                            "owner": {
+                                "$ref": "#/definitions/dto.UserDto"
+                            },
+                            "pastOwners": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/dto.UserDto"
+                                }
+                            },
+                            "registration": {
+                                "type": "string"
+                            },
+                            "summary": {
+                                "description": "Registration   RegistrationDto\nPastRegistratins []RegistrationDto",
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/dto.VehicleSummary"
+                                    }
+                                ]
+                            },
+                            "uuid": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "dto.VehicleDto": {
+                        "type": "object",
+                        "properties": {
+                            "allowedTo": {
+                                "description": "NOTE: can be date or empty if empty then it is allowed forever",
+                                "type": "string"
+                            },
+                            "model": {
+                                "type": "string"
+                            },
+                            "registration": {
+                                "type": "string"
+                            },
+                            "uuid": {
+                                "type": "string"
+                            },
+                            "vehicleType": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "dto.VehicleSummary": {
+                        "type": "object",
+                        "properties": {
+                            "additionalTireSizes": {
+                                "description": "Dodatne dimenzije guma // (15)",
+                                "type": "string"
+                            },
+                            "bodyShape": {
+                                "description": "Oblik karoserije // (2)",
+                                "type": "string"
+                            },
+                            "chassisNumber": {
+                                "description": "Broj šasije // E",
+                                "type": "string"
+                            },
+                            "co2Emissions": {
+                                "description": "Emisija CO2 // V7",
+                                "type": "string"
+                            },
+                            "colourOfVehicle": {
+                                "description": "Boja vozila // R",
+                                "type": "string"
+                            },
+                            "dateFirstRegistration": {
+                                "description": "Datum prve registracije // B",
+                                "type": "string"
+                            },
+                            "ecCategory": {
+                                "description": "EC kategorija // V9",
+                                "type": "string"
+                            },
+                            "engineCapacity": {
+                                "description": "Obujam motora // P1",
+                                "type": "string"
+                            },
+                            "enginePower": {
+                                "description": "Snaga motora // P2",
+                                "type": "string"
+                            },
+                            "engineSpeedForStationaryNoiseTest": {
+                                "description": "Broj okretaja motora pri ispitivanju buke u stacionarnom stanju // U2",
+                                "type": "string"
+                            },
+                            "firstRegistrationInCroatia": {
+                                "description": "Prva registracija u Hrvatskoj // (4)",
+                                "type": "string"
+                            },
+                            "fuelOrPowerSource": {
+                                "description": "Gorivo ili izvor energije // P3",
+                                "type": "string"
+                            },
+                            "height": {
+                                "description": "Visina // (8)",
+                                "type": "string"
+                            },
+                            "homologationType": {
+                                "description": "Homologacijski tip // D2",
+                                "type": "string"
+                            },
+                            "length": {
+                                "description": "Dužina // (6)",
+                                "type": "string"
+                            },
+                            "mark": {
+                                "description": "Marka // D1",
+                                "type": "string"
+                            },
+                            "maximumNetPower": {
+                                "description": "Najveća neto snaga // T",
+                                "type": "string"
+                            },
+                            "mb": {
+                                "description": "MB (pretpostavka: proizvođač) // (13)",
+                                "type": "string"
+                            },
+                            "model": {
+                                "description": "Model // (14)",
+                                "type": "string"
+                            },
+                            "numberOfAxles": {
+                                "description": "Broj osovina // L",
+                                "type": "string"
+                            },
+                            "numberOfDrivenAxles": {
+                                "description": "Broj pogonskih osovina // (9)",
+                                "type": "string"
+                            },
+                            "numberOfSeats": {
+                                "description": "Broj sjedala // S1",
+                                "type": "string"
+                            },
+                            "permissibleMaximumLadenMass": {
+                                "description": "Dopuštena najveća masa // F2",
+                                "type": "string"
+                            },
+                            "permissiblePayload": {
+                                "description": "Dopuštena nosivost // (5)",
+                                "type": "string"
+                            },
+                            "ratedEngineSpeed": {
+                                "description": "Nazivni broj okretaja motora // P4",
+                                "type": "string"
+                            },
+                            "stationaryNoiseLevel": {
+                                "description": "Razina buke u stacionarnom stanju // U1",
+                                "type": "string"
+                            },
+                            "technicallyPermissibleMaximumLadenMass": {
+                                "description": "Tehnički dopuštena najveća masa // F1",
+                                "type": "string"
+                            },
+                            "tireSize": {
+                                "description": "Dimenzije guma // (11)",
+                                "type": "string"
+                            },
+                            "tradeName": {
+                                "description": "Trgovački naziv // D3",
+                                "type": "string"
+                            },
+                            "typeApprovalNumber": {
+                                "description": "Broj homologacije // K",
+                                "type": "string"
+                            },
+                            "uniqueModelCode": {
+                                "description": "Jedinstvena oznaka modela // (12)",
+                                "type": "string"
+                            },
+                            "unladenMass": {
+                                "description": "Masa praznog vozila // G",
+                                "type": "string"
+                            },
+                            "vehicleCategory": {
+                                "description": "Kategorija vozila // J",
+                                "type": "string"
+                            },
+                            "vehicleType": {
+                                "description": "Tip vozila (16) // (16)",
+                                "type": "string"
+                            },
+                            "vehicleUse": {
+                                "description": "Namjena vozila // (3)",
+                                "type": "string"
+                            },
+                            "width": {
+                                "description": "Širina // (7)",
+                                "type": "string"
+                            }
+                        }
+                    }
                 }
             }
-        },
-        "dto.VehicleDto": {
-            "type": "object",
-            "properties": {
-                "allowedTo": {
-                    "description": "NOTE: can be date or empty if empty then it is allowed forever",
-                    "type": "string"
-                },
-                "model": {
-                    "type": "string"
-                },
-                "registration": {
-                    "type": "string"
-                },
-                "uuid": {
-                    "type": "string"
-                },
-                "vehicleType": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.VehicleSummary": {
-            "type": "object",
-            "properties": {
-                "additionalTireSizes": {
-                    "description": "Dodatne dimenzije guma // (15)",
-                    "type": "string"
-                },
-                "bodyShape": {
-                    "description": "Oblik karoserije // (2)",
-                    "type": "string"
-                },
-                "chassisNumber": {
-                    "description": "Broj šasije // E",
-                    "type": "string"
-                },
-                "co2Emissions": {
-                    "description": "Emisija CO2 // V7",
-                    "type": "string"
-                },
-                "colourOfVehicle": {
-                    "description": "Boja vozila // R",
-                    "type": "string"
-                },
-                "dateFirstRegistration": {
-                    "description": "Datum prve registracije // B",
-                    "type": "string"
-                },
-                "ecCategory": {
-                    "description": "EC kategorija // V9",
-                    "type": "string"
-                },
-                "engineCapacity": {
-                    "description": "Obujam motora // P1",
-                    "type": "string"
-                },
-                "enginePower": {
-                    "description": "Snaga motora // P2",
-                    "type": "string"
-                },
-                "engineSpeedForStationaryNoiseTest": {
-                    "description": "Broj okretaja motora pri ispitivanju buke u stacionarnom stanju // U2",
-                    "type": "string"
-                },
-                "firstRegistrationInCroatia": {
-                    "description": "Prva registracija u Hrvatskoj // (4)",
-                    "type": "string"
-                },
-                "fuelOrPowerSource": {
-                    "description": "Gorivo ili izvor energije // P3",
-                    "type": "string"
-                },
-                "height": {
-                    "description": "Visina // (8)",
-                    "type": "string"
-                },
-                "homologationType": {
-                    "description": "Homologacijski tip // D2",
-                    "type": "string"
-                },
-                "length": {
-                    "description": "Dužina // (6)",
-                    "type": "string"
-                },
-                "mark": {
-                    "description": "Marka // D1",
-                    "type": "string"
-                },
-                "maximumNetPower": {
-                    "description": "Najveća neto snaga // T",
-                    "type": "string"
-                },
-                "mb": {
-                    "description": "MB (pretpostavka: proizvođač) // (13)",
-                    "type": "string"
-                },
-                "model": {
-                    "description": "Model // (14)",
-                    "type": "string"
-                },
-                "numberOfAxles": {
-                    "description": "Broj osovina // L",
-                    "type": "string"
-                },
-                "numberOfDrivenAxles": {
-                    "description": "Broj pogonskih osovina // (9)",
-                    "type": "string"
-                },
-                "numberOfSeats": {
-                    "description": "Broj sjedala // S1",
-                    "type": "string"
-                },
-                "permissibleMaximumLadenMass": {
-                    "description": "Dopuštena najveća masa // F2",
-                    "type": "string"
-                },
-                "permissiblePayload": {
-                    "description": "Dopuštena nosivost // (5)",
-                    "type": "string"
-                },
-                "ratedEngineSpeed": {
-                    "description": "Nazivni broj okretaja motora // P4",
-                    "type": "string"
-                },
-                "stationaryNoiseLevel": {
-                    "description": "Razina buke u stacionarnom stanju // U1",
-                    "type": "string"
-                },
-                "technicallyPermissibleMaximumLadenMass": {
-                    "description": "Tehnički dopuštena najveća masa // F1",
-                    "type": "string"
-                },
-                "tireSize": {
-                    "description": "Dimenzije guma // (11)",
-                    "type": "string"
-                },
-                "tradeName": {
-                    "description": "Trgovački naziv // D3",
-                    "type": "string"
-                },
-                "typeApprovalNumber": {
-                    "description": "Broj homologacije // K",
-                    "type": "string"
-                },
-                "uniqueModelCode": {
-                    "description": "Jedinstvena oznaka modela // (12)",
-                    "type": "string"
-                },
-                "unladenMass": {
-                    "description": "Masa praznog vozila // G",
-                    "type": "string"
-                },
-                "vehicleCategory": {
-                    "description": "Kategorija vozila // J",
-                    "type": "string"
-                },
-                "vehicleType": {
-                    "description": "Tip vozila (16) // (16)",
-                    "type": "string"
-                },
-                "vehicleUse": {
-                    "description": "Namjena vozila // (3)",
-                    "type": "string"
-                },
-                "width": {
-                    "description": "Širina // (7)",
-                    "type": "string"
-                }
-            }
-        }
-    }
-}

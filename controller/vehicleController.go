@@ -51,6 +51,7 @@ func (c *VehicleController) RegisterEndpoints(api *gin.RouterGroup) {
 	group.Use(middleware.Protect(model.RoleHAK))
 	group.POST("/", c.create)
 	group.DELETE("/:uuid", c.delete)
+	group.PUT("/change-owner", c.changeOwner)
 }
 
 // DeleteVehicle godoc
@@ -217,4 +218,90 @@ func (v *VehicleController) myVehicles(c *gin.Context) {
 	var dtos dto.VehiclesDto
 
 	c.JSON(http.StatusOK, dtos.FromModel(vehicles))
+}
+
+// changeOwner godoc
+//
+//	@Summary	changes owner to new owner with uuid
+//	@Schemes
+//	@Tags		vehicle
+//	@Success	200
+//	@Failure	400
+//	@Failure	404
+//	@Failure	500
+//	@Param		vehicleUuid	body	dto.ChangeOwnerDto	true	"Dto for changing ownership"
+//	@Router		/vehicle/change-owner [put]
+func (v *VehicleController) changeOwner(c *gin.Context) {
+	var cowner dto.ChangeOwnerDto
+	if err := c.Bind(&cowner); err != nil {
+		v.logger.Errorf("Failed to bind error = %+v", err)
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	vehicleUuid, err := uuid.Parse(cowner.VehicleUuid)
+	if err != nil {
+		v.logger.Errorf("Failed to parse vehicle uuid error = %+v", err)
+		c.AbortWithError(http.StatusBadRequest, err)
+	}
+
+	ownerUuid, err := uuid.Parse(cowner.NewOwnerUuid)
+	if err != nil {
+		v.logger.Errorf("Failed to parse new owner uuid error = %+v", err)
+		c.AbortWithError(http.StatusBadRequest, err)
+	}
+	err = v.VehicleService.ChangeOwner(vehicleUuid, ownerUuid)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			v.logger.Errorf("Vehicle with uuid = %s not found", vehicleUuid)
+			c.AbortWithError(http.StatusNotFound, err)
+			return
+		}
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	v.logger.Debugf("Vehicle with uuid = %s changed owner (uuid = %s)", vehicleUuid, ownerUuid)
+	c.AbortWithStatus(http.StatusOK)
+}
+
+// registerVehicle godoc
+//
+//	@Summary	Tehnicki pregled
+//	@Schemes
+//	@Tags		vehicle
+//	@Success	200
+//	@Failure	400
+//	@Failure	404
+//	@Failure	500
+//	@Param		vehicleUuid	body	dto.ChangeOwnerDto	true	"Dto for changing ownership"
+//	@Param		uuid	path	string	true	"Vehicle UUID"
+//	@Router		/vehicle/registration/{uuid}  [put]
+func (v *VehicleController) registration(c *gin.Context) {
+	// TODO: bind vehicle uuid
+	var cowner dto.RegistrationDto
+	if err := c.Bind(&cowner); err != nil {
+		v.logger.Errorf("Failed to bind error = %+v", err)
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	reg, err := cowner.ToModel()
+	if err != nil {
+		v.logger.Errorf("Failed to map to model error = %+v", err)
+		c.AbortWithError(http.StatusBadRequest, err)
+	}
+
+	err = v.VehicleService.Registration(reg)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			v.logger.Errorf("Vehicle with uuid = %s not found", reg.)
+			c.AbortWithError(http.StatusNotFound, err)
+			return
+		}
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.AbortWithStatus(http.StatusOK)
 }
