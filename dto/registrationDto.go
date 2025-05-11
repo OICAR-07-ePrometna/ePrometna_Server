@@ -1,6 +1,10 @@
 package dto
 
-import "ePrometna_Server/model"
+import (
+	"ePrometna_Server/model"
+
+	"github.com/google/uuid"
+)
 
 type RegistrationDto struct {
 	PassTechnical    bool   `json:"passTechnical"`
@@ -11,6 +15,7 @@ type RegistrationDto struct {
 
 func (dto *RegistrationDto) ToModel() (model.RegistrationInfo, error) {
 	m := model.RegistrationInfo{
+		Uuid:             uuid.New(),
 		PassTechnical:    dto.PassTechnical,
 		TraveledDistance: dto.TraveledDistance,
 		Registration:     dto.Registration,

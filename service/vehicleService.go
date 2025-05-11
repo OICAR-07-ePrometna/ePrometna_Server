@@ -4,6 +4,8 @@ import (
 	"ePrometna_Server/app"
 	"ePrometna_Server/model"
 	"ePrometna_Server/util/cerror"
+	"errors"
+	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -16,7 +18,7 @@ type IVehicleService interface {
 	Create(newVehicle *model.Vehicle, ownerUuid uuid.UUID) (*model.Vehicle, error)
 	Delete(uuid uuid.UUID) error
 	ChangeOwner(vehicle uuid.UUID, newOwner uuid.UUID) error
-	Registration(model.RegistrationInfo) error
+	Registration(vehicleUuid uuid.UUID, model model.RegistrationInfo) error
 }
 
 // TODO: implement service
@@ -154,11 +156,15 @@ func (v *VehicleService) ChangeOwner(vehicleUUID uuid.UUID, newOwner uuid.UUID) 
 	if rez.Error != nil {
 		return rez.Error
 	}
+	if user.Role != model.RoleFirma && user.Role != model.RoleOsoba {
+		v.logger.Errorf("New owner (UUID: %s) with role '%s' cannot own a vehicle", newOwner, user.Role)
+		return cerror.ErrBadRole
+	}
 
 	var vehicle model.Vehicle
 	rez = v.db.
 		Preload("Owner").
-		Preload("PaswOwners").
+		Preload("PastOwners").
 		Where("uuid = ?", vehicleUUID).
 		First(&vehicle)
 
@@ -169,12 +175,15 @@ func (v *VehicleService) ChangeOwner(vehicleUUID uuid.UUID, newOwner uuid.UUID) 
 		return rez.Error
 	}
 
-	// Moving current user to past user
-	oldUser := model.OwnerHistory{}
-	oldUser.FromUser(*vehicle.Owner)
-	vehicle.PastOwners = append(vehicle.PastOwners, oldUser)
-
-	// assingn new user
+	if vehicle.Owner != nil && vehicle.UserId != nil {
+		pastOwnerEntry := model.OwnerHistory{
+			Uuid:      uuid.New(),
+			VehicleId: vehicle.ID,
+			UserId:    *vehicle.UserId, // This should be oldOwner.ID
+		}
+		if err := v.db.Create(&pastOwnerEntry).Error; err != nil { /* handle error */
+		}
+	}
 	vehicle.UserId = &user.ID
 
 	rez = v.db.
@@ -182,12 +191,52 @@ func (v *VehicleService) ChangeOwner(vehicleUUID uuid.UUID, newOwner uuid.UUID) 
 	if rez.Error != nil {
 		return rez.Error
 	}
-
 	return nil
 }
 
 // Registration implements IVehicleService.
-func (v *VehicleService) Registration(reg model.RegistrationInfo) error {
-	panic("unimplemented")
-	return nil
+func (v *VehicleService) Registration(vehicleUuid uuid.UUID, newRegInfo model.RegistrationInfo) error {
+	v.logger.Debugf("Attempting to register vehicle with UUID: %s", vehicleUuid)
+
+	return v.db.Transaction(func(tx *gorm.DB) error {
+		var vehicle model.Vehicle
+		if err := tx.
+			Preload("Registration").
+			Where("uuid = ?", vehicleUuid).
+			First(&vehicle).
+			Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				v.logger.Warnf("Vehicle with UUID = %s not found for registration.", vehicleUuid)
+				return gorm.ErrRecordNotFound
+			}
+			v.logger.Errorf("Failed to find vehicle with UUID = %s: %+v", vehicleUuid, err)
+			return err
+		}
+
+		v.logger.Debugf("Found vehicle (ID: %d) for registration.", vehicle.ID)
+
+		if vehicle.Registration != nil {
+			v.logger.Infof("Vehicle UUID %s (ID: %d) already has an active registration (RegistrationInfo ID: %d). This registration will be superseded by the new one.", vehicle.Uuid, vehicle.ID, vehicle.Registration.ID)
+		}
+
+		newRegInfo.VehicleId = vehicle.ID
+		newRegInfo.TechnicalDate = time.Now()
+
+		if err := tx.Create(&newRegInfo).Error; err != nil {
+			v.logger.Errorf("Failed to create new RegistrationInfo for vehicle ID %d (UUID: %s): %+v", vehicle.ID, newRegInfo.Uuid, err)
+			return err
+		}
+		v.logger.Debugf("Successfully created new RegistrationInfo (ID: %d, UUID: %s) for vehicle ID %d.", newRegInfo.ID, newRegInfo.Uuid, vehicle.ID)
+
+		vehicle.RegistrationID = &newRegInfo.ID
+		vehicle.Registration = &newRegInfo
+
+		if err := tx.Save(&vehicle).Error; err != nil {
+			v.logger.Errorf("Failed to save vehicle (ID: %d) with updated current registration (RegistrationInfo ID: %d): %+v", vehicle.ID, newRegInfo.ID, err)
+			return err
+		}
+
+		v.logger.Infof("Successfully updated vehicle UUID %s (ID: %d) to set new current registration (RegistrationInfo ID: %d, UUID: %s).", vehicle.Uuid, vehicle.ID, newRegInfo.ID, newRegInfo.Uuid)
+		return nil
+	})
 }

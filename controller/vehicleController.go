@@ -24,48 +24,47 @@ type VehicleController struct {
 
 func NewVehicleController() *VehicleController {
 	var controller *VehicleController
-
-	// Call dependency injection
 	app.Invoke(func(vehicleService service.IVehicleService, logger *zap.SugaredLogger) {
-		// create controller
 		controller = &VehicleController{
 			VehicleService: vehicleService,
 			logger:         logger,
 		}
 	})
-
 	return controller
 }
 
 func (c *VehicleController) RegisterEndpoints(api *gin.RouterGroup) {
-	// create a group with the name of the router
 	group := api.Group("/vehicle")
 
-	// Osoba firma i Hak mogu dohvatiti detalje vozila
+	// Publicly accessible or role-specific GETs
 	group.GET("/:uuid", middleware.Protect(model.RoleHAK, model.RoleFirma, model.RoleOsoba), c.get)
-
-	// Osoba i firma mogu dohvatiti svoja vozila
 	group.GET("/", middleware.Protect(model.RoleFirma, model.RoleOsoba), c.myVehicles)
 
-	// samo Hak endpoints
-	group.Use(middleware.Protect(model.RoleHAK))
-	group.POST("/", c.create)
-	group.DELETE("/:uuid", c.delete)
-	group.PUT("/change-owner", c.changeOwner)
+	// Endpoints requiring HAK role
+	hakGroup := group.Group("") // Create a new sub-group for HAK specific middleware
+	hakGroup.Use(middleware.Protect(model.RoleHAK))
+	{
+		hakGroup.POST("/", c.create)
+		hakGroup.DELETE("/:uuid", c.delete)
+		hakGroup.PUT("/change-owner", c.changeOwner)
+		// Ensure the registration route is here and uses PUT
+		hakGroup.PUT("/registration/:uuid", c.registration) // <<< MAKE SURE THIS LINE EXISTS AND IS CORRECT
+	}
 }
 
+// ... rest of your controller functions ...
+
 // DeleteVehicle godoc
-//
-//	@Summary	Soft delete on vehicle
-//	@Schemes
-//	@Description	Preforms a soft delete
-//	@Tags			vehicle
-//	@Success		204
-//	@Failure		400
-//	@Failure		404
-//	@Failure		500
-//	@Param			uuid	path	string	true	"Vehicle UUID"
-//	@Router			/vehicle/{uuid} [delete]
+// @Summary Soft delete on vehicle
+// @Schemes
+// @Description Preforms a soft delete
+// @Tags vehicle
+// @Success 204
+// @Failure 400
+// @Failure 404
+// @Failure 500
+// @Param uuid path string true "Vehicle UUID"
+// @Router /vehicle/{uuid} [delete]
 func (v *VehicleController) delete(c *gin.Context) {
 	vehicleUuid, err := uuid.Parse(c.Param("uuid"))
 	if err != nil {
@@ -81,6 +80,7 @@ func (v *VehicleController) delete(c *gin.Context) {
 			c.AbortWithError(http.StatusNotFound, err)
 			return
 		}
+		v.logger.Errorf("Failed to delete vehicle %s: %+v", vehicleUuid, err)
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
@@ -89,18 +89,17 @@ func (v *VehicleController) delete(c *gin.Context) {
 }
 
 // CreateVehicle godoc
-//
-//	@Summary	Creates new vehicle
-//	@Schemes
-//	@Description	Create new vehicle with an owner
-//	@Tags			vehicle
-//	@Produce		json
-//	@Success		201	{object}	dto.VehicleDto
-//	@Failure		400
-//	@Failure		404
-//	@Failure		500
-//	@Param			model	body	dto.NewVehicleDto	true	"Vehicle model"
-//	@Router			/vehicle [post]
+// @Summary Creates new vehicle
+// @Schemes
+// @Description Create new vehicle with an owner
+// @Tags vehicle
+// @Produce json
+// @Success 201 {object} dto.VehicleDto
+// @Failure 400
+// @Failure 404
+// @Failure 500
+// @Param model body dto.NewVehicleDto true "Vehicle model"
+// @Router /vehicle [post]
 func (v *VehicleController) create(c *gin.Context) {
 	var newDto dto.NewVehicleDto
 	if err := c.Bind(&newDto); err != nil {
@@ -109,53 +108,52 @@ func (v *VehicleController) create(c *gin.Context) {
 		return
 	}
 
-	vehicle, err := newDto.ToModel()
+	vehicle, err := newDto.ToModel() // This DTO also creates an initial RegistrationInfo
 	if err != nil {
-		v.logger.Errorf("Failed to create model error = %+v", err)
+		v.logger.Errorf("Failed to create model from DTO error = %+v", err)
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
 	ownerUuid, err := uuid.Parse(newDto.OwnerUuid)
 	if err != nil {
-		v.logger.Errorf("Failed to parse uuid = %s, err + %+v", newDto.OwnerUuid, err)
+		v.logger.Errorf("Failed to parse owner uuid = %s, err + %+v", newDto.OwnerUuid, err)
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	vehicle, err = v.VehicleService.Create(vehicle, ownerUuid)
+	createdVehicle, err := v.VehicleService.Create(vehicle, ownerUuid)
 	if err != nil {
 		if errors.Is(err, cerror.ErrBadRole) {
-			v.logger.Errorf("Role or user is invalid, err = %+v", err)
-			c.AbortWithError(http.StatusBadRequest, err)
+			v.logger.Errorf("Role or user is invalid for owning a vehicle, err = %+v", err)
+			c.AbortWithError(http.StatusBadRequest, err) // 400 for bad role as it's a client error
 			return
 		}
-
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			v.logger.Errorf("User with uuid = %s not found", newDto.OwnerUuid)
+		if errors.Is(err, gorm.ErrRecordNotFound) { // This means owner user was not found
+			v.logger.Errorf("User (owner) with uuid = %s not found", newDto.OwnerUuid)
 			c.AbortWithError(http.StatusNotFound, err)
 			return
 		}
+		v.logger.Errorf("Failed to create vehicle: %+v", err)
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	var dto dto.VehicleDto
-	c.JSON(http.StatusCreated, dto.FromModel(vehicle))
+	var respDto dto.VehicleDto
+	c.JSON(http.StatusCreated, respDto.FromModel(createdVehicle))
 }
 
 // GetVehicle godoc
-//
-//	@Summary	Gets a vehicle with uuid
-//	@Schemes
-//	@Tags		vehicle
-//	@Produce	json
-//	@Success	200	{object}	dto.VehicleDetailsDto
-//	@Failure	400
-//	@Failure	404
-//	@Failure	500
-//	@Param		uuid	path	string	true	"Vehicle UUID"
-//	@Router		/vehicle/{uuid} [get]
+// @Summary Gets a vehicle with uuid
+// @Schemes
+// @Tags vehicle
+// @Produce json
+// @Success 200 {object} dto.VehicleDetailsDto
+// @Failure 400
+// @Failure 404
+// @Failure 500
+// @Param uuid path string true "Vehicle UUID"
+// @Router /vehicle/{uuid} [get]
 func (v *VehicleController) get(c *gin.Context) {
 	vehicleUuid, err := uuid.Parse(c.Param("uuid"))
 	if err != nil {
@@ -171,92 +169,98 @@ func (v *VehicleController) get(c *gin.Context) {
 			c.AbortWithError(http.StatusNotFound, err)
 			return
 		}
+		v.logger.Errorf("Failed to read vehicle %s: %+v", vehicleUuid, err)
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	var dto dto.VehicleDetailsDto
-	// var dto dto.VehicleDto
-	c.JSON(http.StatusOK, dto.FromModel(vehicle))
+	var detailsDto dto.VehicleDetailsDto
+	c.JSON(http.StatusOK, detailsDto.FromModel(vehicle))
 }
 
 // myVehicle godoc
-//
-//	@Summary	Gets your vehicles
-//	@Schemes
-//	@Tags		vehicle
-//	@Produce	json
-//	@Success	200	{object}	[]dto.VehicleDto
-//	@Failure	400
-//	@Failure	404
-//	@Failure	500
-//	@Router		/vehicle [get]
+// @Summary Gets your vehicles
+// @Schemes
+// @Tags vehicle
+// @Produce json
+// @Success 200 {object} []dto.VehicleDto
+// @Failure 400
+// @Failure 401
+// @Failure 404
+// @Failure 500
+// @Router /vehicle [get]
 func (v *VehicleController) myVehicles(c *gin.Context) {
 	_, claims, err := auth.ParseToken(c.Request.Header.Get("Authorization"))
 	if err != nil {
 		v.logger.Errorf("Failed to parse token: %v", err)
-		c.AbortWithError(http.StatusUnauthorized, err)
+		c.AbortWithError(http.StatusUnauthorized, err) // 401 for token issues
 		return
 	}
-	uuid, err := uuid.Parse(claims.Uuid)
+	userUuid, err := uuid.Parse(claims.Uuid) // User's own UUID from token
 	if err != nil {
-		v.logger.Errorf("Failed to parse uuid = %s, err + %+v", claims.Uuid, err)
-		c.AbortWithError(http.StatusBadRequest, err)
+		v.logger.Errorf("Failed to parse uuid from token claims = %s, err + %+v", claims.Uuid, err)
+		c.AbortWithError(http.StatusBadRequest, err) // Should not happen if token is valid
 		return
 	}
 
-	vehicles, err := v.VehicleService.ReadAll(uuid)
+	vehicles, err := v.VehicleService.ReadAll(userUuid)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			v.logger.Errorf("Vehicle with owner uuid = %s not found", uuid)
-			c.AbortWithError(http.StatusNotFound, err)
-			return
-		}
+		// No specific check for gorm.ErrRecordNotFound here, as ReadAll might return empty slice
+		v.logger.Errorf("Failed to read vehicles for user %s: %+v", userUuid, err)
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 	var dtos dto.VehiclesDto
-
 	c.JSON(http.StatusOK, dtos.FromModel(vehicles))
 }
 
 // changeOwner godoc
-//
-//	@Summary	changes owner to new owner with uuid
-//	@Schemes
-//	@Tags		vehicle
-//	@Success	200
-//	@Failure	400
-//	@Failure	404
-//	@Failure	500
-//	@Param		vehicleUuid	body	dto.ChangeOwnerDto	true	"Dto for changing ownership"
-//	@Router		/vehicle/change-owner [put]
+// @Summary changes owner to new owner with uuid
+// @Schemes
+// @Tags vehicle
+// @Success 200
+// @Failure 400
+// @Failure 404
+// @Failure 500
+// @Param changeOwnerDto body dto.ChangeOwnerDto true "Dto for changing ownership"
+// @Router /vehicle/change-owner [put]
 func (v *VehicleController) changeOwner(c *gin.Context) {
 	var cowner dto.ChangeOwnerDto
-	if err := c.Bind(&cowner); err != nil {
-		v.logger.Errorf("Failed to bind error = %+v", err)
+	if err := c.Bind(&cowner); err != nil { // This will use the updated DTO with standard uuid validation
+		v.logger.Errorf("Failed to bind ChangeOwnerDto: %+v", err)
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	vehicleUuid, err := uuid.Parse(cowner.VehicleUuid)
-	if err != nil {
-		v.logger.Errorf("Failed to parse vehicle uuid error = %+v", err)
-		c.AbortWithError(http.StatusBadRequest, err)
+	vehicleUuid, err := uuid.Parse(cowner.VehicleUuid) // Already validated by binding:"uuid"
+	if err != nil {                                    // Should ideally not be reached if binding works
+		v.logger.Errorf("Failed to parse vehicle uuid from DTO (after binding) error = %+v", err)
+		c.AbortWithError(http.StatusBadRequest, errors.New("invalid vehicle UUID format in DTO"))
+		return
 	}
 
-	ownerUuid, err := uuid.Parse(cowner.NewOwnerUuid)
-	if err != nil {
-		v.logger.Errorf("Failed to parse new owner uuid error = %+v", err)
-		c.AbortWithError(http.StatusBadRequest, err)
+	ownerUuid, err := uuid.Parse(cowner.NewOwnerUuid) // Already validated by binding:"uuid"
+	if err != nil {                                   // Should ideally not be reached
+		v.logger.Errorf("Failed to parse new owner uuid from DTO (after binding) error = %+v", err)
+		c.AbortWithError(http.StatusBadRequest, errors.New("invalid new owner UUID format in DTO"))
+		return
 	}
+
 	err = v.VehicleService.ChangeOwner(vehicleUuid, ownerUuid)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			v.logger.Errorf("Vehicle with uuid = %s not found", vehicleUuid)
+			// This could mean vehicle or new owner not found, or other related record.
+			// Service should return more specific errors if possible, or controller logs it.
+			v.logger.Errorf("ChangeOwner failed (record not found) for vehicle %s to owner %s: %+v", vehicleUuid, ownerUuid, err)
 			c.AbortWithError(http.StatusNotFound, err)
 			return
 		}
+		if errors.Is(err, cerror.ErrBadRole) {
+			v.logger.Errorf("ChangeOwner failed (bad role) for vehicle %s to owner %s: %+v", vehicleUuid, ownerUuid, err)
+			c.AbortWithError(http.StatusBadRequest, err) // 400 for bad role
+			return
+		}
+		v.logger.Errorf("Failed to change owner for vehicle %s to %s: %+v", vehicleUuid, ownerUuid, err)
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
@@ -266,42 +270,55 @@ func (v *VehicleController) changeOwner(c *gin.Context) {
 }
 
 // registerVehicle godoc
-//
-//	@Summary	Tehnicki pregled
-//	@Schemes
-//	@Tags		vehicle
-//	@Success	200
-//	@Failure	400
-//	@Failure	404
-//	@Failure	500
-//	@Param		vehicleUuid	body	dto.ChangeOwnerDto	true	"Dto for changing ownership"
-//	@Param		uuid	path	string	true	"Vehicle UUID"
-//	@Router		/vehicle/registration/{uuid}  [put]
+// @Summary Tehnicki pregled
+// @Schemes
+// @Description Performs a technical inspection and registers a vehicle.
+// @Tags vehicle
+// @Accept json
+// @Produce json
+// @Success 200 "Successfully registered"
+// @Failure 400 {object} object{error=string} "Invalid request (bad UUID, binding error)"
+// @Failure 404 {object} object{error=string} "Vehicle not found"
+// @Failure 500 {object} object{error=string} "Internal server error"
+// @Param uuid path string true "Vehicle UUID" Format(uuid)
+// @Param registrationData body dto.RegistrationDto true "Data for vehicle registration"
+// @Router /vehicle/registration/{uuid} [put]
 func (v *VehicleController) registration(c *gin.Context) {
-	// TODO: bind vehicle uuid
-	var cowner dto.RegistrationDto
-	if err := c.Bind(&cowner); err != nil {
-		v.logger.Errorf("Failed to bind error = %+v", err)
+	vehicleUuidString := c.Param("uuid")
+	vehicleUuid, err := uuid.Parse(vehicleUuidString)
+	if err != nil {
+		v.logger.Errorf("Failed to parse vehicle uuid from path: %s, error = %+v", vehicleUuidString, err)
+		c.AbortWithError(http.StatusBadRequest, errors.New("invalid vehicle UUID format in path"))
+		return
+	}
+
+	var regDto dto.RegistrationDto
+	if err := c.Bind(&regDto); err != nil {
+		v.logger.Errorf("Failed to bind RegistrationDto: %+v", err)
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	reg, err := cowner.ToModel()
-	if err != nil {
-		v.logger.Errorf("Failed to map to model error = %+v", err)
-		c.AbortWithError(http.StatusBadRequest, err)
+	regModel, err := regDto.ToModel() // DTO to Model conversion
+	if err != nil {                   // This error path might not be reachable if DTO is simple
+		v.logger.Errorf("Failed to map RegistrationDto to model: %+v", err)
+		c.AbortWithError(http.StatusBadRequest, err) // Or InternalServerError depending on ToModel logic
+		return
 	}
 
-	err = v.VehicleService.Registration(reg)
+	// The service's Registration function now takes vehicleUuid and the regModel
+	err = v.VehicleService.Registration(vehicleUuid, regModel)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			v.logger.Errorf("Vehicle with uuid = %s not found", reg.)
+			v.logger.Errorf("Vehicle with uuid = %s not found for registration", vehicleUuid)
 			c.AbortWithError(http.StatusNotFound, err)
 			return
 		}
+		// Handle other specific errors from service if any (e.g., cerror.ErrRegistrationFailed)
+		v.logger.Errorf("Error during vehicle registration for uuid = %s: %+v", vehicleUuid, err)
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-
-	c.AbortWithStatus(http.StatusOK)
+	v.logger.Infof("Vehicle %s registered successfully.", vehicleUuid)
+	c.Status(http.StatusOK) // Use c.Status for 200 OK with no body, or c.JSON if returning data
 }

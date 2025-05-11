@@ -15,6 +15,7 @@ type Vehicle struct {
 	TemporaryData    *TempData          `gorm:"foreignKey:VehicleId;null"`
 	Registration     *RegistrationInfo  `gorm:"foreignKey:VehicleId;null"`
 	PastRegistration []RegistrationInfo `gorm:"foreignKey:VehicleId;null"`
+	RegistrationID   *uint
 
 	VehicleCategory                        string // Kategorija vozila // J
 	Mark                                   string // Marka // D1
