@@ -46,6 +46,9 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 	// Mup admin endpiont TODO: see pagination or search and or bothe
 	group.GET("/police-officers", middleware.Protect(model.RoleMupADMIN), u.getAllPoliceOfficers)
 
+	// HAK can search users by OIB for vehicle registration
+	group.GET("/oib/:oib", middleware.Protect(model.RoleHAK), u.getUserByOib)
+
 	// register Endpoints
 	group.Use(middleware.Protect(model.RoleSuperAdmin))
 	group.POST("/", u.create)
@@ -363,4 +366,41 @@ func (u *UserController) searchUsersByName(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, userDtos)
+}
+
+// GetUserByOIB godoc
+//
+//	@Summary		get user with oib
+//	@Description	get a user with oib
+//	@Tags			user
+//	@Produce		json
+//	@Success		200	{object}	dto.UserDto
+//	@Failure		400
+//	@Failure		404
+//	@Failure		500
+//	@Param			oib	path	string	true	"user oib"
+//	@Router			/user/oib/{oib} [get]
+func (u *UserController) getUserByOib(c *gin.Context) {
+	oib := c.Param("oib")
+	if oib == "" {
+		u.logger.Errorf("OIB parameter is empty")
+		c.AbortWithError(http.StatusBadRequest, errors.New("OIB parameter is required"))
+		return
+	}
+
+	user, err := u.UserCrud.GetUserByOIB(oib)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			u.logger.Errorf("User with OIB = %s not found", oib)
+			c.AbortWithError(http.StatusNotFound, err)
+			return
+		}
+
+		u.logger.Errorf("Failed to get user with OIB = %s", oib)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	dto := dto.UserDto{}
+	c.JSON(http.StatusOK, dto.FromModel(user))
 }

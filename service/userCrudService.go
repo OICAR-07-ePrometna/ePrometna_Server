@@ -23,6 +23,7 @@ type IUserCrudService interface {
 	GetAllUsers() ([]model.User, error)
 	GetAllPoliceOfficers() ([]model.User, error)
 	SearchUsersByName(query string) ([]model.User, error)
+	GetUserByOIB(oib string) (*model.User, error)
 }
 
 type UserCrudService struct {
@@ -158,4 +159,14 @@ func (u *UserCrudService) SearchUsersByName(query string) ([]model.User, error) 
 	}
 
 	return filteredUsers, nil
+}
+
+// GetUserByOIB implements IUserCrudService.
+func (u *UserCrudService) GetUserByOIB(oib string) (*model.User, error) {
+	var user model.User
+	rez := u.db.Where("oib = ?", oib).First(&user)
+	if rez.Error != nil {
+		return nil, rez.Error
+	}
+	return &user, nil
 }
