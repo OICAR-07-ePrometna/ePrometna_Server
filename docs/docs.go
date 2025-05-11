@@ -362,6 +362,44 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/oib/{oib}": {
+            "get": {
+                "description": "get a user with oib",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "get user with oib",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user oib",
+                        "name": "oib",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UserDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/user/police-officers": {
             "get": {
                 "description": "Fetches all police officers for MUP Admin",
