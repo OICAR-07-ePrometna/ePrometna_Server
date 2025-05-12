@@ -728,7 +728,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "deviceInfo": {
-                    "$ref": "#/definitions/service.DeviceInfo"
+                    "$ref": "#/definitions/device.DeviceInfo"
                 },
                 "email": {
                     "type": "string"
@@ -748,6 +748,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "device.DeviceInfo": {
+            "type": "object",
+            "properties": {
+                "brand": {
+                    "type": "string"
+                },
+                "deviceId": {
+                    "type": "string"
+                },
+                "modelName": {
+                    "type": "string"
+                },
+                "platform": {
                     "type": "string"
                 }
             }
@@ -1101,23 +1118,6 @@ const docTemplate = `{
                 },
                 "width": {
                     "description": "Širina // (7)",
-                    "type": "string"
-                }
-            }
-        },
-        "service.DeviceInfo": {
-            "type": "object",
-            "properties": {
-                "brand": {
-                    "type": "string"
-                },
-                "deviceId": {
-                    "type": "string"
-                },
-                "modelName": {
-                    "type": "string"
-                },
-                "platform": {
                     "type": "string"
                 }
             }

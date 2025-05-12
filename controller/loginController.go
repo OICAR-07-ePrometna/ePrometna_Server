@@ -7,6 +7,7 @@ import (
 	"ePrometna_Server/model"
 	"ePrometna_Server/service"
 	"ePrometna_Server/util/auth"
+	"ePrometna_Server/util/device"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -17,9 +18,9 @@ import (
 
 // MobileLoginDto contains login credentials and device info
 type MobileLoginDto struct {
-	Email      string             `json:"email" binding:"required"`
-	Password   string             `json:"password" binding:"required"`
-	DeviceInfo service.DeviceInfo `json:"deviceInfo" binding:"required"`
+	Email      string            `json:"email" binding:"required"`
+	Password   string            `json:"password" binding:"required"`
+	DeviceInfo device.DeviceInfo `json:"deviceInfo" binding:"required"`
 }
 
 // MobileLoginResponse contains all tokens for a mobile login

@@ -2,7 +2,7 @@ definitions:
   controller.MobileLoginDto:
     properties:
       deviceInfo:
-        $ref: '#/definitions/service.DeviceInfo'
+        $ref: '#/definitions/device.DeviceInfo'
       email:
         type: string
       password:
@@ -19,6 +19,17 @@ definitions:
       deviceToken:
         type: string
       refreshToken:
+        type: string
+    type: object
+  device.DeviceInfo:
+    properties:
+      brand:
+        type: string
+      deviceId:
+        type: string
+      modelName:
+        type: string
+      platform:
         type: string
     type: object
   dto.DriverLicenseDto:
@@ -272,17 +283,6 @@ definitions:
         type: string
       width:
         description: Širina // (7)
-        type: string
-    type: object
-  service.DeviceInfo:
-    properties:
-      brand:
-        type: string
-      deviceId:
-        type: string
-      modelName:
-        type: string
-      platform:
         type: string
     type: object
 info:
