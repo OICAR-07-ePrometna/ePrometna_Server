@@ -47,8 +47,7 @@ func (c *VehicleController) RegisterEndpoints(api *gin.RouterGroup) {
 		hakGroup.POST("/", c.create)
 		hakGroup.DELETE("/:uuid", c.delete)
 		hakGroup.PUT("/change-owner", c.changeOwner)
-		// Ensure the registration route is here and uses PUT
-		hakGroup.PUT("/registration/:uuid", c.registration) // <<< MAKE SURE THIS LINE EXISTS AND IS CORRECT
+		hakGroup.PUT("/registration/:uuid", c.registration)
 	}
 }
 
@@ -269,7 +268,7 @@ func (v *VehicleController) changeOwner(c *gin.Context) {
 	}
 
 	v.logger.Debugf("Vehicle with uuid = %s changed owner (uuid = %s)", vehicleUuid, ownerUuid)
-	c.AbortWithStatus(http.StatusOK)
+	c.AbortWithStatus(http.StatusNoContent)
 }
 
 // registerVehicle godoc
@@ -324,5 +323,5 @@ func (v *VehicleController) registration(c *gin.Context) {
 		return
 	}
 	v.logger.Infof("Vehicle %s registered successfully.", vehicleUuid)
-	c.Status(http.StatusOK) // Use c.Status for 200 OK with no body, or c.JSON if returning data
+	c.AbortWithStatus(http.StatusNoContent)
 }

@@ -2,6 +2,7 @@ package dto
 
 import (
 	"ePrometna_Server/model"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -20,6 +21,7 @@ func (dto *RegistrationDto) ToModel() (model.RegistrationInfo, error) {
 		TraveledDistance: dto.TraveledDistance,
 		Registration:     dto.Registration,
 		Note:             &dto.Note,
+		TechnicalDate:    time.Now(),
 	}
 
 	return m, nil
