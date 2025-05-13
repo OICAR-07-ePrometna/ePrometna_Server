@@ -55,6 +55,7 @@ func (c *VehicleController) RegisterEndpoints(api *gin.RouterGroup) {
 // ... rest of your controller functions ...
 
 // DeleteVehicle godoc
+//
 //	@Summary	Soft delete on vehicle
 //	@Schemes
 //	@Description	Preforms a soft delete
@@ -89,6 +90,7 @@ func (v *VehicleController) delete(c *gin.Context) {
 }
 
 // CreateVehicle godoc
+//
 //	@Summary	Creates new vehicle
 //	@Schemes
 //	@Description	Create new vehicle with an owner
@@ -144,6 +146,7 @@ func (v *VehicleController) create(c *gin.Context) {
 }
 
 // GetVehicle godoc
+//
 //	@Summary	Gets a vehicle with uuid
 //	@Schemes
 //	@Tags		vehicle
@@ -179,6 +182,7 @@ func (v *VehicleController) get(c *gin.Context) {
 }
 
 // myVehicle godoc
+//
 //	@Summary	Gets your vehicles
 //	@Schemes
 //	@Tags		vehicle
@@ -215,6 +219,7 @@ func (v *VehicleController) myVehicles(c *gin.Context) {
 }
 
 // changeOwner godoc
+//
 //	@Summary	changes owner to new owner with uuid
 //	@Schemes
 //	@Tags		vehicle
@@ -268,6 +273,7 @@ func (v *VehicleController) changeOwner(c *gin.Context) {
 }
 
 // registerVehicle godoc
+//
 //	@Summary	Tehnicki pregled
 //	@Schemes
 //	@Description	Performs a technical inspection and registers a vehicle.

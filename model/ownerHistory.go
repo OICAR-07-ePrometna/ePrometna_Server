@@ -13,5 +13,7 @@ type OwnerHistory struct {
 }
 
 func (m *OwnerHistory) FromUser(user User) *OwnerHistory {
+	m.UserId = user.ID
+	m.Uuid = uuid.New()
 	return m
 }
