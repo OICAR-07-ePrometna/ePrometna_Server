@@ -10,6 +10,7 @@ type OwnerHistory struct {
 	Uuid      uuid.UUID `gorm:"type:uuid;unique;not null"`
 	VehicleId uint      `gorm:"type:uint;not null"`
 	UserId    uint      `gorm:"type:uint;not null"`
+	User      User      `gorm:"foreignKey:UserId"`
 }
 
 func (m *OwnerHistory) FromUser(user User) *OwnerHistory {

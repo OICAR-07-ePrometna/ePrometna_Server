@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 // TODO: add more properties
@@ -105,9 +106,6 @@ func (dto *VehicleDetailsDto) ToModel() (*model.Vehicle, error) {
 		AdditionalTireSizes:                    dto.Summary.AdditionalTireSizes,
 	}
 
-	// TODO: Converting Owner, Drivers, and PastOwners would require additional logic
-	// to convert UserDto to User models
-
 	return vehicle, nil
 }
 
@@ -163,8 +161,34 @@ func (dto VehicleDetailsDto) FromModel(m *model.Vehicle) VehicleDetailsDto {
 		result.Owner = UserDto{}.FromModel(m.Owner)
 	}
 
-	// TODO: Add owner, drivers, and past owners conversion logic here
-	// This would require retrieving related user information and converting to UserDto
+	// Convert drivers
+	if len(m.Drivers) != 0 {
+		for _, driverEntry := range m.Drivers {
+			// Check if the User field within VehicleDrivers was preloaded
+			if driverEntry.User.ID != 0 { // Check if User is a valid, non-zero-ID user
+				var driverUserDto UserDto
+				result.Drivers = append(result.Drivers, driverUserDto.FromModel(&driverEntry.User))
+			} else {
+				zap.S().Warnf("Vehicle UUID %s: Driver entry (VehicleDrivers ID: %d) has no preloaded User details (or User ID is 0). Skipping.", m.Uuid, driverEntry.ID)
+			}
+		}
+	} else {
+		result.Drivers = []UserDto{}
+	}
 
+	// Convert past owners
+	if len(m.PastOwners) != 0 {
+		for _, pastOwnerEntry := range m.PastOwners {
+			// Check if the User field within OwnerHistory was preloaded
+			if pastOwnerEntry.User.ID != 0 { // Check if User is a valid, non-zero-ID user
+				var pastOwnerUserDto UserDto
+				result.PastOwners = append(result.PastOwners, pastOwnerUserDto.FromModel(&pastOwnerEntry.User))
+			} else {
+				zap.S().Warnf("Vehicle UUID %s: Past owner entry (OwnerHistory ID: %d) has no preloaded User details (or User ID is 0). Skipping.", m.Uuid, pastOwnerEntry.ID)
+			}
+		}
+	} else {
+		result.PastOwners = []UserDto{}
+	}
 	return result
 }

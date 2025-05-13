@@ -14,6 +14,7 @@ type VehicleDrivers struct {
 	Uuid      uuid.UUID `gorm:"type:uuid;unique;not null"`
 	VehicleId uint      `gorm:"type:uint;not null"`
 	UserId    uint      `gorm:"type:uint;not null"`
+	User      User      `gorm:"foreignKey:UserId"`
 	Given     time.Time `gorm:"type:date;not null"`
 	Until     time.Time `gorm:"type:date;null"`
 }
