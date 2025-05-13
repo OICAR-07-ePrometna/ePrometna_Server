@@ -299,3 +299,80 @@ func (suite *LoginControllerTestSuite) TestRefreshToken_BindingError() {
 
 	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
 }
+
+// --- Tests for LoginMobile ---
+func (suite *LoginControllerTestSuite) TestLoginMobile_Success() {
+	mobileLoginDto := dto.MobileLoginDto{
+		Email:    "mobile@example.com",
+		Password: "mobilePassword123",
+		DeviceInfo: device.DeviceInfo{
+			Platform:  "Android",
+			Brand:     "TestBrand",
+			ModelName: "TestModel",
+			DeviceID:  "testDevice123",
+		},
+	}
+	expectedResult := &service.MobileLoginResult{
+		AccessToken:  "mobile.access.token",
+		RefreshToken: "mobile.refresh.token",
+		DeviceToken:  "mobile.device.token",
+	}
+
+	suite.mockLoginService.On("LoginMobile", mobileLoginDto.Email, mobileLoginDto.Password, mobileLoginDto.DeviceInfo).
+		Return(expectedResult, nil).Once()
+
+	jsonValue, _ := json.Marshal(mobileLoginDto)
+	req, _ := http.NewRequest(http.MethodPost, "/api/auth/login-mobile", bytes.NewBuffer(jsonValue))
+	req.Header.Set("Content-Type", "application/json")
+
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+
+	var responseDto dto.MobileLoginResponse
+	err := json.Unmarshal(w.Body.Bytes(), &responseDto)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), expectedResult.AccessToken, responseDto.AccessToken)
+	assert.Equal(suite.T(), expectedResult.RefreshToken, responseDto.RefreshToken)
+	assert.Equal(suite.T(), expectedResult.DeviceToken, responseDto.DeviceToken)
+
+	suite.mockLoginService.AssertExpectations(suite.T())
+}
+
+func (suite *LoginControllerTestSuite) TestLoginMobile_ServiceError() {
+	mobileLoginDto := dto.MobileLoginDto{
+		Email:    "mobile.error@example.com",
+		Password: "password",
+		DeviceInfo: device.DeviceInfo{
+			DeviceID: "errorDevice",
+		},
+	}
+	serviceErr := errors.New("device registration failed")
+
+	suite.mockLoginService.On("LoginMobile", mobileLoginDto.Email, mobileLoginDto.Password, mobileLoginDto.DeviceInfo).
+		Return((*service.MobileLoginResult)(nil), serviceErr).Once()
+
+	jsonValue, _ := json.Marshal(mobileLoginDto)
+	req, _ := http.NewRequest(http.MethodPost, "/api/auth/login-mobile", bytes.NewBuffer(jsonValue))
+	req.Header.Set("Content-Type", "application/json")
+
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code) // Controller maps service errors to Unauthorized for login
+	assert.Contains(suite.T(), w.Body.String(), serviceErr.Error())
+	suite.mockLoginService.AssertExpectations(suite.T())
+}
+
+func (suite *LoginControllerTestSuite) TestLoginMobile_BindingError() {
+	// Malformed JSON for DeviceInfo part
+	req, _ := http.NewRequest(http.MethodPost, "/api/auth/login-mobile", strings.NewReader(`{"email": "a@b.com", "password": "pw", "deviceInfo": {"platform":`))
+	req.Header.Set("Content-Type", "application/json")
+
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
+	assert.Contains(suite.T(), w.Body.String(), "Invalid request format")
+}

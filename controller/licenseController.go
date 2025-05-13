@@ -70,7 +70,7 @@ func (c *LicenseController) createLicense(ctx *gin.Context) {
 	_, claims, err := auth.ParseToken(ctx.Request.Header.Get("Authorization"))
 	if err != nil {
 		c.logger.Errorf("Failed to parse token: %v", err)
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		ctx.AbortWithError(http.StatusUnauthorized, err)
 		return
 	}
 	ownerUuid, err := uuid.Parse(claims.Uuid)
@@ -79,13 +79,17 @@ func (c *LicenseController) createLicense(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid owner UUID"})
 		return
 	}
-	license := licenseDto.ToModel()
+	license, err := licenseDto.ToModel()
+	if err != nil {
+		ctx.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
 
 	license, err = c.LicenseService.Create(license, ownerUuid)
 	if err != nil {
 		if errors.Is(err, cerror.ErrBadRole) {
 			c.logger.Errorf("Role or user is invalid, err = %+v", err)
-			ctx.AbortWithError(http.StatusNotFound, err)
+			ctx.AbortWithError(http.StatusBadRequest, err)
 			return
 		}
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -208,8 +212,12 @@ func (c *LicenseController) updateLicense(ctx *gin.Context) {
 		ctx.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
+	model, err := updateDto.ToModel()
+	if err != nil {
+		ctx.AbortWithError(http.StatusBadRequest, err)
+	}
 
-	updatedLicense, err := c.LicenseService.Update(licenseUuid, updateDto.ToModel())
+	updatedLicense, err := c.LicenseService.Update(licenseUuid, model)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.logger.Errorf("License with uuid = %s not found", licenseUuid)

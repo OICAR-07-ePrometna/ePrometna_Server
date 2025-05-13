@@ -70,10 +70,10 @@ func TestDriverLicenseDto_ToModel(t *testing.T) {
 			// The DPanicf in the original ToModel makes direct error comparison tricky.
 			// In a test environment, DPanicf will panic. In production, it logs and continues.
 			// We'll assume for testing it might return nil if parsing fails.
-			got := tt.dto.ToModel()
+			got, err := tt.dto.ToModel()
 
 			if tt.wantErr {
-				assert.Nil(t, got, "Expected nil for DPanicf cases or parse errors")
+				assert.NotNil(t, err, "Expected nil for DPanicf cases or parse errors")
 			} else {
 				assert.NotNil(t, got)
 				assert.NotEqual(t, uuid.Nil, got.Uuid, "UUID should be generated and not nil")
