@@ -235,8 +235,10 @@ func (suite *VehicleServiceTestSuite) TestCreateVehicle_Success() {
 		VehicleType:   "Car",
 		ChassisNumber: "CHASSIS_CREATE" + uuid.NewString()[:4],
 		Registration: &model.RegistrationInfo{
+			Uuid:             uuid.New(),
 			PassTechnical:    true,
 			TraveledDistance: 50,
+			TechnicalDate:    time.Now(),
 			Registration:     "ZG-SVC-CREATE",
 		},
 	}

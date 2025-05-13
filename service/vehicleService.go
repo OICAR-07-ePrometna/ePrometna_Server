@@ -144,11 +144,11 @@ func (v *VehicleService) ReadAll(driverUuid uuid.UUID) ([]model.Vehicle, error) 
 
 // TODO: test
 // ChangeOwner implements IVehicleService.
-func (v *VehicleService) ChangeOwner(vehicleUUID uuid.UUID, newOwner uuid.UUID) error {
-	var user model.User
+func (v *VehicleService) ChangeOwner(vehicleUUID uuid.UUID, newOwnerUuid uuid.UUID) error {
+	var newOwner model.User
 	rez := v.db.
-		Where("uuid = ?", newOwner).
-		First(&user)
+		Where("uuid = ?", newOwnerUuid).
+		First(&newOwner)
 
 	if rez.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
@@ -156,8 +156,8 @@ func (v *VehicleService) ChangeOwner(vehicleUUID uuid.UUID, newOwner uuid.UUID) 
 	if rez.Error != nil {
 		return rez.Error
 	}
-	if user.Role != model.RoleFirma && user.Role != model.RoleOsoba {
-		v.logger.Errorf("New owner (UUID: %s) with role '%s' cannot own a vehicle", newOwner, user.Role)
+	if newOwner.Role != model.RoleFirma && newOwner.Role != model.RoleOsoba {
+		v.logger.Errorf("New owner (UUID: %s) with role '%s' cannot own a vehicle", newOwnerUuid, newOwner.Role)
 		return cerror.ErrBadRole
 	}
 
@@ -184,7 +184,8 @@ func (v *VehicleService) ChangeOwner(vehicleUUID uuid.UUID, newOwner uuid.UUID) 
 		if err := v.db.Create(&pastOwnerEntry).Error; err != nil { /* handle error */
 		}
 	}
-	vehicle.UserId = &user.ID
+	vehicle.UserId = &newOwner.ID
+	vehicle.Owner = &newOwner
 
 	rez = v.db.
 		Save(&vehicle)
