@@ -457,7 +457,7 @@ func TestChangeOwner_Controller_Success(t *testing.T) {
 	w := httptest.NewRecorder()
 	testRouter.ServeHTTP(w, req)
 
-	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, http.StatusNoContent, w.Code)
 	mockVehicleService.AssertExpectations(t)
 }
 
@@ -527,7 +527,7 @@ func TestRegistration_Controller_Success(t *testing.T) {
 	w := httptest.NewRecorder()
 	testRouter.ServeHTTP(w, req)
 
-	assert.Equal(t, http.StatusOK, w.Code) // Controller uses AbortWithStatus(http.StatusOK)
+	assert.Equal(t, http.StatusNoContent, w.Code) // Controller uses AbortWithStatus(http.StatusOK)
 	mockVehicleService.AssertExpectations(t)
 }
 
