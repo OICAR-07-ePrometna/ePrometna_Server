@@ -396,6 +396,43 @@ func (suite *VehicleServiceTestSuite) TestRegistration_SupersedeExisting() {
 	}
 }
 
+// TestDeleteVehicle_Success tests the successful soft deletion of a vehicle.
+func (suite *VehicleServiceTestSuite) TestDeleteVehicle_Success() {
+	owner := createTestUserInDB(suite.db, &suite.Suite, model.RoleOsoba, uuid.New())
+	vehicleToTest := createTestVehicleWithInitialReg(suite.db, &suite.Suite, owner.ID, uuid.New(), "ZG-DEL-01")
+	suite.T().Logf("Vehicle created for deletion test: ID=%d, UUID=%s, OwnerID=%d", vehicleToTest.ID, vehicleToTest.Uuid, *vehicleToTest.UserId)
+
+	err := suite.vehicleService.Delete(vehicleToTest.Uuid)
+	assert.NoError(suite.T(), err)
+
+	// Verify in DB: Check if UserId is nil and DeletedAt is set (for soft delete)
+	var dbVehicle model.Vehicle
+	// Use Unscoped to retrieve soft-deleted records
+	err = suite.db.Unscoped().Preload("Registration").First(&dbVehicle, "uuid = ?", vehicleToTest.Uuid).Error
+	assert.NoError(suite.T(), err, "Should be able to find the vehicle (even if soft-deleted) by UUID")
+
+	assert.Nil(suite.T(), dbVehicle.UserId, "Vehicle's UserId should be nil after deletion")
+	assert.True(suite.T(), dbVehicle.DeletedAt.Valid, "Vehicle's DeletedAt should be valid (not NULL)")
+	assert.NotNil(suite.T(), dbVehicle.DeletedAt.Time, "Vehicle's DeletedAt time should be set")
+	assert.WithinDuration(suite.T(), time.Now(), dbVehicle.DeletedAt.Time, 5*time.Second, "DeletedAt should be recent")
+
+	// Optionally, check that the associated RegistrationInfo is not deleted if that's the desired behavior.
+	// The current service.Delete does not explicitly delete registrations.
+	if vehicleToTest.Registration != nil {
+		var regInfo model.RegistrationInfo
+		errReg := suite.db.First(&regInfo, "id = ?", vehicleToTest.Registration.ID).Error
+		assert.NoError(suite.T(), errReg, "Registration info should still exist if not cascade deleted")
+	}
+}
+
+// TestDeleteVehicle_NotFound tests deleting a non-existent vehicle.
+func (suite *VehicleServiceTestSuite) TestDeleteVehicle_NotFound() {
+	nonExistentUUID := uuid.New()
+	err := suite.vehicleService.Delete(nonExistentUUID)
+	assert.Error(suite.T(), err)
+	assert.True(suite.T(), errors.Is(err, gorm.ErrRecordNotFound), "Expected gorm.ErrRecordNotFound for non-existent vehicle")
+}
+
 // --- Run Test Suite ---
 func TestVehicleServiceSuite(t *testing.T) {
 	suite.Run(t, new(VehicleServiceTestSuite))
