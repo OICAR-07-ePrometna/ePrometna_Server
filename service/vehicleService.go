@@ -217,6 +217,10 @@ func (v *VehicleService) Registration(vehicleUuid uuid.UUID, newRegInfo model.Re
 
 		if vehicle.Registration != nil {
 			v.logger.Infof("Vehicle UUID %s (ID: %d) already has an active registration (RegistrationInfo ID: %d). This registration will be superseded by the new one.", vehicle.Uuid, vehicle.ID, vehicle.Registration.ID)
+			if err := tx.Model(&vehicle).Omit("RegistrationID").
+				Association("PastRegistration").Append(vehicle.Registration); err != nil {
+				return err
+			}
 		}
 
 		newRegInfo.VehicleId = vehicle.ID
