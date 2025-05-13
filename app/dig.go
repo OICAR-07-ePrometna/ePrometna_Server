@@ -18,6 +18,10 @@ var digContainer *dig.Container = nil
 
 var once = sync.Once{}
 
+func Test() {
+	digContainer = dig.New()
+}
+
 func Setup() {
 	once.Do(func() {
 		setupLogger()

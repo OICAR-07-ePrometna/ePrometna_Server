@@ -7,13 +7,15 @@ import (
 
 type Vehicle struct {
 	gorm.Model
-	Uuid          uuid.UUID         `gorm:"type:uuid;unique;not null"`
-	UserId        uint              `gorm:"type:uint;not null"`
-	Owner         *User             `gorm:"foreignKey:UserId;OnDelete:SET NULL"`
-	Drivers       []VehicleDrivers  `gorm:"foreignKey:VehicleId"`
-	PastOwners    []OwnerHistory    `gorm:"foreignKey:VehicleId"`
-	TemporaryData *TempData         `gorm:"foreignKey:VehicleId"`
-	Registration  *RegistrationInfo `gorm:"foreignKey:VehicleId;null"`
+	Uuid             uuid.UUID          `gorm:"type:uuid;unique;not null"`
+	UserId           *uint              `gorm:"type:uint;null"`
+	Owner            *User              `gorm:"foreignKey:UserId;OnDelete:SET NULL"`
+	Drivers          []VehicleDrivers   `gorm:"foreignKey:VehicleId;null"`
+	PastOwners       []OwnerHistory     `gorm:"foreignKey:VehicleId;null"`
+	TemporaryData    *TempData          `gorm:"foreignKey:VehicleId;null"`
+	Registration     *RegistrationInfo  `gorm:"foreignKey:VehicleId;null"`
+	PastRegistration []RegistrationInfo `gorm:"foreignKey:VehicleId;null"`
+	RegistrationID   *uint
 
 	VehicleCategory                        string // Kategorija vozila // J
 	Mark                                   string // Marka // D1

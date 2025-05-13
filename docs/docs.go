@@ -641,6 +641,9 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request"
                     },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
                     "404": {
                         "description": "Not Found"
                     },
@@ -684,6 +687,111 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/vehicle/change-owner": {
+            "put": {
+                "tags": [
+                    "vehicle"
+                ],
+                "summary": "changes owner to new owner with uuid",
+                "parameters": [
+                    {
+                        "description": "Dto for changing ownership",
+                        "name": "changeOwnerDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ChangeOwnerDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/vehicle/registration/{uuid}": {
+            "put": {
+                "description": "Performs a technical inspection and registers a vehicle.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vehicle"
+                ],
+                "summary": "Tehnicki pregled",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Vehicle UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Data for vehicle registration",
+                        "name": "registrationData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RegistrationDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully registered"
+                    },
+                    "400": {
+                        "description": "Invalid request (bad UUID, binding error)",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Vehicle not found",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -807,6 +915,21 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.ChangeOwnerDto": {
+            "type": "object",
+            "required": [
+                "newOwnerUuid",
+                "vehicleUuid"
+            ],
+            "properties": {
+                "newOwnerUuid": {
+                    "type": "string"
+                },
+                "vehicleUuid": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.DriverLicenseDto": {
             "type": "object",
             "properties": {
@@ -910,6 +1033,23 @@ const docTemplate = `{
                 },
                 "summary": {
                     "$ref": "#/definitions/dto.VehicleSummary"
+                },
+                "traveledDistance": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.RegistrationDto": {
+            "type": "object",
+            "properties": {
+                "note": {
+                    "type": "string"
+                },
+                "passTechnical": {
+                    "type": "boolean"
+                },
+                "registration": {
+                    "type": "string"
                 },
                 "traveledDistance": {
                     "type": "integer"

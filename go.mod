@@ -8,7 +8,18 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
-require github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1
+require (
+	github.com/stretchr/testify v1.10.0
+	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1
+	gorm.io/driver/sqlite v1.5.7
+)
+
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/mattn/go-sqlite3 v1.14.22 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
+)
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect

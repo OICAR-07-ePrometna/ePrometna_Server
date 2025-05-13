@@ -204,7 +204,6 @@ func (dm *DeviceManager) ValidateDeviceRegistration(user *model.User, deviceInfo
 	}, &sql.TxOptions{
 		Isolation: sql.LevelSerializable, // Use SERIALIZABLE isolation level
 	})
-
 	if err != nil {
 		return "", false, err
 	}
