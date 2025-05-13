@@ -32,7 +32,7 @@ type MockUserCrudService struct {
 // GetUserByOIB implements service.IUserCrudService.
 func (m *MockUserCrudService) GetUserByOIB(oib string) (*model.User, error) {
 	args := m.Called(oib)
-	if len(args) < 2 || args.Get(0) == nil {
+	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*model.User), args.Error(1)
