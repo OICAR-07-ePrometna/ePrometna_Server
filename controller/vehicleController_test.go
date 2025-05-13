@@ -165,7 +165,13 @@ func TestCreateVehicle_Controller_Success(t *testing.T) {
 
 	// Mock the service call
 	// We need to be careful with the first argument to mock.MatchedBy
-	mockVehicleService.On("Create", mock.AnythingOfType("*model.Vehicle"), ownerUUID).Return(expectedVehicleModel, nil).Once()
+	mockVehicleService.On("Create",
+		mock.MatchedBy(func(v *model.Vehicle) bool {
+			return v.VehicleModel == newVehicleDto.Summary.Model &&
+				v.VehicleType == newVehicleDto.Summary.VehicleType &&
+				v.Registration != nil &&
+				v.Registration.Registration == newVehicleDto.Registration
+		}), ownerUUID).Return(expectedVehicleModel, nil).Once()
 
 	jsonValue, _ := json.Marshal(newVehicleDto)
 	req, _ := http.NewRequest(http.MethodPost, "/api/vehicle/", bytes.NewBuffer(jsonValue))
