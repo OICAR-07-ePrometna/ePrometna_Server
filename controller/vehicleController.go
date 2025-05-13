@@ -55,16 +55,16 @@ func (c *VehicleController) RegisterEndpoints(api *gin.RouterGroup) {
 // ... rest of your controller functions ...
 
 // DeleteVehicle godoc
-// @Summary Soft delete on vehicle
-// @Schemes
-// @Description Preforms a soft delete
-// @Tags vehicle
-// @Success 204
-// @Failure 400
-// @Failure 404
-// @Failure 500
-// @Param uuid path string true "Vehicle UUID"
-// @Router /vehicle/{uuid} [delete]
+//	@Summary	Soft delete on vehicle
+//	@Schemes
+//	@Description	Preforms a soft delete
+//	@Tags			vehicle
+//	@Success		204
+//	@Failure		400
+//	@Failure		404
+//	@Failure		500
+//	@Param			uuid	path	string	true	"Vehicle UUID"
+//	@Router			/vehicle/{uuid} [delete]
 func (v *VehicleController) delete(c *gin.Context) {
 	vehicleUuid, err := uuid.Parse(c.Param("uuid"))
 	if err != nil {
@@ -89,17 +89,17 @@ func (v *VehicleController) delete(c *gin.Context) {
 }
 
 // CreateVehicle godoc
-// @Summary Creates new vehicle
-// @Schemes
-// @Description Create new vehicle with an owner
-// @Tags vehicle
-// @Produce json
-// @Success 201 {object} dto.VehicleDto
-// @Failure 400
-// @Failure 404
-// @Failure 500
-// @Param model body dto.NewVehicleDto true "Vehicle model"
-// @Router /vehicle [post]
+//	@Summary	Creates new vehicle
+//	@Schemes
+//	@Description	Create new vehicle with an owner
+//	@Tags			vehicle
+//	@Produce		json
+//	@Success		201	{object}	dto.VehicleDto
+//	@Failure		400
+//	@Failure		404
+//	@Failure		500
+//	@Param			model	body	dto.NewVehicleDto	true	"Vehicle model"
+//	@Router			/vehicle [post]
 func (v *VehicleController) create(c *gin.Context) {
 	var newDto dto.NewVehicleDto
 	if err := c.Bind(&newDto); err != nil {
@@ -144,16 +144,16 @@ func (v *VehicleController) create(c *gin.Context) {
 }
 
 // GetVehicle godoc
-// @Summary Gets a vehicle with uuid
-// @Schemes
-// @Tags vehicle
-// @Produce json
-// @Success 200 {object} dto.VehicleDetailsDto
-// @Failure 400
-// @Failure 404
-// @Failure 500
-// @Param uuid path string true "Vehicle UUID"
-// @Router /vehicle/{uuid} [get]
+//	@Summary	Gets a vehicle with uuid
+//	@Schemes
+//	@Tags		vehicle
+//	@Produce	json
+//	@Success	200	{object}	dto.VehicleDetailsDto
+//	@Failure	400
+//	@Failure	404
+//	@Failure	500
+//	@Param		uuid	path	string	true	"Vehicle UUID"
+//	@Router		/vehicle/{uuid} [get]
 func (v *VehicleController) get(c *gin.Context) {
 	vehicleUuid, err := uuid.Parse(c.Param("uuid"))
 	if err != nil {
@@ -179,16 +179,16 @@ func (v *VehicleController) get(c *gin.Context) {
 }
 
 // myVehicle godoc
-// @Summary Gets your vehicles
-// @Schemes
-// @Tags vehicle
-// @Produce json
-// @Success 200 {object} []dto.VehicleDto
-// @Failure 400
-// @Failure 401
-// @Failure 404
-// @Failure 500
-// @Router /vehicle [get]
+//	@Summary	Gets your vehicles
+//	@Schemes
+//	@Tags		vehicle
+//	@Produce	json
+//	@Success	200	{object}	[]dto.VehicleDto
+//	@Failure	400
+//	@Failure	401
+//	@Failure	404
+//	@Failure	500
+//	@Router		/vehicle [get]
 func (v *VehicleController) myVehicles(c *gin.Context) {
 	_, claims, err := auth.ParseToken(c.Request.Header.Get("Authorization"))
 	if err != nil {
@@ -215,15 +215,15 @@ func (v *VehicleController) myVehicles(c *gin.Context) {
 }
 
 // changeOwner godoc
-// @Summary changes owner to new owner with uuid
-// @Schemes
-// @Tags vehicle
-// @Success 200
-// @Failure 400
-// @Failure 404
-// @Failure 500
-// @Param changeOwnerDto body dto.ChangeOwnerDto true "Dto for changing ownership"
-// @Router /vehicle/change-owner [put]
+//	@Summary	changes owner to new owner with uuid
+//	@Schemes
+//	@Tags		vehicle
+//	@Success	200
+//	@Failure	400
+//	@Failure	404
+//	@Failure	500
+//	@Param		changeOwnerDto	body	dto.ChangeOwnerDto	true	"Dto for changing ownership"
+//	@Router		/vehicle/change-owner [put]
 func (v *VehicleController) changeOwner(c *gin.Context) {
 	var cowner dto.ChangeOwnerDto
 	if err := c.Bind(&cowner); err != nil {
@@ -268,19 +268,19 @@ func (v *VehicleController) changeOwner(c *gin.Context) {
 }
 
 // registerVehicle godoc
-// @Summary Tehnicki pregled
-// @Schemes
-// @Description Performs a technical inspection and registers a vehicle.
-// @Tags vehicle
-// @Accept json
-// @Produce json
-// @Success 200 "Successfully registered"
-// @Failure 400 {object} object{error=string} "Invalid request (bad UUID, binding error)"
-// @Failure 404 {object} object{error=string} "Vehicle not found"
-// @Failure 500 {object} object{error=string} "Internal server error"
-// @Param uuid path string true "Vehicle UUID" Format(uuid)
-// @Param registrationData body dto.RegistrationDto true "Data for vehicle registration"
-// @Router /vehicle/registration/{uuid} [put]
+//	@Summary	Tehnicki pregled
+//	@Schemes
+//	@Description	Performs a technical inspection and registers a vehicle.
+//	@Tags			vehicle
+//	@Accept			json
+//	@Produce		json
+//	@Success		200					"Successfully registered"
+//	@Failure		400					{object}	object{error=string}	"Invalid request (bad UUID, binding error)"
+//	@Failure		404					{object}	object{error=string}	"Vehicle not found"
+//	@Failure		500					{object}	object{error=string}	"Internal server error"
+//	@Param			uuid				path		string					true	"Vehicle UUID"	Format(uuid)
+//	@Param			registrationData	body		dto.RegistrationDto		true	"Data for vehicle registration"
+//	@Router			/vehicle/registration/{uuid} [put]
 func (v *VehicleController) registration(c *gin.Context) {
 	vehicleUuidString := c.Param("uuid")
 	vehicleUuid, err := uuid.Parse(vehicleUuidString)

@@ -2,15 +2,15 @@ definitions:
   controller.MobileLoginDto:
     properties:
       deviceInfo:
-        $ref: "#/definitions/device.DeviceInfo"
+        $ref: '#/definitions/device.DeviceInfo'
       email:
         type: string
       password:
         type: string
     required:
-      - deviceInfo
-      - email
-      - password
+    - deviceInfo
+    - email
+    - password
     type: object
   controller.MobileLoginResponse:
     properties:
@@ -31,6 +31,7 @@ definitions:
         type: string
       platform:
         type: string
+    type: object
   dto.ChangeOwnerDto:
     properties:
       newOwnerUuid:
@@ -38,8 +39,8 @@ definitions:
       vehicleUuid:
         type: string
     required:
-      - newOwnerUuid
-      - vehicleUuid
+    - newOwnerUuid
+    - vehicleUuid
     type: object
   dto.DriverLicenseDto:
     properties:
@@ -62,8 +63,8 @@ definitions:
         minLength: 6
         type: string
     required:
-      - email
-      - password
+    - email
+    - password
     type: object
   dto.NewUserDto:
     properties:
@@ -89,24 +90,24 @@ definitions:
         type: string
       role:
         enum:
-          - hak
-          - mupadmin
-          - osoba
-          - firma
-          - policija
-          - superadmin
+        - hak
+        - mupadmin
+        - osoba
+        - firma
+        - policija
+        - superadmin
         type: string
       uuid:
         type: string
     required:
-      - birthDate
-      - email
-      - firstName
-      - lastName
-      - oib
-      - password
-      - residence
-      - role
+    - birthDate
+    - email
+    - firstName
+    - lastName
+    - oib
+    - password
+    - residence
+    - role
     type: object
   dto.NewVehicleDto:
     properties:
@@ -115,7 +116,18 @@ definitions:
       registration:
         type: string
       summary:
-        $ref: "#/definitions/dto.VehicleSummary"
+        $ref: '#/definitions/dto.VehicleSummary'
+      traveledDistance:
+        type: integer
+    type: object
+  dto.RegistrationDto:
+    properties:
+      note:
+        type: string
+      passTechnical:
+        type: boolean
+      registration:
+        type: string
       traveledDistance:
         type: integer
     type: object
@@ -149,19 +161,19 @@ definitions:
     properties:
       drivers:
         items:
-          $ref: "#/definitions/dto.UserDto"
+          $ref: '#/definitions/dto.UserDto'
         type: array
       owner:
-        $ref: "#/definitions/dto.UserDto"
+        $ref: '#/definitions/dto.UserDto'
       pastOwners:
         items:
-          $ref: "#/definitions/dto.UserDto"
+          $ref: '#/definitions/dto.UserDto'
         type: array
       registration:
         type: string
       summary:
         allOf:
-          - $ref: "#/definitions/dto.VehicleSummary"
+        - $ref: '#/definitions/dto.VehicleSummary'
         description: |-
           Registration   RegistrationDto
           PastRegistratins []RegistrationDto
@@ -171,7 +183,7 @@ definitions:
   dto.VehicleDto:
     properties:
       allowedTo:
-        description: "NOTE: can be date or empty if empty then it is allowed forever"
+        description: 'NOTE: can be date or empty if empty then it is allowed forever'
         type: string
       model:
         type: string
@@ -212,8 +224,7 @@ definitions:
         description: Snaga motora // P2
         type: string
       engineSpeedForStationaryNoiseTest:
-        description:
-          Broj okretaja motora pri ispitivanju buke u stacionarnom stanju
+        description: Broj okretaja motora pri ispitivanju buke u stacionarnom stanju
           // U2
         type: string
       firstRegistrationInCroatia:
@@ -238,7 +249,7 @@ definitions:
         description: Najveća neto snaga // T
         type: string
       mb:
-        description: "MB (pretpostavka: proizvođač) // (13)"
+        description: 'MB (pretpostavka: proizvođač) // (13)'
         type: string
       model:
         description: Model // (14)
@@ -301,77 +312,77 @@ paths:
   /auth/login:
     post:
       consumes:
-        - application/json
+      - application/json
       description: Authenticates a user and returns access and refresh tokens
       parameters:
-        - description: Login credentials
-          in: body
-          name: loginDto
-          required: true
-          schema:
-            $ref: "#/definitions/dto.LoginDto"
+      - description: Login credentials
+        in: body
+        name: loginDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginDto'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/dto.TokenDto"
+            $ref: '#/definitions/dto.TokenDto'
       summary: User login
       tags:
-        - auth
+      - auth
   /auth/login-mobile:
     post:
       consumes:
-        - application/json
+      - application/json
       description: Authenticates a user on a mobile device and registers the device
       parameters:
-        - description: Mobile login credentials
-          in: body
-          name: mobileLoginDto
-          required: true
-          schema:
-            $ref: "#/definitions/controller.MobileLoginDto"
+      - description: Mobile login credentials
+        in: body
+        name: mobileLoginDto
+        required: true
+        schema:
+          $ref: '#/definitions/controller.MobileLoginDto'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/controller.MobileLoginResponse"
+            $ref: '#/definitions/controller.MobileLoginResponse'
       summary: Mobile login with device registration
       tags:
-        - auth
+      - auth
   /auth/refresh:
     post:
       description: Generates a new access token using a valid refresh token
       parameters:
-        - description: Refresh Token
-          in: body
-          name: refreshToken
-          required: true
-          schema:
-            type: string
+      - description: Refresh Token
+        in: body
+        name: refreshToken
+        required: true
+        schema:
+          type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/dto.TokenDto"
+            $ref: '#/definitions/dto.TokenDto'
       summary: Refresh Access Token
       tags:
-        - auth
+      - auth
   /license:
     get:
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/dto.DriverLicenseDto"
+              $ref: '#/definitions/dto.DriverLicenseDto'
             type: array
         "400":
           description: Bad Request
@@ -381,23 +392,23 @@ paths:
           description: Internal Server Error
       summary: Gets your licenses
       tags:
-        - license
+      - license
     post:
       description: Create a new license with an owner
       parameters:
-        - description: License model
-          in: body
-          name: model
-          required: true
-          schema:
-            $ref: "#/definitions/dto.DriverLicenseDto"
+      - description: License model
+        in: body
+        name: model
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DriverLicenseDto'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: "#/definitions/dto.DriverLicenseDto"
+            $ref: '#/definitions/dto.DriverLicenseDto'
         "400":
           description: Bad Request
         "404":
@@ -406,15 +417,15 @@ paths:
           description: Internal Server Error
       summary: Creates a new license
       tags:
-        - license
+      - license
   /license/{uuid}:
     delete:
       parameters:
-        - description: License UUID
-          in: path
-          name: uuid
-          required: true
-          type: string
+      - description: License UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
       responses:
         "204":
           description: No Content
@@ -426,21 +437,21 @@ paths:
           description: Internal Server Error
       summary: Deletes a license
       tags:
-        - license
+      - license
     get:
       parameters:
-        - description: License UUID
-          in: path
-          name: uuid
-          required: true
-          type: string
+      - description: License UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/dto.DriverLicenseDto"
+            $ref: '#/definitions/dto.DriverLicenseDto'
         "400":
           description: Bad Request
         "404":
@@ -449,27 +460,27 @@ paths:
           description: Internal Server Error
       summary: Gets a license with uuid
       tags:
-        - license
+      - license
     put:
       parameters:
-        - description: License UUID
-          in: path
-          name: uuid
-          required: true
-          type: string
-        - description: License model
-          in: body
-          name: model
-          required: true
-          schema:
-            $ref: "#/definitions/dto.DriverLicenseDto"
+      - description: License UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: License model
+        in: body
+        name: model
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DriverLicenseDto'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/dto.DriverLicenseDto"
+            $ref: '#/definitions/dto.DriverLicenseDto'
         "400":
           description: Bad Request
         "404":
@@ -478,23 +489,23 @@ paths:
           description: Internal Server Error
       summary: Updates a license
       tags:
-        - license
+      - license
   /user:
     post:
       parameters:
-        - description: Data for new user
-          in: body
-          name: model
-          required: true
-          schema:
-            $ref: "#/definitions/dto.NewUserDto"
+      - description: Data for new user
+        in: body
+        name: model
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewUserDto'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: "#/definitions/dto.UserDto"
+            $ref: '#/definitions/dto.UserDto'
         "400":
           description: Bad Request
         "404":
@@ -503,18 +514,18 @@ paths:
           description: Internal Server Error
       summary: Create new user
       tags:
-        - user
+      - user
   /user/{uuid}:
     delete:
       description: delete a user with uuid
       parameters:
-        - description: user uuid
-          in: path
-          name: uuid
-          required: true
-          type: string
+      - description: user uuid
+        in: path
+        name: uuid
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "204":
           description: No Content
@@ -526,22 +537,22 @@ paths:
           description: Internal Server Error
       summary: delete user with uuid
       tags:
-        - user
+      - user
     get:
       description: get a user with uuid
       parameters:
-        - description: user uuid
-          in: path
-          name: uuid
-          required: true
-          type: string
+      - description: user uuid
+        in: path
+        name: uuid
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/dto.UserDto"
+            $ref: '#/definitions/dto.UserDto'
         "400":
           description: Bad Request
         "404":
@@ -550,27 +561,27 @@ paths:
           description: Internal Server Error
       summary: get user with uuid
       tags:
-        - user
+      - user
     put:
       parameters:
-        - description: uuid of user to be updated
-          in: path
-          name: uuid
-          required: true
-          type: string
-        - description: Data for updating user
-          in: body
-          name: model
-          required: true
-          schema:
-            $ref: "#/definitions/dto.UserDto"
+      - description: uuid of user to be updated
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: Data for updating user
+        in: body
+        name: model
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserDto'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/dto.UserDto"
+            $ref: '#/definitions/dto.UserDto'
         "400":
           description: Bad Request
         "404":
@@ -579,18 +590,18 @@ paths:
           description: Internal Server Error
       summary: Update user with new dat
       tags:
-        - user
+      - user
   /user/all-users:
     get:
       description: Fetches all users for superadmin
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/dto.UserDto"
+              $ref: '#/definitions/dto.UserDto'
             type: array
         "401":
           description: Unauthorized
@@ -600,17 +611,17 @@ paths:
           description: Internal Server Error
       summary: Get all users for superadmin
       tags:
-        - user
+      - user
   /user/my-data:
     get:
       description: Fetches the currently logged-in user's data based on the JWT token
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/dto.UserDto"
+            $ref: '#/definitions/dto.UserDto'
         "400":
           description: Bad Request
         "401":
@@ -621,23 +632,23 @@ paths:
           description: Internal Server Error
       summary: Get logged-in user data
       tags:
-        - user
+      - user
   /user/oib/{oib}:
     get:
       description: get a user with oib
       parameters:
-        - description: user oib
-          in: path
-          name: oib
-          required: true
-          type: string
+      - description: user oib
+        in: path
+        name: oib
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/dto.UserDto"
+            $ref: '#/definitions/dto.UserDto'
         "400":
           description: Bad Request
         "404":
@@ -646,18 +657,18 @@ paths:
           description: Internal Server Error
       summary: get user with oib
       tags:
-        - user
+      - user
   /user/police-officers:
     get:
       description: Fetches all police officers for MUP Admin
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/dto.UserDto"
+              $ref: '#/definitions/dto.UserDto'
             type: array
         "401":
           description: Unauthorized
@@ -667,26 +678,25 @@ paths:
           description: Internal Server Error
       summary: Get all police officers for MUP Admin
       tags:
-        - user
+      - user
   /user/search:
     get:
-      description:
-        Performs a fuzzy search for users by first name, last name, or
+      description: Performs a fuzzy search for users by first name, last name, or
         full name with similarity matching
       parameters:
-        - description: Search query
-          in: query
-          name: query
-          required: true
-          type: string
+      - description: Search query
+        in: query
+        name: query
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/dto.UserDto"
+              $ref: '#/definitions/dto.UserDto'
             type: array
         "400":
           description: Bad Request
@@ -694,43 +704,45 @@ paths:
           description: Internal Server Error
       summary: Search users by name
       tags:
-        - user
+      - user
   /vehicle:
     get:
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: "#/definitions/dto.VehicleDto"
+              $ref: '#/definitions/dto.VehicleDto'
             type: array
         "400":
           description: Bad Request
+        "401":
+          description: Unauthorized
         "404":
           description: Not Found
         "500":
           description: Internal Server Error
       summary: Gets your vehicles
       tags:
-        - vehicle
+      - vehicle
     post:
       description: Create new vehicle with an owner
       parameters:
-        - description: Vehicle model
-          in: body
-          name: model
-          required: true
-          schema:
-            $ref: "#/definitions/dto.NewVehicleDto"
+      - description: Vehicle model
+        in: body
+        name: model
+        required: true
+        schema:
+          $ref: '#/definitions/dto.NewVehicleDto'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: "#/definitions/dto.VehicleDto"
+            $ref: '#/definitions/dto.VehicleDto'
         "400":
           description: Bad Request
         "404":
@@ -739,16 +751,16 @@ paths:
           description: Internal Server Error
       summary: Creates new vehicle
       tags:
-        - vehicle
+      - vehicle
   /vehicle/{uuid}:
     delete:
       description: Preforms a soft delete
       parameters:
-        - description: Vehicle UUID
-          in: path
-          name: uuid
-          required: true
-          type: string
+      - description: Vehicle UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
       responses:
         "204":
           description: No Content
@@ -760,21 +772,21 @@ paths:
           description: Internal Server Error
       summary: Soft delete on vehicle
       tags:
-        - vehicle
+      - vehicle
     get:
       parameters:
-        - description: Vehicle UUID
-          in: path
-          name: uuid
-          required: true
-          type: string
+      - description: Vehicle UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: "#/definitions/dto.VehicleDetailsDto"
+            $ref: '#/definitions/dto.VehicleDetailsDto'
         "400":
           description: Bad Request
         "404":
@@ -783,16 +795,16 @@ paths:
           description: Internal Server Error
       summary: Gets a vehicle with uuid
       tags:
-        - vehicle
+      - vehicle
   /vehicle/change-owner:
     put:
       parameters:
-        - description: Dto for changing ownership
-          in: body
-          name: vehicleUuid
-          required: true
-          schema:
-            $ref: "#/definitions/dto.ChangeOwnerDto"
+      - description: Dto for changing ownership
+        in: body
+        name: changeOwnerDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChangeOwnerDto'
       responses:
         "200":
           description: OK
@@ -804,5 +816,52 @@ paths:
           description: Internal Server Error
       summary: changes owner to new owner with uuid
       tags:
-        - vehicle
+      - vehicle
+  /vehicle/registration/{uuid}:
+    put:
+      consumes:
+      - application/json
+      description: Performs a technical inspection and registers a vehicle.
+      parameters:
+      - description: Vehicle UUID
+        format: uuid
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: Data for vehicle registration
+        in: body
+        name: registrationData
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegistrationDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully registered
+        "400":
+          description: Invalid request (bad UUID, binding error)
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: Vehicle not found
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Tehnicki pregled
+      tags:
+      - vehicle
 swagger: "2.0"
