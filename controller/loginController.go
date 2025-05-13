@@ -118,7 +118,6 @@ func (l *LoginController) loginMobile(c *gin.Context) {
 		loginDto.Password,
 		loginDto.DeviceInfo,
 	)
-
 	if err != nil {
 		l.logger.Errorf("Mobile login failed err = %+v", err)
 		c.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
