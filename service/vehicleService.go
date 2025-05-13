@@ -69,42 +69,41 @@ func (v *VehicleService) Create(vehicle *model.Vehicle, ownerUuid uuid.UUID) (*m
 
 // Delete implements IVehicleService.
 func (v *VehicleService) Delete(_uuid uuid.UUID) error {
-	vehicle := model.Vehicle{}
+	return v.db.Transaction(
+		func(tx *gorm.DB) error {
+			vehicle := model.Vehicle{}
 
-	rez := v.db.
-		Where("uuid = ?", _uuid).
-		First(&vehicle)
+			rez := tx.
+				Where("uuid = ?", _uuid).
+				First(&vehicle)
 
-	if rez.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
-	}
-	if rez.Error != nil {
-		return rez.Error
-	}
+			if rez.RowsAffected == 0 {
+				return gorm.ErrRecordNotFound
+			}
+			if rez.Error != nil {
+				return rez.Error
+			}
 
-	// TODO: write a service for removing users and putting them into past woners
-	vehicle.UserId = nil
+			// TODO: write a service for removing users and putting them into past oners
+			vehicle.UserId = nil
 
-	rez = v.db.
-		Save(&vehicle)
+			rez = tx.Save(&vehicle)
+			v.logger.Debugf("Update statment on uuid = %s, rez %+v", _uuid, rez)
+			if rez.RowsAffected == 0 {
+				return gorm.ErrRecordNotFound
+			}
+			if rez.Error != nil {
+				return rez.Error
+			}
 
-	v.logger.Debugf("Update statment on uuid = %s, rez %+v", _uuid, rez)
-	if rez.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
-	}
-	if rez.Error != nil {
-		return rez.Error
-	}
+			rez = tx.Delete(&vehicle)
+			v.logger.Debugf("Delete statment on uuid = %s, rez %+v", _uuid, rez)
+			if rez.RowsAffected == 0 {
+				return gorm.ErrRecordNotFound
+			}
 
-	rez = v.db.
-		Delete(&vehicle)
-
-	v.logger.Debugf("Delete statment on uuid = %s, rez %+v", _uuid, rez)
-	if rez.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
-	}
-
-	return rez.Error
+			return rez.Error
+		})
 }
 
 // Read implements IVehicleService.
