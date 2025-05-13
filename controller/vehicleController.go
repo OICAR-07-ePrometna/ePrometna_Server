@@ -226,21 +226,21 @@ func (v *VehicleController) myVehicles(c *gin.Context) {
 // @Router /vehicle/change-owner [put]
 func (v *VehicleController) changeOwner(c *gin.Context) {
 	var cowner dto.ChangeOwnerDto
-	if err := c.Bind(&cowner); err != nil { // This will use the updated DTO with standard uuid validation
+	if err := c.Bind(&cowner); err != nil {
 		v.logger.Errorf("Failed to bind ChangeOwnerDto: %+v", err)
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	vehicleUuid, err := uuid.Parse(cowner.VehicleUuid) // Already validated by binding:"uuid"
-	if err != nil {                                    // Should ideally not be reached if binding works
+	vehicleUuid, err := uuid.Parse(cowner.VehicleUuid)
+	if err != nil {
 		v.logger.Errorf("Failed to parse vehicle uuid from DTO (after binding) error = %+v", err)
 		c.AbortWithError(http.StatusBadRequest, errors.New("invalid vehicle UUID format in DTO"))
 		return
 	}
 
-	ownerUuid, err := uuid.Parse(cowner.NewOwnerUuid) // Already validated by binding:"uuid"
-	if err != nil {                                   // Should ideally not be reached
+	ownerUuid, err := uuid.Parse(cowner.NewOwnerUuid)
+	if err != nil {
 		v.logger.Errorf("Failed to parse new owner uuid from DTO (after binding) error = %+v", err)
 		c.AbortWithError(http.StatusBadRequest, errors.New("invalid new owner UUID format in DTO"))
 		return
@@ -249,15 +249,13 @@ func (v *VehicleController) changeOwner(c *gin.Context) {
 	err = v.VehicleService.ChangeOwner(vehicleUuid, ownerUuid)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			// This could mean vehicle or new owner not found, or other related record.
-			// Service should return more specific errors if possible, or controller logs it.
 			v.logger.Errorf("ChangeOwner failed (record not found) for vehicle %s to owner %s: %+v", vehicleUuid, ownerUuid, err)
 			c.AbortWithError(http.StatusNotFound, err)
 			return
 		}
 		if errors.Is(err, cerror.ErrBadRole) {
 			v.logger.Errorf("ChangeOwner failed (bad role) for vehicle %s to owner %s: %+v", vehicleUuid, ownerUuid, err)
-			c.AbortWithError(http.StatusBadRequest, err) // 400 for bad role
+			c.AbortWithError(http.StatusBadRequest, err)
 			return
 		}
 		v.logger.Errorf("Failed to change owner for vehicle %s to %s: %+v", vehicleUuid, ownerUuid, err)

@@ -433,6 +433,54 @@ func (suite *VehicleServiceTestSuite) TestDeleteVehicle_NotFound() {
 	assert.True(suite.T(), errors.Is(err, gorm.ErrRecordNotFound), "Expected gorm.ErrRecordNotFound for non-existent vehicle")
 }
 
+// TestReadAllVehicles_OwnerHasVehicles tests retrieving vehicles for an owner who has them.
+func (suite *VehicleServiceTestSuite) TestReadAllVehicles_OwnerHasVehicles() {
+	ownerUser := createTestUserInDB(suite.db, &suite.Suite, model.RoleOsoba, uuid.New())
+
+	// Create a couple of vehicles for this owner
+	vehicle1 := createTestVehicleWithInitialReg(suite.db, &suite.Suite, ownerUser.ID, uuid.New(), "ZG-ALL-01")
+	vehicle2 := createTestVehicleWithInitialReg(suite.db, &suite.Suite, ownerUser.ID, uuid.New(), "ZG-ALL-02")
+
+	// Create another owner and their vehicle, to ensure we only get vehicles for the specified owner
+	otherOwner := createTestUserInDB(suite.db, &suite.Suite, model.RoleFirma, uuid.New())
+	_ = createTestVehicleWithInitialReg(suite.db, &suite.Suite, otherOwner.ID, uuid.New(), "KA-OTHER-01")
+
+	retrievedVehicles, err := suite.vehicleService.ReadAll(ownerUser.Uuid)
+	assert.NoError(suite.T(), err)
+	assert.NotNil(suite.T(), retrievedVehicles)
+	assert.Len(suite.T(), retrievedVehicles, 2, "Should retrieve two vehicles for the owner")
+
+	// Check if the correct vehicles are returned (can check UUIDs or other unique properties)
+	var foundV1, foundV2 bool
+	for _, v := range retrievedVehicles {
+		assert.NotNil(suite.T(), v.Registration, "Vehicle in list should have registration preloaded")
+		if v.Uuid == vehicle1.Uuid {
+			foundV1 = true
+			assert.Equal(suite.T(), "ZG-ALL-01", v.Registration.Registration)
+		}
+		if v.Uuid == vehicle2.Uuid {
+			foundV2 = true
+			assert.Equal(suite.T(), "ZG-ALL-02", v.Registration.Registration)
+		}
+	}
+	assert.True(suite.T(), foundV1, "Vehicle 1 not found in retrieved list")
+	assert.True(suite.T(), foundV2, "Vehicle 2 not found in retrieved list")
+}
+
+// TestReadAllVehicles_OwnerHasNoVehicles tests retrieving vehicles for an owner who has none.
+func (suite *VehicleServiceTestSuite) TestReadAllVehicles_OwnerHasNoVehicles() {
+	ownerWithNoVehicles := createTestUserInDB(suite.db, &suite.Suite, model.RoleOsoba, uuid.New())
+
+	// Create a vehicle for a different owner to ensure the DB isn't empty
+	otherOwner := createTestUserInDB(suite.db, &suite.Suite, model.RoleFirma, uuid.New())
+	_ = createTestVehicleWithInitialReg(suite.db, &suite.Suite, otherOwner.ID, uuid.New(), "KA-OTHER-02")
+
+	retrievedVehicles, err := suite.vehicleService.ReadAll(ownerWithNoVehicles.Uuid)
+	assert.NoError(suite.T(), err)
+	assert.NotNil(suite.T(), retrievedVehicles) // Should be an empty slice, not nil
+	assert.Len(suite.T(), retrievedVehicles, 0, "Should retrieve an empty list for an owner with no vehicles")
+}
+
 // --- Run Test Suite ---
 func TestVehicleServiceSuite(t *testing.T) {
 	suite.Run(t, new(VehicleServiceTestSuite))
