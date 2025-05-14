@@ -72,6 +72,14 @@ func (m *MockVehicleService) Registration(vehicleUuid uuid.UUID, regModel model.
 	return args.Error(0)
 }
 
+func (m *MockVehicleService) ReadByVin(vin string) (*model.Vehicle, error) {
+	args := m.Called(vin)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.Vehicle), args.Error(1)
+}
+
 // --- Test Setup ---
 var (
 	testSugarLogger    *zap.SugaredLogger

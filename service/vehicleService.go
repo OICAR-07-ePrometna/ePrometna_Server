@@ -15,6 +15,7 @@ import (
 type IVehicleService interface {
 	ReadAll(driverUuid uuid.UUID) ([]model.Vehicle, error)
 	Read(uuid uuid.UUID) (*model.Vehicle, error)
+	ReadByVin(vin string) (*model.Vehicle, error)
 	Create(newVehicle *model.Vehicle, ownerUuid uuid.UUID) (*model.Vehicle, error)
 	Delete(uuid uuid.UUID) error
 	ChangeOwner(vehicle uuid.UUID, newOwner uuid.UUID) error
@@ -243,4 +244,21 @@ func (v *VehicleService) Registration(vehicleUuid uuid.UUID, newRegInfo model.Re
 		v.logger.Infof("Successfully updated vehicle UUID %s (ID: %d) to set new current registration (RegistrationInfo ID: %d, UUID: %s).", vehicle.Uuid, vehicle.ID, newRegInfo.ID, newRegInfo.Uuid)
 		return nil
 	})
+}
+
+// ReadByVin implements IVehicleService.
+func (v *VehicleService) ReadByVin(vin string) (*model.Vehicle, error) {
+	var vehicle model.Vehicle
+
+	rez := v.db.
+		InnerJoins("Registration").
+		Preload("Owner").
+		Where("vehicles.chassis_number = ?", vin).
+		First(&vehicle)
+
+	if rez.Error != nil {
+		return nil, rez.Error
+	}
+
+	return &vehicle, nil
 }
