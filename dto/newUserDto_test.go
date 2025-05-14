@@ -133,7 +133,6 @@ func TestNewUserDto_ToModel(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotNil(t, got)
 				assert.NotEqual(t, uuid.Nil, got.Uuid, "Generated UUID should not be nil")
-				// If DTO had a UUID, ToModel generates a new one, so we don't compare tt.want.Uuid
 				assert.Equal(t, tt.want.FirstName, got.FirstName)
 				assert.Equal(t, tt.want.LastName, got.LastName)
 				assert.Equal(t, tt.want.OIB, got.OIB)

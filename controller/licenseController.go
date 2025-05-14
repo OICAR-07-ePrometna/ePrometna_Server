@@ -215,6 +215,7 @@ func (c *LicenseController) updateLicense(ctx *gin.Context) {
 	model, err := updateDto.ToModel()
 	if err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)
+		return
 	}
 
 	updatedLicense, err := c.LicenseService.Update(licenseUuid, model)

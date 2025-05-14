@@ -39,7 +39,11 @@ type MockLoginService struct {
 // LoginMobile implements service.ILoginService.
 func (m *MockLoginService) LoginMobile(email string, password string, deviceInfo device.DeviceInfo) (*service.MobileLoginResult, error) {
 	args := m.Called(email, password, deviceInfo)
-	return args.Get(0).(*service.MobileLoginResult), args.Error(1)
+	var res *service.MobileLoginResult
+	if v := args.Get(0); v != nil {
+		res = v.(*service.MobileLoginResult)
+	}
+	return res, args.Error(1)
 }
 
 func (m *MockLoginService) Login(email, password string) (string, string, error) {

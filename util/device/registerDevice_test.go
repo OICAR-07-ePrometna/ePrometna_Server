@@ -23,12 +23,11 @@ import (
 
 // --- Global Test Variables ---
 var (
-	testUserGlobal = &model.User{ // Renamed to avoid conflict with suite field
-		// ID will be set by GORM upon creation
+	testUserGlobal = &model.User{
 		Uuid:         uuid.New(),
 		FirstName:    "Global",
 		LastName:     "Tester",
-		OIB:          "12345678901", // Ensure this is unique for each created user in tests
+		OIB:          "12345678901",
 		Email:        "global.tester@example.com",
 		PasswordHash: "hashedpassword",
 		Role:         model.RoleOsoba,

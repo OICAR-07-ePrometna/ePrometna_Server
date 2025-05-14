@@ -148,8 +148,8 @@ func (suite *LicenseControllerTestSuite) TestCreateLicense_Success() {
 	licenseDto := dto.DriverLicenseDto{
 		LicenseNumber: "DL12345", IssueDate: "2023-01-01", ExpiringDate: "2033-01-01", Category: "B",
 	}
-	expectedLicenseModel, _ := licenseDto.ToModel()
-	expectedLicenseModel.UserId = 0
+	expectedLicenseModel, errConv := licenseDto.ToModel()
+	assert.NoError(suite.T(), errConv)
 
 	// Mock service Create
 	// The service will receive the ownerUUID from the token, not from the DTO.

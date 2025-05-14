@@ -216,6 +216,8 @@ func (suite *UserControllerTestSuite) TestCreateUser_Forbidden() {
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, req)
 	assert.Equal(suite.T(), http.StatusForbidden, w.Code)
+
+	suite.mockUserCrudService.AssertExpectations(suite.T())
 }
 
 func (suite *UserControllerTestSuite) TestCreateUser_BindingError() {
@@ -227,6 +229,8 @@ func (suite *UserControllerTestSuite) TestCreateUser_BindingError() {
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, req)
 	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
+
+	suite.mockUserCrudService.AssertExpectations(suite.T())
 }
 
 func (suite *UserControllerTestSuite) TestGetUser_Success() {
