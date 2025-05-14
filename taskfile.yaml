@@ -5,7 +5,7 @@ vars:
 
   # folders
   BIN_FOLDER: bin
-  TEST_PCKGS: ./util/* ./controller ./service
+  TEST_PCKGS: ./util/* ./controller ./service ./dto
 
   # build options
   # -v  print the names of packages as they are compiled

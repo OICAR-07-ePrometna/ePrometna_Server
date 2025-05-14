@@ -18,18 +18,16 @@ type DriverLicenseDto struct {
 }
 
 // ToModel create a model from a dto
-func (dto *DriverLicenseDto) ToModel() *model.DriverLicense {
+func (dto *DriverLicenseDto) ToModel() (*model.DriverLicense, error) {
 	issueDate, err := time.Parse(format.DateFormat, dto.IssueDate)
 	if err != nil {
-		zap.S().DPanicf("Bad date time format need %s has %s", format.DateFormat, dto.IssueDate)
-		// TODO: see what to have to happen in prod
-		return nil
+		zap.S().Errorf("Bad date time format need %s has %s", format.DateFormat, dto.IssueDate)
+		return nil, err
 	}
 	exp, err := time.Parse(format.DateFormat, dto.ExpiringDate)
 	if err != nil {
-		zap.S().DPanicf("Bad date time format need %s has %s", format.DateFormat, dto.ExpiringDate)
-		// TODO: see what to have to happen in prod
-		return nil
+		zap.S().Errorf("Bad date time format need %s has %s", format.DateFormat, dto.ExpiringDate)
+		return nil, err
 	}
 	return &model.DriverLicense{
 		Uuid:          uuid.New(),
@@ -37,7 +35,7 @@ func (dto *DriverLicenseDto) ToModel() *model.DriverLicense {
 		Category:      dto.Category,
 		IssueDate:     issueDate,
 		ExpiringDate:  exp,
-	}
+	}, nil
 }
 
 // FromModel returns a dto from model struct

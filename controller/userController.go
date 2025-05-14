@@ -109,7 +109,7 @@ func (u *UserController) get(c *gin.Context) {
 //	@Router		/user [post]
 func (u *UserController) create(c *gin.Context) {
 	var dto dto.NewUserDto
-	if err := c.ShouldBindJSON(&dto); err != nil {
+	if err := c.BindJSON(&dto); err != nil {
 		u.logger.Errorf("Failed to bind error = %+v", err)
 		return
 	}

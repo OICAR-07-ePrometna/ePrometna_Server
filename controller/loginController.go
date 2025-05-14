@@ -7,7 +7,6 @@ import (
 	"ePrometna_Server/model"
 	"ePrometna_Server/service"
 	"ePrometna_Server/util/auth"
-	"ePrometna_Server/util/device"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,20 +14,6 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
-
-// MobileLoginDto contains login credentials and device info
-type MobileLoginDto struct {
-	Email      string            `json:"email" binding:"required"`
-	Password   string            `json:"password" binding:"required"`
-	DeviceInfo device.DeviceInfo `json:"deviceInfo" binding:"required"`
-}
-
-// MobileLoginResponse contains all tokens for a mobile login
-type MobileLoginResponse struct {
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
-	DeviceToken  string `json:"deviceToken"`
-}
 
 type LoginController struct {
 	loginService service.ILoginService
@@ -104,7 +89,7 @@ func (l *LoginController) login(c *gin.Context) {
 //	@Success		200				{object}	MobileLoginResponse
 //	@Router			/auth/login-mobile [post]
 func (l *LoginController) loginMobile(c *gin.Context) {
-	var loginDto MobileLoginDto
+	var loginDto dto.MobileLoginDto
 
 	if err := c.BindJSON(&loginDto); err != nil {
 		l.logger.Errorf("Invalid mobile login request err = %+v", err)
@@ -118,7 +103,6 @@ func (l *LoginController) loginMobile(c *gin.Context) {
 		loginDto.Password,
 		loginDto.DeviceInfo,
 	)
-
 	if err != nil {
 		l.logger.Errorf("Mobile login failed err = %+v", err)
 		c.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
@@ -126,7 +110,7 @@ func (l *LoginController) loginMobile(c *gin.Context) {
 	}
 
 	// Return all tokens
-	c.JSON(http.StatusOK, MobileLoginResponse{
+	c.JSON(http.StatusOK, dto.MobileLoginResponse{
 		AccessToken:  result.AccessToken,
 		RefreshToken: result.RefreshToken,
 		DeviceToken:  result.DeviceToken,
