@@ -210,7 +210,7 @@ func (suite *DeviceManagerTestSuite) TestFindDeviceByID_Found() {
 func (suite *DeviceManagerTestSuite) TestFindDeviceByID_NotFound() {
 	deviceID := "nonExistentDevice456"
 	mobile, err := suite.deviceMgr.FindDeviceByID(deviceID)
-	assert.NoError(suite.T(), err)
+	assert.ErrorIs(suite.T(), err, gorm.ErrRecordNotFound)
 	assert.Nil(suite.T(), mobile)
 }
 
@@ -235,7 +235,7 @@ func (suite *DeviceManagerTestSuite) TestFindUserDevice_Found() {
 func (suite *DeviceManagerTestSuite) TestFindUserDevice_NotFound() {
 	nonExistentUserID := uint(999999)
 	mobile, err := suite.deviceMgr.FindUserDevice(nonExistentUserID)
-	assert.NoError(suite.T(), err)
+	assert.ErrorIs(suite.T(), err, gorm.ErrRecordNotFound)
 	assert.Nil(suite.T(), mobile)
 }
 
