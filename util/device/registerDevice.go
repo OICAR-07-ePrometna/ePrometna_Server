@@ -46,10 +46,7 @@ func (dm *DeviceManager) FindDeviceByID(deviceID string) (*model.Mobile, error) 
 	result := dm.DB.Where("registered_device LIKE ?", "%"+deviceID+"%").First(&device)
 
 	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, nil // Device not found, not an error
-		}
-		return nil, result.Error // Database error
+		return nil, result.Error
 	}
 
 	return &device, nil
@@ -61,10 +58,7 @@ func (dm *DeviceManager) FindUserDevice(userID uint) (*model.Mobile, error) {
 	result := dm.DB.Where("user_id = ?", userID).First(&device)
 
 	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, nil // User has no device, not an error
-		}
-		return nil, result.Error // Database error
+		return nil, result.Error
 	}
 
 	return &device, nil
@@ -202,7 +196,7 @@ func (dm *DeviceManager) ValidateDeviceRegistration(user *model.User, deviceInfo
 		isNewRegistration = true
 		return nil
 	}, &sql.TxOptions{
-		Isolation: sql.LevelSerializable, // Use SERIALIZABLE isolation level
+		Isolation: sql.LevelSerializable,
 	})
 	if err != nil {
 		return "", false, err
