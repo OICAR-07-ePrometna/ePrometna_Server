@@ -12,15 +12,16 @@ import (
 )
 
 type NewUserDto struct {
-	Uuid      string `json:"uuid"`
-	FirstName string `json:"firstName" binding:"required,min=2,max=100"`
-	LastName  string `json:"lastName" binding:"required,min=2,max=100"`
-	OIB       string `json:"oib" binding:"required,len=11"`
-	Residence string `json:"residence" binding:"required,max=255"`
-	BirthDate string `json:"birthDate" binding:"required,datetime=2006-01-02"`
-	Email     string `json:"email" binding:"required,email"`
-	Password  string `json:"password" binding:"required,min=6"`
-	Role      string `json:"role" binding:"required,oneof=hak mupadmin osoba firma policija superadmin"`
+	Uuid        string `json:"uuid"`
+	FirstName   string `json:"firstName" binding:"required,min=2,max=100"`
+	LastName    string `json:"lastName" binding:"required,min=2,max=100"`
+	OIB         string `json:"oib" binding:"required,len=11"`
+	Residence   string `json:"residence" binding:"required,max=255"`
+	BirthDate   string `json:"birthDate" binding:"required,datetime=2006-01-02"`
+	Email       string `json:"email" binding:"required,email"`
+	Password    string `json:"password" binding:"required,min=6"`
+	Role        string `json:"role" binding:"required,oneof=hak mupadmin osoba firma policija superadmin"`
+	PoliceToken string `json:"policeToken"`
 }
 
 // ToModel create a model from a dto
@@ -44,14 +45,15 @@ func (dto *NewUserDto) ToModel() (*model.User, error) {
 	}
 
 	return &model.User{
-		Uuid:      uuid.New(),
-		FirstName: dto.FirstName,
-		LastName:  dto.LastName,
-		OIB:       dto.OIB,
-		Residence: dto.Residence,
-		BirthDate: bod,
-		Email:     dto.Email,
-		Role:      role,
+		Uuid:        uuid.New(),
+		FirstName:   dto.FirstName,
+		LastName:    dto.LastName,
+		OIB:         dto.OIB,
+		Residence:   dto.Residence,
+		BirthDate:   bod,
+		Email:       dto.Email,
+		Role:        role,
+		PoliceToken: &dto.PoliceToken,
 	}, nil
 }
 
@@ -66,6 +68,12 @@ func (dto *NewUserDto) FromModel(m *model.User) *NewUserDto {
 		BirthDate: m.BirthDate.Format(format.DateFormat),
 		Email:     m.Email,
 		Role:      fmt.Sprint(m.Role),
+		PoliceToken: func() string {
+			if m.PoliceToken != nil {
+				return *m.PoliceToken
+			}
+			return ""
+		}(),
 	}
 	return dto
 }

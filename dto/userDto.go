@@ -12,14 +12,15 @@ import (
 )
 
 type UserDto struct {
-	Uuid      string `json:"uuid"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	OIB       string `json:"oib"`
-	Residence string `json:"residence"`
-	BirthDate string `json:"birthDate"`
-	Email     string `json:"email"`
-	Role      string `json:"role"`
+	Uuid        string `json:"uuid"`
+	FirstName   string `json:"firstName"`
+	LastName    string `json:"lastName"`
+	OIB         string `json:"oib"`
+	Residence   string `json:"residence"`
+	BirthDate   string `json:"birthDate"`
+	Email       string `json:"email"`
+	Role        string `json:"role"`
+	PoliceToken string `json:"policeToken"`
 }
 
 func (dto *UserDto) ToModel() (*model.User, error) {
@@ -42,14 +43,15 @@ func (dto *UserDto) ToModel() (*model.User, error) {
 	}
 
 	return &model.User{
-		Uuid:      uuid,
-		FirstName: dto.FirstName,
-		LastName:  dto.LastName,
-		OIB:       dto.OIB,
-		Residence: dto.Residence,
-		BirthDate: bod,
-		Email:     dto.Email,
-		Role:      role,
+		Uuid:        uuid,
+		FirstName:   dto.FirstName,
+		LastName:    dto.LastName,
+		OIB:         dto.OIB,
+		Residence:   dto.Residence,
+		BirthDate:   bod,
+		Email:       dto.Email,
+		Role:        role,
+		PoliceToken: &dto.PoliceToken,
 	}, nil
 }
 
@@ -64,6 +66,12 @@ func (dto UserDto) FromModel(m *model.User) UserDto {
 		BirthDate: m.BirthDate.Format(format.DateFormat),
 		Email:     m.Email,
 		Role:      fmt.Sprint(m.Role),
+		PoliceToken: func() string {
+			if m.PoliceToken != nil {
+				return *m.PoliceToken
+			}
+			return ""
+		}(),
 	}
 	return dto
 }

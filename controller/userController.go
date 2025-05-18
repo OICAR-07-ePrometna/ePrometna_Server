@@ -8,6 +8,7 @@ import (
 	"ePrometna_Server/util/auth"
 	"ePrometna_Server/util/middleware"
 	"errors"
+	"math/rand"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -49,8 +50,12 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 	// HAK can search users by OIB for vehicle registration
 	group.GET("/oib/:oib", middleware.Protect(model.RoleHAK), u.getUserByOib)
 
+	// Police token endpoints
+	group.POST("/:uuid/generate-token", middleware.Protect(model.RoleSuperAdmin, model.RoleMupADMIN), u.generatePoliceToken)
+	group.PATCH("/:uuid/police-token", middleware.Protect(model.RoleSuperAdmin, model.RoleMupADMIN), u.setPoliceToken)
+
 	// register Endpoints
-	group.Use(middleware.Protect(model.RoleSuperAdmin))
+	group.Use(middleware.Protect(model.RoleSuperAdmin, model.RoleMupADMIN))
 	group.POST("/", u.create)
 	group.GET("/:uuid", u.get)
 	group.PUT("/:uuid", u.update)
@@ -113,10 +118,23 @@ func (u *UserController) create(c *gin.Context) {
 		u.logger.Errorf("Failed to bind error = %+v", err)
 		return
 	}
+
 	newUser, err := dto.ToModel()
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
+	}
+
+	// Handle police token based on role
+	if newUser.Role == model.RolePolicija {
+		// For police officers, ensure token is set if provided
+		if dto.PoliceToken != "" {
+			tokenValue := dto.PoliceToken
+			newUser.PoliceToken = &tokenValue
+		}
+	} else {
+		// For non-police users, explicitly set to nil
+		newUser.PoliceToken = nil
 	}
 
 	user, err := u.UserCrud.Create(newUser, dto.Password)
@@ -125,7 +143,24 @@ func (u *UserController) create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, dto.FromModel(user))
+	// For police officers, reload to ensure we have the latest state
+	if user.Role == model.RolePolicija {
+		refreshedUser, err := u.UserCrud.Read(user.Uuid)
+		if err == nil {
+			user = refreshedUser
+		}
+	}
+
+	// Log the response for debugging
+	responseDto := dto.FromModel(user)
+	tokenValue := ""
+	if user.PoliceToken != nil {
+		tokenValue = *user.PoliceToken
+	}
+	u.logger.Infof("Response DTO: %+v", responseDto)
+	u.logger.Infof("Response PoliceToken: %q", tokenValue)
+
+	c.JSON(http.StatusCreated, responseDto)
 }
 
 // UserExample godoc
@@ -403,4 +438,127 @@ func (u *UserController) getUserByOib(c *gin.Context) {
 
 	dto := dto.UserDto{}
 	c.JSON(http.StatusOK, dto.FromModel(user))
+}
+
+// Backend - Add to controller/userController.go
+
+// GeneratePoliceToken godoc
+//
+//	@Summary	Generate a new police token for a user
+//	@Tags		user
+//	@Produce	json
+//	@Success	200	{object}	gin.H
+//	@Failure	400
+//	@Failure	404
+//	@Failure	500
+//	@Param		uuid	path	string	true	"User UUID"
+//	@Router		/user/{uuid}/generate-token [post]
+func (u *UserController) generatePoliceToken(c *gin.Context) {
+	userUuid, err := uuid.Parse(c.Param("uuid"))
+	if err != nil {
+		u.logger.Errorf("Error parsing UUID = %s", c.Param("uuid"))
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	user, err := u.UserCrud.Read(userUuid)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			u.logger.Errorf("User with UUID = %s not found", userUuid)
+			c.AbortWithError(http.StatusNotFound, err)
+			return
+		}
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	// Only allow generating police token for police officers
+	if user.Role != model.RolePolicija {
+		u.logger.Warnf("Attempted to generate police token for non-police user: %s", user.Role)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Police token can only be generated for police officers"})
+		return
+	}
+
+	token := u.generateToken()
+	user.PoliceToken = &token
+
+	// Save the updated user
+	_, err = u.UserCrud.Update(userUuid, user)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	// Return the generated token to the client
+	c.JSON(http.StatusOK, gin.H{"token": token})
+}
+
+// SetPoliceToken godoc
+//
+//	@Summary	Set police token for a user
+//	@Tags		user
+//	@Produce	json
+//	@Success	200
+//	@Failure	400
+//	@Failure	404
+//	@Failure	500
+//	@Param		uuid	path	string	true	"User UUID"
+//	@Param		model	body	object	true	"Police token"
+//	@Router		/user/{uuid}/police-token [patch]
+func (u *UserController) setPoliceToken(c *gin.Context) {
+	userUuid, err := uuid.Parse(c.Param("uuid"))
+	if err != nil {
+		u.logger.Errorf("Error parsing UUID = %s", c.Param("uuid"))
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	var tokenRequest struct {
+		PoliceToken string `json:"police_token" binding:"required"`
+	}
+
+	if err := c.BindJSON(&tokenRequest); err != nil {
+		u.logger.Errorf("Failed to bind error = %+v", err)
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	user, err := u.UserCrud.Read(userUuid)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			u.logger.Errorf("User with UUID = %s not found", userUuid)
+			c.AbortWithError(http.StatusNotFound, err)
+			return
+		}
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	// Only allow setting police token for police officers
+	if user.Role != model.RolePolicija {
+		u.logger.Warnf("Attempted to set police token for non-police user: %s", user.Role)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Police token can only be set for police officers"})
+		return
+	}
+
+	// Update user with token
+	tokenValue := tokenRequest.PoliceToken
+	user.PoliceToken = &tokenValue
+
+	_, err = u.UserCrud.Update(userUuid, user)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
+func (u *UserController) generateToken() string {
+	digits := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	token := ""
+	for i := 0; i < 8; i++ {
+		token += string(digits[rand.Intn(len(digits))])
+	}
+	return token
 }

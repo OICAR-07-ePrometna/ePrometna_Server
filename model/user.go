@@ -65,6 +65,7 @@ type User struct {
 	CreatedDevices   []Mobile         `gorm:"foreignKey:CreatorId"`
 	TemporaryData    *TempData        `gorm:"foreignKey:DriverId"`
 	License          *DriverLicense   `gorm:"foreignKey:UserId"`
+	PoliceToken      *string          `gorm:"column:police_token;null"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) error {
@@ -87,6 +88,7 @@ func (u *User) Update(user *User) *User {
 	u.Residence = user.Residence
 	u.Email = user.Email
 	u.Role = user.Role
+	u.PoliceToken = user.PoliceToken
 
 	return u
 }
