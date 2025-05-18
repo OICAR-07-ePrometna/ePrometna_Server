@@ -72,6 +72,19 @@ func (m *MockVehicleService) Registration(vehicleUuid uuid.UUID, regModel model.
 	return args.Error(0)
 }
 
+func (m *MockVehicleService) ReadByVin(vin string) (*model.Vehicle, error) {
+	args := m.Called(vin)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.Vehicle), args.Error(1)
+}
+
+func (m *MockVehicleService) Deregister(vehicleUuid uuid.UUID) error {
+	args := m.Called(vehicleUuid)
+	return args.Error(0)
+}
+
 // --- Test Setup ---
 var (
 	testSugarLogger    *zap.SugaredLogger
@@ -292,11 +305,12 @@ func TestGetVehicle_Controller_Success(t *testing.T) {
 	token := generateTestToken(tokenUserUUID, "testuser@example.com", model.RoleOsoba)
 
 	expectedVehicle := &model.Vehicle{
-		Uuid:         vehicleUUID,
-		VehicleModel: "Tesla Model Y",
-		VehicleType:  "Car",
-		Owner:        &model.User{Uuid: tokenUserUUID, FirstName: "Test"}, // Assume owner details
-		Registration: &model.RegistrationInfo{Registration: "ZG-GET-01"},
+		Uuid:           vehicleUUID,
+		VehicleModel:   "Tesla Model Y",
+		VehicleType:    "Car",
+		Owner:          &model.User{Uuid: tokenUserUUID, FirstName: "Test"}, // Assume owner details
+		Registration:   &model.RegistrationInfo{Registration: "ZG-GET-01"},
+		RegistrationID: func(id uint) *uint { return &id }(1),
 	}
 	mockVehicleService.On("Read", vehicleUUID).Return(expectedVehicle, nil).Once()
 

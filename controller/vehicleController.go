@@ -39,6 +39,7 @@ func (c *VehicleController) RegisterEndpoints(api *gin.RouterGroup) {
 	// Publicly accessible or role-specific GETs
 	group.GET("/:uuid", middleware.Protect(model.RoleHAK, model.RoleFirma, model.RoleOsoba), c.get)
 	group.GET("/", middleware.Protect(model.RoleFirma, model.RoleOsoba), c.myVehicles)
+	group.GET("/vin/:vin", middleware.Protect(model.RoleHAK, model.RoleFirma, model.RoleOsoba), c.getByVin)
 
 	// Endpoints requiring HAK role
 	hakGroup := group.Group("") // Create a new sub-group for HAK specific middleware
@@ -48,6 +49,7 @@ func (c *VehicleController) RegisterEndpoints(api *gin.RouterGroup) {
 		hakGroup.DELETE("/:uuid", c.delete)
 		hakGroup.PUT("/change-owner", c.changeOwner)
 		hakGroup.PUT("/registration/:uuid", c.registration)
+		hakGroup.PUT("/deregister/:uuid", c.deregister)
 	}
 }
 
@@ -324,4 +326,75 @@ func (v *VehicleController) registration(c *gin.Context) {
 	}
 	v.logger.Infof("Vehicle %s registered successfully.", vehicleUuid)
 	c.AbortWithStatus(http.StatusNoContent)
+}
+
+// GetVehicleByVin godoc
+//
+//	@Summary	Gets a vehicle by VIN number
+//	@Schemes
+//	@Tags		vehicle
+//	@Produce	json
+//	@Success	200	{object}	dto.VehicleDetailsDto
+//	@Failure	400	{object}	object{error=string}	"Invalid request"
+//	@Failure	404	{object}	object{error=string}	"Vehicle not found"
+//	@Failure	500	{object}	object{error=string}	"Internal server error"
+//	@Param		vin	path		string					true	"Vehicle VIN number"
+//	@Router		/vehicle/vin/{vin} [get]
+func (v *VehicleController) getByVin(c *gin.Context) {
+	vin := c.Param("vin")
+	if vin == "" {
+		v.logger.Error("Empty VIN provided")
+		c.AbortWithError(http.StatusBadRequest, errors.New("VIN number is required"))
+		return
+	}
+
+	vehicle, err := v.VehicleService.ReadByVin(vin)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			v.logger.Errorf("Vehicle with VIN = %s not found", vin)
+			c.AbortWithError(http.StatusNotFound, err)
+			return
+		}
+		v.logger.Errorf("Failed to read vehicle with VIN %s: %+v", vin, err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	var detailsDto dto.VehicleDetailsDto
+	c.JSON(http.StatusOK, detailsDto.FromModel(vehicle))
+}
+
+// DeregisterVehicle godoc
+//
+//	@Summary	Deregister a vehicle by setting its license plate to null
+//	@Schemes
+//	@Description	Sets the vehicle's license plate to null
+//	@Tags			vehicle
+//	@Success		200
+//	@Failure		400
+//	@Failure		404
+//	@Failure		500
+//	@Param			uuid	path	string	true	"Vehicle UUID"
+//	@Router			/vehicle/deregister/{uuid} [put]
+func (v *VehicleController) deregister(c *gin.Context) {
+	vehicleUuid, err := uuid.Parse(c.Param("uuid"))
+	if err != nil {
+		v.logger.Errorf("error parsing uuid value = %s", c.Param("uuid"))
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	err = v.VehicleService.Deregister(vehicleUuid)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			v.logger.Errorf("Vehicle with uuid = %s not found", vehicleUuid)
+			c.AbortWithError(http.StatusNotFound, err)
+			return
+		}
+		v.logger.Errorf("Failed to deregister vehicle %s: %+v", vehicleUuid, err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.Status(http.StatusOK)
 }

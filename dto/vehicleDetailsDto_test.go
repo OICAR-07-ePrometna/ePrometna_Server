@@ -81,7 +81,7 @@ func TestVehicleDetailsDto_FromModel(t *testing.T) {
 	vehicleUUID := uuid.New()
 	ownerUUID := uuid.New()
 	ownerBirthDate, _ := time.Parse(format.DateFormat, "1980-01-01")
-
+	registrationID := uint(1)
 	vehicleModel := &model.Vehicle{
 		Uuid:                  vehicleUUID,
 		VehicleType:           "Sedan",
@@ -92,6 +92,7 @@ func TestVehicleDetailsDto_FromModel(t *testing.T) {
 		Registration: &model.RegistrationInfo{
 			Registration: "ZG777FROM",
 		},
+		RegistrationID: &registrationID,
 		Owner: &model.User{ // Simplified Owner for testing FromModel
 			Uuid:      ownerUUID,
 			FirstName: "OwnerF",

@@ -153,8 +153,10 @@ func (dto VehicleDetailsDto) FromModel(m *model.Vehicle) VehicleDetailsDto {
 	}
 
 	// Add registration if available
-	if m.Registration != nil {
-		result.Registration = m.Registration.Registration
+	if m.RegistrationID != nil {
+		if m.Registration != nil {
+			result.Registration = m.Registration.Registration
+		}
 	}
 
 	if m.Owner != nil {
