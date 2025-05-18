@@ -50,7 +50,7 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 	group.GET("/oib/:oib", middleware.Protect(model.RoleHAK), u.getUserByOib)
 
 	// register Endpoints
-	//group.Use(middleware.Protect(model.RoleSuperAdmin))
+	group.Use(middleware.Protect(model.RoleSuperAdmin))
 	group.POST("/", u.create)
 	group.GET("/:uuid", u.get)
 	group.PUT("/:uuid", u.update)

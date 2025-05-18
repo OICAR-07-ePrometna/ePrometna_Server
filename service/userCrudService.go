@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/xrash/smetrics"
 
@@ -83,6 +84,7 @@ func (u *UserCrudService) Delete(_uuid uuid.UUID) error {
 	user.FirstName = "Deleted"
 	user.LastName = "User"
 	user.OIB = fmt.Sprintf("000000%05d", user.ID)
+	user.BirthDate = time.Time{}
 	user.Residence = "Anonymized"
 	user.Email = fmt.Sprintf("deleted_%s@example.com", _uuid.String())
 	user.PasswordHash = ""
