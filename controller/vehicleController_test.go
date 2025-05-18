@@ -305,11 +305,12 @@ func TestGetVehicle_Controller_Success(t *testing.T) {
 	token := generateTestToken(tokenUserUUID, "testuser@example.com", model.RoleOsoba)
 
 	expectedVehicle := &model.Vehicle{
-		Uuid:         vehicleUUID,
-		VehicleModel: "Tesla Model Y",
-		VehicleType:  "Car",
-		Owner:        &model.User{Uuid: tokenUserUUID, FirstName: "Test"}, // Assume owner details
-		Registration: &model.RegistrationInfo{Registration: "ZG-GET-01"},
+		Uuid:           vehicleUUID,
+		VehicleModel:   "Tesla Model Y",
+		VehicleType:    "Car",
+		Owner:          &model.User{Uuid: tokenUserUUID, FirstName: "Test"}, // Assume owner details
+		Registration:   &model.RegistrationInfo{Registration: "ZG-GET-01"},
+		RegistrationID: func(id uint) *uint { return &id }(1),
 	}
 	mockVehicleService.On("Read", vehicleUUID).Return(expectedVehicle, nil).Once()
 
