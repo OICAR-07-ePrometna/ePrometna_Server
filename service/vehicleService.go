@@ -260,7 +260,6 @@ func (v *VehicleService) ReadByVin(vin string) (*model.Vehicle, error) {
 	if rez.Error != nil {
 		return nil, rez.Error
 	}
-	v.logger.Debugf("registration: %+v", vehicle.Registration)
 
 	return &vehicle, nil
 }

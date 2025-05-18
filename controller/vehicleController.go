@@ -359,8 +359,6 @@ func (v *VehicleController) getByVin(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	v.logger.Debugf("c vehicle registration: %+v", vehicle.Registration)
-	v.logger.Debugf("c vehicle: %+v", vehicle)
 
 	var detailsDto dto.VehicleDetailsDto
 	c.JSON(http.StatusOK, detailsDto.FromModel(vehicle))
