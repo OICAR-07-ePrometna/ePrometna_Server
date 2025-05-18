@@ -80,6 +80,11 @@ func (m *MockVehicleService) ReadByVin(vin string) (*model.Vehicle, error) {
 	return args.Get(0).(*model.Vehicle), args.Error(1)
 }
 
+func (m *MockVehicleService) Deregister(vehicleUuid uuid.UUID) error {
+	args := m.Called(vehicleUuid)
+	return args.Error(0)
+}
+
 // --- Test Setup ---
 var (
 	testSugarLogger    *zap.SugaredLogger

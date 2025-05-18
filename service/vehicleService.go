@@ -20,6 +20,7 @@ type IVehicleService interface {
 	Delete(uuid uuid.UUID) error
 	ChangeOwner(vehicle uuid.UUID, newOwner uuid.UUID) error
 	Registration(vehicleUuid uuid.UUID, model model.RegistrationInfo) error
+	Deregister(vehicleUuid uuid.UUID) error
 }
 
 // TODO: implement service
@@ -259,6 +260,50 @@ func (v *VehicleService) ReadByVin(vin string) (*model.Vehicle, error) {
 	if rez.Error != nil {
 		return nil, rez.Error
 	}
+	v.logger.Debugf("registration: %+v", vehicle.Registration)
 
 	return &vehicle, nil
+}
+
+// Deregister implements IVehicleService.
+func (v *VehicleService) Deregister(vehicleUuid uuid.UUID) error {
+	v.logger.Debugf("Attempting to deregister vehicle with UUID: %s", vehicleUuid)
+
+	return v.db.Transaction(func(tx *gorm.DB) error {
+		var vehicle model.Vehicle
+		if err := tx.
+			Preload("Registration").
+			Where("uuid = ?", vehicleUuid).
+			First(&vehicle).
+			Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				v.logger.Warnf("Vehicle with UUID = %s not found for deregistration.", vehicleUuid)
+				return gorm.ErrRecordNotFound
+			}
+			v.logger.Errorf("Failed to find vehicle with UUID = %s: %+v", vehicleUuid, err)
+			return err
+		}
+
+		v.logger.Debugf("Found vehicle (ID: %d) for deregistration.", vehicle.ID)
+
+		if vehicle.Registration != nil {
+			v.logger.Infof("Vehicle UUID %s (ID: %d) has an active registration (RegistrationInfo ID: %d). This registration will be moved to past registrations.", vehicle.Uuid, vehicle.ID, vehicle.Registration.ID)
+			if err := tx.Model(&vehicle).Omit("RegistrationID").
+				Association("PastRegistration").Append(vehicle.Registration); err != nil {
+				return err
+			}
+		}
+
+		// Set RegistrationID to nil to deregister the vehicle
+		vehicle.RegistrationID = nil
+		vehicle.Registration = nil
+
+		if err := tx.Save(&vehicle).Error; err != nil {
+			v.logger.Errorf("Failed to save vehicle (ID: %d) with null registration: %+v", vehicle.ID, err)
+			return err
+		}
+
+		v.logger.Infof("Successfully deregistered vehicle UUID %s (ID: %d).", vehicle.Uuid, vehicle.ID)
+		return nil
+	})
 }

@@ -49,6 +49,7 @@ func (c *VehicleController) RegisterEndpoints(api *gin.RouterGroup) {
 		hakGroup.DELETE("/:uuid", c.delete)
 		hakGroup.PUT("/change-owner", c.changeOwner)
 		hakGroup.PUT("/registration/:uuid", c.registration)
+		hakGroup.PUT("/deregister/:uuid", c.deregister)
 	}
 }
 
@@ -358,7 +359,44 @@ func (v *VehicleController) getByVin(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
+	v.logger.Debugf("c vehicle registration: %+v", vehicle.Registration)
+	v.logger.Debugf("c vehicle: %+v", vehicle)
 
 	var detailsDto dto.VehicleDetailsDto
 	c.JSON(http.StatusOK, detailsDto.FromModel(vehicle))
+}
+
+// DeregisterVehicle godoc
+//
+//	@Summary	Deregister a vehicle by setting its license plate to null
+//	@Schemes
+//	@Description	Sets the vehicle's license plate to null
+//	@Tags			vehicle
+//	@Success		200
+//	@Failure		400
+//	@Failure		404
+//	@Failure		500
+//	@Param			uuid	path	string	true	"Vehicle UUID"
+//	@Router			/vehicle/deregister/{uuid} [put]
+func (v *VehicleController) deregister(c *gin.Context) {
+	vehicleUuid, err := uuid.Parse(c.Param("uuid"))
+	if err != nil {
+		v.logger.Errorf("error parsing uuid value = %s", c.Param("uuid"))
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	err = v.VehicleService.Deregister(vehicleUuid)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			v.logger.Errorf("Vehicle with uuid = %s not found", vehicleUuid)
+			c.AbortWithError(http.StatusNotFound, err)
+			return
+		}
+		v.logger.Errorf("Failed to deregister vehicle %s: %+v", vehicleUuid, err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.Status(http.StatusOK)
 }
