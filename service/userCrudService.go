@@ -104,7 +104,6 @@ func (u *UserCrudService) Update(_uuid uuid.UUID, user *model.User) (*model.User
 	return userOld, nil
 }
 
-// Create implements IUserCrudService.
 func (u *UserCrudService) Create(user *model.User, password string) (*model.User, error) {
 	hash, err := auth.HashPassword(password)
 	if err != nil {
@@ -112,10 +111,60 @@ func (u *UserCrudService) Create(user *model.User, password string) (*model.User
 	}
 
 	user.PasswordHash = hash
+
+	// Handle police token based on role
+	if user.Role != model.RolePolicija {
+		// For non-police users, ensure the token is nil
+		user.PoliceToken = nil
+	}
+
+	// Debug logging
+	tokenValue := "nil"
+	if user.PoliceToken != nil {
+		tokenValue = *user.PoliceToken
+	}
+	u.logger.Infof("Creating user: %s %s, role: %s, token: %s",
+		user.FirstName, user.LastName, user.Role, tokenValue)
+
+	// Create the user
 	rez := u.db.Create(&user)
 	if rez.Error != nil {
 		return nil, rez.Error
 	}
+
+	// Verify the token was saved correctly for police officers
+	if user.Role == model.RolePolicija && user.PoliceToken != nil && *user.PoliceToken != "" {
+		var savedUser model.User
+		if err := u.db.Where("uuid = ?", user.Uuid).First(&savedUser).Error; err != nil {
+			u.logger.Errorf("Could not verify saved user: %v", err)
+		} else {
+			savedTokenValue := "nil"
+			if savedUser.PoliceToken != nil {
+				savedTokenValue = *savedUser.PoliceToken
+			}
+			u.logger.Infof("Saved user: %s %s, role: %s, token: %s",
+				savedUser.FirstName, savedUser.LastName, savedUser.Role, savedTokenValue)
+
+			// If token not saved correctly, try direct update
+			if (savedUser.PoliceToken == nil || *savedUser.PoliceToken == "") &&
+				user.PoliceToken != nil && *user.PoliceToken != "" {
+				u.logger.Infof("Token not saved correctly, trying direct update")
+				if err := u.db.Model(&savedUser).Update("police_token", user.PoliceToken).Error; err != nil {
+					u.logger.Errorf("Failed to update token directly: %v", err)
+				} else {
+					u.logger.Infof("Token updated directly")
+					// Re-fetch the user to confirm the update
+					if err := u.db.Where("uuid = ?", user.Uuid).First(&savedUser).Error; err != nil {
+						u.logger.Errorf("Could not fetch updated user: %v", err)
+					} else {
+						// Return the updated user
+						return &savedUser, nil
+					}
+				}
+			}
+		}
+	}
+
 	return user, nil
 }
 
