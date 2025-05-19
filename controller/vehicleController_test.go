@@ -18,6 +18,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -31,6 +32,11 @@ import (
 // --- Mock VehicleService ---
 type MockVehicleService struct {
 	mock.Mock
+}
+
+// ShareVehicle implements service.IVehicleService.
+func (m *MockVehicleService) ShareVehicle(vehicleUuid uuid.UUID, userUuid uuid.UUID, until *time.Time) error {
+	panic("unimplemented")
 }
 
 func (m *MockVehicleService) Create(newVehicle *model.Vehicle, ownerUuid uuid.UUID) (*model.Vehicle, error) {

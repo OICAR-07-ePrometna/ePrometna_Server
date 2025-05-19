@@ -39,6 +39,7 @@ func (c *VehicleController) RegisterEndpoints(api *gin.RouterGroup) {
 	// Publicly accessible or role-specific GETs
 	group.GET("/:uuid", middleware.Protect(model.RoleHAK, model.RoleFirma, model.RoleOsoba), c.get)
 	group.GET("/", middleware.Protect(model.RoleFirma, model.RoleOsoba), c.myVehicles)
+	group.POST("/share", middleware.Protect(model.RoleOsoba), c.shareVehicle)
 
 	// Endpoints requiring HAK role
 	hakGroup := group.Group("") // Create a new sub-group for HAK specific middleware
@@ -324,4 +325,52 @@ func (v *VehicleController) registration(c *gin.Context) {
 	}
 	v.logger.Infof("Vehicle %s registered successfully.", vehicleUuid)
 	c.AbortWithStatus(http.StatusNoContent)
+}
+
+// ShareVehicle godoc
+//
+//	@Summary	Share vehicle with another user
+//	@Schemes
+//	@Description	Share a vehicle with another user until a specified date
+//	@Tags			vehicle
+//	@Accept			json
+//	@Produce		json
+//	@Param			shareVehicleDto	body	dto.ShareVehicleDto	true	"Data for sharing vehicle"
+//	@Success		200				"Successfully shared vehicle"
+//	@Failure		400				{object}	object{error=string}	"Invalid request (bad UUID, binding error)"
+//	@Failure		401				{object}	object{error=string}	"Unauthorized"
+//	@Failure		404				{object}	object{error=string}	"Vehicle or user not found"
+//	@Failure		500				{object}	object{error=string}	"Internal server error"
+//	@Router			/vehicle/share [post]
+func (v *VehicleController) shareVehicle(c *gin.Context) {
+	var shareDto dto.ShareVehicleDto
+	if err := c.ShouldBindJSON(&shareDto); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	vehicleUuid, err := uuid.Parse(shareDto.VehicleUuid)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid vehicle UUID"})
+		return
+	}
+
+	userUuid, err := uuid.Parse(shareDto.UserUuid)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user UUID"})
+		return
+	}
+
+	until, err := shareDto.ParseUntil()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format for Until"})
+		return
+	}
+
+	if err := v.VehicleService.ShareVehicle(vehicleUuid, userUuid, until); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Vehicle shared successfully"})
 }

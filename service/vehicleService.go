@@ -19,6 +19,7 @@ type IVehicleService interface {
 	Delete(uuid uuid.UUID) error
 	ChangeOwner(vehicle uuid.UUID, newOwner uuid.UUID) error
 	Registration(vehicleUuid uuid.UUID, model model.RegistrationInfo) error
+	ShareVehicle(vehicleUuid uuid.UUID, userUuid uuid.UUID, until *time.Time) error
 }
 
 // TODO: implement service
@@ -243,4 +244,43 @@ func (v *VehicleService) Registration(vehicleUuid uuid.UUID, newRegInfo model.Re
 		v.logger.Infof("Successfully updated vehicle UUID %s (ID: %d) to set new current registration (RegistrationInfo ID: %d, UUID: %s).", vehicle.Uuid, vehicle.ID, newRegInfo.ID, newRegInfo.Uuid)
 		return nil
 	})
+}
+
+// ShareVehicle implements IVehicleService
+func (v *VehicleService) ShareVehicle(vehicleUuid uuid.UUID, userUuid uuid.UUID, until *time.Time) error {
+	var vehicle model.Vehicle
+	if err := v.db.Where("uuid = ?", vehicleUuid).First(&vehicle).Error; err != nil {
+		v.logger.Errorf("Error finding vehicle with UUID %s: %+v", vehicleUuid, err)
+		return err
+	}
+
+	var user model.User
+	if err := v.db.Where("uuid = ?", userUuid).First(&user).Error; err != nil {
+		v.logger.Errorf("Error finding user with UUID %s: %+v", userUuid, err)
+		return err
+	}
+
+	if user.Role != model.RoleFirma && user.Role != model.RoleOsoba {
+		v.logger.Errorf("User with role %+v can't own a car", user.Role)
+		return cerror.ErrBadRole
+	}
+
+	borrowedVehicle := model.VehicleDrivers{
+		Uuid:      uuid.New(),
+		VehicleId: vehicle.ID,
+		UserId:    user.ID,
+		Given:     time.Now(),
+		Until:     time.Time{},
+	}
+	if until != nil {
+		borrowedVehicle.Until = *until
+	}
+
+	if err := v.db.Create(&borrowedVehicle).Error; err != nil {
+		v.logger.Errorf("Error sharing vehicle with UUID %s to user with UUID %s: %+v", vehicleUuid, userUuid, err)
+		return err
+	}
+
+	v.logger.Infof("Successfully shared vehicle with UUID %s to user with UUID %s", vehicleUuid, userUuid)
+	return nil
 }
