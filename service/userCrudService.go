@@ -4,8 +4,10 @@ import (
 	"ePrometna_Server/app"
 	"ePrometna_Server/model"
 	"ePrometna_Server/util/auth"
+	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/xrash/smetrics"
 
@@ -60,15 +62,41 @@ func (u *UserCrudService) ReadAll() ([]model.User, error) {
 
 // Delete implements IUserCrudService.
 func (u *UserCrudService) Delete(_uuid uuid.UUID) error {
-	rez := u.db.
-		Where("uuid = ?", _uuid).
-		Delete(&model.User{})
-
-	u.logger.Debugf("Delete statment on uuid = %s, rez %+v", _uuid, rez)
-	if rez.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
+	var user model.User
+	rez := u.db.Preload("License").Where("uuid = ?", _uuid).First(&user)
+	if rez.Error != nil {
+		if rez.RowsAffected == 0 {
+			u.logger.Debugf("User with UUID %s not found", _uuid)
+			return gorm.ErrRecordNotFound
+		}
+		u.logger.Errorf("Error finding user with UUID %s: %v", _uuid, rez.Error)
+		return rez.Error
 	}
-	return rez.Error
+
+	if user.License != nil {
+		u.logger.Debugf("Deleting driver license with UUID %s", user.License.Uuid)
+		if err := u.db.Where("uuid = ?", user.License.Uuid).Delete(&user.License).Error; err != nil {
+			u.logger.Errorf("Error deleting driver license with UUID %s: %v", user.License.Uuid, err)
+			return err
+		}
+	}
+
+	user.FirstName = "Deleted"
+	user.LastName = "User"
+	user.OIB = fmt.Sprintf("000000%05d", user.ID)
+	user.BirthDate = time.Time{}
+	user.Residence = "Anonymized"
+	user.Email = fmt.Sprintf("deleted_%s@example.com", _uuid.String())
+	user.PasswordHash = ""
+
+	saveRez := u.db.Save(&user)
+	if saveRez.Error != nil {
+		u.logger.Errorf("Error saving anonymized user with UUID %s: %v", _uuid, saveRez.Error)
+		return saveRez.Error
+	}
+
+	u.logger.Debugf("User with UUID %s anonymized successfully", _uuid)
+	return nil
 }
 
 // Read implements IUserCrudService.

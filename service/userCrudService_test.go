@@ -271,14 +271,9 @@ func (suite *UserCrudServiceTestSuite) TestDeleteUser_Success() {
 
 	// Verify soft delete (or hard delete if GORM default is changed)
 	var dbUser model.User
-	errDb := suite.db.First(&dbUser, "uuid = ?", seededUser.Uuid).Error
-	assert.Error(suite.T(), errDb) // Should be gorm.ErrRecordNotFound for hard delete
-	assert.True(suite.T(), errors.Is(errDb, gorm.ErrRecordNotFound))
-
-	// If soft delete is used, you'd check for DeletedAt being set:
-	// errDb := suite.db.Unscoped().First(&dbUser, seededUser.ID).Error
-	// assert.NoError(suite.T(), errDb)
-	// assert.NotNil(suite.T(), dbUser.DeletedAt)
+	errDb := suite.db.Unscoped().First(&dbUser, seededUser.ID).Error
+	assert.NoError(suite.T(), errDb)
+	assert.NotNil(suite.T(), dbUser.DeletedAt)
 }
 
 func (suite *UserCrudServiceTestSuite) TestDeleteUser_NotFound() {
