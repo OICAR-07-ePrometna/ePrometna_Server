@@ -151,7 +151,7 @@ func (dto VehicleDetailsDto) FromModel(m *model.Vehicle) VehicleDetailsDto {
 			AdditionalTireSizes:                    m.AdditionalTireSizes,
 		},
 	}
-
+	zap.S().Info("Vehicle UUID %s: Registration ID: %d", m.Uuid, m.RegistrationID)
 	// Add registration if available
 	if m.RegistrationID != nil {
 		if m.Registration != nil {

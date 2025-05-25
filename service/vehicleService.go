@@ -237,6 +237,8 @@ func (v *VehicleService) Registration(vehicleUuid uuid.UUID, newRegInfo model.Re
 		vehicle.RegistrationID = &newRegInfo.ID
 		vehicle.Registration = &newRegInfo
 
+		zap.S().Info("Vehicle UUID %s: Registration ID: %d", vehicle.Uuid, vehicle.RegistrationID)
+
 		if err := tx.Save(&vehicle).Error; err != nil {
 			v.logger.Errorf("Failed to save vehicle (ID: %d) with updated current registration (RegistrationInfo ID: %d): %+v", vehicle.ID, newRegInfo.ID, err)
 			return err
