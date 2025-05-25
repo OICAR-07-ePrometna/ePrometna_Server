@@ -1028,7 +1028,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.VehicleDto"
+                        }
                     },
                     "400": {
                         "description": "Bad Request"

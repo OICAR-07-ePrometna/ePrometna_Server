@@ -402,7 +402,7 @@ func (v *VehicleController) deregister(c *gin.Context) {
 //	@Schemes
 //	@Description	Will allow to update some wehicle data
 //	@Tags			vehicle
-//	@Success		200
+//	@Success		200	{object}	dto.VehicleDto
 //	@Failure		400
 //	@Failure		404
 //	@Failure		500

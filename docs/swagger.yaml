@@ -867,6 +867,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/dto.VehicleDto'
         "400":
           description: Bad Request
         "404":
