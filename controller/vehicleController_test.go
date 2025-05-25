@@ -8,7 +8,7 @@ import (
 	"ePrometna_Server/dto"
 	"ePrometna_Server/model"
 	"ePrometna_Server/service"
-	"ePrometna_Server/util/auth" // For generating test tokens
+	"ePrometna_Server/util/auth"
 	"ePrometna_Server/util/cerror"
 	"encoding/json"
 	"errors"
@@ -31,6 +31,15 @@ import (
 // --- Mock VehicleService ---
 type MockVehicleService struct {
 	mock.Mock
+}
+
+// Update implements service.IVehicleService.
+func (m *MockVehicleService) Update(vehicleUuid uuid.UUID, newWehicle model.Vehicle) (*model.Vehicle, error) {
+	args := m.Called(vehicleUuid, newWehicle)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.Vehicle), args.Error(1)
 }
 
 func (m *MockVehicleService) Create(newVehicle *model.Vehicle, ownerUuid uuid.UUID) (*model.Vehicle, error) {
@@ -598,7 +607,3 @@ func TestRegistration_Controller_BindingError(t *testing.T) {
 	testRouter.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
-
-// Note: You would add more tests for other controller methods (get, myVehicles, delete, changeOwner)
-// and various error scenarios (binding errors, service errors, auth errors).
-// The structure for those tests would be similar to the Create and Get examples.

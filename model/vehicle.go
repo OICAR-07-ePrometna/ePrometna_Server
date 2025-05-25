@@ -54,3 +54,33 @@ type Vehicle struct {
 	AdditionalTireSizes                    string // Dodatne dimenzije guma // (15)
 	VehicleType                            string // Tip vozila (16) // (16)
 }
+
+func (v *Vehicle) Update(newVehicle Vehicle) *Vehicle {
+	v.HomologationType = newVehicle.HomologationType
+	v.BodyShape = newVehicle.BodyShape
+	v.VehicleUse = newVehicle.VehicleUse
+	v.TechnicallyPermissibleMaximumLadenMass = newVehicle.TechnicallyPermissibleMaximumLadenMass
+	v.PermissibleMaximumLadenMass = newVehicle.PermissibleMaximumLadenMass
+	v.UnladenMass = newVehicle.UnladenMass
+	v.PermissiblePayload = newVehicle.PermissiblePayload
+	v.TypeApprovalNumber = newVehicle.TypeApprovalNumber
+	v.EngineCapacity = newVehicle.EngineCapacity
+	v.EnginePower = newVehicle.EnginePower
+	v.FuelOrPowerSource = newVehicle.FuelOrPowerSource
+	v.RatedEngineSpeed = newVehicle.RatedEngineSpeed
+	v.NumberOfSeats = newVehicle.NumberOfSeats
+	v.ColourOfVehicle = newVehicle.ColourOfVehicle
+	v.Length = newVehicle.Length
+	v.Width = newVehicle.Width
+	v.Height = newVehicle.Height
+	v.MaximumNetPower = newVehicle.MaximumNetPower
+	v.NumberOfAxles = newVehicle.NumberOfAxles
+	v.NumberOfDrivenAxles = newVehicle.NumberOfDrivenAxles
+	v.Mb = newVehicle.Mb
+	v.StationaryNoiseLevel = newVehicle.StationaryNoiseLevel
+	v.EngineSpeedForStationaryNoiseTest = newVehicle.EngineSpeedForStationaryNoiseTest
+	v.Co2Emissions = newVehicle.Co2Emissions
+	v.EcCategory = newVehicle.EcCategory
+	v.AdditionalTireSizes = newVehicle.AdditionalTireSizes
+	return v
+}

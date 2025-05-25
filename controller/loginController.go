@@ -85,8 +85,8 @@ func (l *LoginController) login(c *gin.Context) {
 //	@Tags			auth
 //	@Accept			json
 //	@Produce		json
-//	@Param			mobileLoginDto	body		MobileLoginDto	true	"Mobile login credentials"
-//	@Success		200				{object}	MobileLoginResponse
+//	@Param			mobileLoginDto	body		dto.MobileLoginDto	true	"Mobile login credentials"
+//	@Success		200				{object}	dto.MobileLoginResponse
 //	@Router			/auth/login-mobile [post]
 func (l *LoginController) loginMobile(c *gin.Context) {
 	var loginDto dto.MobileLoginDto

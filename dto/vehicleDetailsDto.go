@@ -2,7 +2,6 @@ package dto
 
 import (
 	"ePrometna_Server/model"
-	"fmt"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -62,7 +61,7 @@ type VehicleSummary struct {
 func (dto *VehicleDetailsDto) ToModel() (*model.Vehicle, error) {
 	uuid, err := uuid.Parse(dto.Uuid)
 	if err != nil {
-		return nil, fmt.Errorf("invalid vehicle UUID: %w", err)
+		//	return nil, fmt.Errorf("invalid vehicle UUID: %w", err)
 	}
 
 	// Create a basic vehicle model

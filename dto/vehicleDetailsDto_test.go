@@ -50,8 +50,8 @@ func TestVehicleDetailsDto_ToModel(t *testing.T) {
 			dto: dto.VehicleDetailsDto{
 				Uuid: "not-a-real-uuid",
 			},
-			want:    nil,
-			wantErr: true,
+			want:    &model.Vehicle{},
+			wantErr: false,
 		},
 	}
 

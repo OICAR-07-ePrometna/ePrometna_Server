@@ -1,26 +1,4 @@
 definitions:
-  controller.MobileLoginDto:
-    properties:
-      deviceInfo:
-        $ref: '#/definitions/device.DeviceInfo'
-      email:
-        type: string
-      password:
-        type: string
-    required:
-    - deviceInfo
-    - email
-    - password
-    type: object
-  controller.MobileLoginResponse:
-    properties:
-      accessToken:
-        type: string
-      deviceToken:
-        type: string
-      refreshToken:
-        type: string
-    type: object
   device.DeviceInfo:
     properties:
       brand:
@@ -66,6 +44,28 @@ definitions:
     - email
     - password
     type: object
+  dto.MobileLoginDto:
+    properties:
+      deviceInfo:
+        $ref: '#/definitions/device.DeviceInfo'
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - deviceInfo
+    - email
+    - password
+    type: object
+  dto.MobileLoginResponse:
+    properties:
+      accessToken:
+        type: string
+      deviceToken:
+        type: string
+      refreshToken:
+        type: string
+    type: object
   dto.NewUserDto:
     properties:
       birthDate:
@@ -84,6 +84,8 @@ definitions:
         type: string
       password:
         minLength: 6
+        type: string
+      policeToken:
         type: string
       residence:
         maxLength: 255
@@ -149,6 +151,8 @@ definitions:
       lastName:
         type: string
       oib:
+        type: string
+      policeToken:
         type: string
       residence:
         type: string
@@ -342,14 +346,14 @@ paths:
         name: mobileLoginDto
         required: true
         schema:
-          $ref: '#/definitions/controller.MobileLoginDto'
+          $ref: '#/definitions/dto.MobileLoginDto'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.MobileLoginResponse'
+            $ref: '#/definitions/dto.MobileLoginResponse'
       summary: Mobile login with device registration
       tags:
       - auth
@@ -591,6 +595,56 @@ paths:
       summary: Update user with new dat
       tags:
       - user
+  /user/{uuid}/generate-token:
+    post:
+      parameters:
+      - description: User UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Generate a new police token for a user
+      tags:
+      - user
+  /user/{uuid}/police-token:
+    patch:
+      parameters:
+      - description: User UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: Police token
+        in: body
+        name: model
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Set police token for a user
+      tags:
+      - user
   /user/all-users:
     get:
       description: Fetches all users for superadmin
@@ -796,6 +850,34 @@ paths:
       summary: Gets a vehicle with uuid
       tags:
       - vehicle
+    put:
+      description: Will allow to update some wehicle data
+      parameters:
+      - description: Vehicle UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: Vehicle data to update
+        in: body
+        name: vehicle
+        required: true
+        schema:
+          $ref: '#/definitions/dto.VehicleDetailsDto'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.VehicleDto'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Update vehicle data
+      tags:
+      - vehicle
   /vehicle/change-owner:
     put:
       parameters:
@@ -815,6 +897,27 @@ paths:
         "500":
           description: Internal Server Error
       summary: changes owner to new owner with uuid
+      tags:
+      - vehicle
+  /vehicle/deregister/{uuid}:
+    put:
+      description: Sets the vehicle's license plate to null
+      parameters:
+      - description: Vehicle UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Deregister a vehicle by setting its license plate to null
       tags:
       - vehicle
   /vehicle/registration/{uuid}:
@@ -862,6 +965,45 @@ paths:
                 type: string
             type: object
       summary: Tehnicki pregled
+      tags:
+      - vehicle
+  /vehicle/vin/{vin}:
+    get:
+      parameters:
+      - description: Vehicle VIN number
+        in: path
+        name: vin
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.VehicleDetailsDto'
+        "400":
+          description: Invalid request
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: Vehicle not found
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Gets a vehicle by VIN number
       tags:
       - vehicle
 swagger: "2.0"

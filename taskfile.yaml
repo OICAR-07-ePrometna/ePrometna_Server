@@ -79,7 +79,6 @@ tasks:
       - cmd: swag fmt
       - cmd: swag init
       # - cmd: swag-v2 init --v3.1 --outputTypes yaml
-    ignore_error: true
 
   list:
     cmds:
