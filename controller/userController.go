@@ -381,7 +381,7 @@ func (u *UserController) searchUsersByName(c *gin.Context) {
 	query := c.Query("query")
 	if query == "" {
 		u.logger.Warn("Search query is empty")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Search query is required"})
+		c.JSON(http.StatusBadRequest, "Search query is required")
 		return
 	}
 
@@ -390,7 +390,7 @@ func (u *UserController) searchUsersByName(c *gin.Context) {
 	users, err := u.UserCrud.SearchUsersByName(query)
 	if err != nil {
 		u.logger.Errorf("Failed to search users: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to search users"})
+		c.JSON(http.StatusInternalServerError, "Failed to search users")
 		return
 	}
 
@@ -447,7 +447,7 @@ func (u *UserController) getUserByOib(c *gin.Context) {
 //	@Summary	Generate a new police token for a user
 //	@Tags		user
 //	@Produce	json
-//	@Success	200	{object}	gin.H
+//	@Success	200
 //	@Failure	400
 //	@Failure	404
 //	@Failure	500

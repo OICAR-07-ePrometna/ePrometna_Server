@@ -69,7 +69,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controller.MobileLoginDto"
+                            "$ref": "#/definitions/dto.MobileLoginDto"
                         }
                     }
                 ],
@@ -77,7 +77,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.MobileLoginResponse"
+                            "$ref": "#/definitions/dto.MobileLoginResponse"
                         }
                     }
                 }
@@ -619,6 +619,83 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/{uuid}/generate-token": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Generate a new police token for a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/user/{uuid}/police-token": {
+            "patch": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Set police token for a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Police token",
+                        "name": "model",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/vehicle": {
             "get": {
                 "produces": [
@@ -724,6 +801,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/vehicle/deregister/{uuid}": {
+            "put": {
+                "description": "Sets the vehicle's license plate to null",
+                "tags": [
+                    "vehicle"
+                ],
+                "summary": "Deregister a vehicle by setting its license plate to null",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vehicle UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/vehicle/registration/{uuid}": {
             "put": {
                 "description": "Performs a technical inspection and registers a vehicle.",
@@ -796,6 +905,67 @@ const docTemplate = `{
                 }
             }
         },
+        "/vehicle/vin/{vin}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vehicle"
+                ],
+                "summary": "Gets a vehicle by VIN number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vehicle VIN number",
+                        "name": "vin",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.VehicleDetailsDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Vehicle not found",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/vehicle/{uuid}": {
             "get": {
                 "produces": [
@@ -820,6 +990,45 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/dto.VehicleDetailsDto"
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "put": {
+                "description": "Will allow to update some wehicle data",
+                "tags": [
+                    "vehicle"
+                ],
+                "summary": "Update vehicle data",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vehicle UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Vehicle data to update",
+                        "name": "vehicle",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.VehicleDetailsDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
                     },
                     "400": {
                         "description": "Bad Request"
@@ -865,39 +1074,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "controller.MobileLoginDto": {
-            "type": "object",
-            "required": [
-                "deviceInfo",
-                "email",
-                "password"
-            ],
-            "properties": {
-                "deviceInfo": {
-                    "$ref": "#/definitions/device.DeviceInfo"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "controller.MobileLoginResponse": {
-            "type": "object",
-            "properties": {
-                "accessToken": {
-                    "type": "string"
-                },
-                "deviceToken": {
-                    "type": "string"
-                },
-                "refreshToken": {
-                    "type": "string"
-                }
-            }
-        },
         "device.DeviceInfo": {
             "type": "object",
             "properties": {
@@ -966,6 +1142,39 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.MobileLoginDto": {
+            "type": "object",
+            "required": [
+                "deviceInfo",
+                "email",
+                "password"
+            ],
+            "properties": {
+                "deviceInfo": {
+                    "$ref": "#/definitions/device.DeviceInfo"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.MobileLoginResponse": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "deviceToken": {
+                    "type": "string"
+                },
+                "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.NewUserDto": {
             "type": "object",
             "required": [
@@ -1001,6 +1210,9 @@ const docTemplate = `{
                 "password": {
                     "type": "string",
                     "minLength": 6
+                },
+                "policeToken": {
+                    "type": "string"
                 },
                 "residence": {
                     "type": "string",
@@ -1083,6 +1295,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "oib": {
+                    "type": "string"
+                },
+                "policeToken": {
                     "type": "string"
                 },
                 "residence": {
