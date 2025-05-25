@@ -20,6 +20,7 @@ type IVehicleService interface {
 	Delete(uuid uuid.UUID) error
 	ChangeOwner(vehicle uuid.UUID, newOwner uuid.UUID) error
 	Registration(vehicleUuid uuid.UUID, model model.RegistrationInfo) error
+	Update(vehicleUuid uuid.UUID, model model.Vehicle) (*model.Vehicle, error)
 	Deregister(vehicleUuid uuid.UUID) error
 }
 
@@ -307,4 +308,32 @@ func (v *VehicleService) Deregister(vehicleUuid uuid.UUID) error {
 		v.logger.Infof("Successfully deregistered vehicle UUID %s (ID: %d).", vehicle.Uuid, vehicle.ID)
 		return nil
 	})
+}
+
+func (v *VehicleService) Update(vehicleUuid uuid.UUID, newVehicle model.Vehicle) (*model.Vehicle, error) {
+	v.logger.Debugf("Attempting to update vehicle with UUID: %s", vehicleUuid)
+
+	var existingVehicle model.Vehicle
+	if err := v.db.Where("uuid = ?", vehicleUuid).First(&existingVehicle).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			v.logger.Warnf("Vehicle with UUID = %s not found for update.", vehicleUuid)
+			return nil, gorm.ErrRecordNotFound
+		}
+		v.logger.Errorf("Failed to find vehicle with UUID = %s: %+v", vehicleUuid, err)
+		return nil, err
+	}
+
+	v.logger.Debugf("Found vehicle (ID: %d) for update. Current data: %+v", existingVehicle.ID, existingVehicle)
+	v.logger.Debugf("New data for update: %+v", newVehicle)
+
+	existingVehicle.Update(newVehicle)
+
+	if err := v.db.Save(&existingVehicle).Error; err != nil {
+		v.logger.Errorf("Failed to save updated vehicle (ID: %d, UUID: %s): %+v", existingVehicle.ID, existingVehicle.Uuid, err)
+		return nil, err
+	}
+
+	v.logger.Infof("Successfully updated vehicle UUID %s (ID: %d).", existingVehicle.Uuid, existingVehicle.ID)
+
+	return &existingVehicle, nil
 }
