@@ -34,8 +34,12 @@ type MockVehicleService struct {
 }
 
 // Update implements service.IVehicleService.
-func (m *MockVehicleService) Update(vehicleUuid uuid.UUID, model model.Vehicle) (*model.Vehicle, error) {
-	panic("unimplemented")
+func (m *MockVehicleService) Update(vehicleUuid uuid.UUID, newWehicle model.Vehicle) (*model.Vehicle, error) {
+	args := m.Called(vehicleUuid, newWehicle)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.Vehicle), args.Error(1)
 }
 
 func (m *MockVehicleService) Create(newVehicle *model.Vehicle, ownerUuid uuid.UUID) (*model.Vehicle, error) {
