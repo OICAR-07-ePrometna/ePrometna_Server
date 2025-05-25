@@ -396,7 +396,7 @@ func (v *VehicleController) deregister(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-// Upodate vehicle godoc
+// Upodate_vehicle godoc
 //
 //	@Summary	Update vehicle data
 //	@Schemes
@@ -406,10 +406,11 @@ func (v *VehicleController) deregister(c *gin.Context) {
 //	@Failure		400
 //	@Failure		404
 //	@Failure		500
-//	@Param			uuid	path	string	true	"Vehicle UUID"
+//	@Param			uuid	path	string					true	"Vehicle UUID"
+//	@Param			vehicle	body	dto.VehicleDetailsDto	true	"Vehicle data to update"
 //	@Router			/vehicle/{uuid} [put]
 func (v *VehicleController) update(c *gin.Context) {
-	var newDto dto.VehicleDto
+	var newDto dto.VehicleDetailsDto
 	if err := c.Bind(&newDto); err != nil {
 		v.logger.Errorf("Failed to bind error = %+v", err)
 		c.AbortWithError(http.StatusBadRequest, err)
