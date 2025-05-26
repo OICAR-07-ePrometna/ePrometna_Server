@@ -124,13 +124,8 @@ func (v *VehicleService) Read(_uuid uuid.UUID) (*model.Vehicle, error) {
 		return nil, rez.Error
 	}
 
-	vehicle.Registration.ID = *vehicle.RegistrationID
-	rez = v.db.
-		Where("id = ?", *vehicle.RegistrationID).
-		First(&vehicle.Registration)
-
-	if rez.Error != nil {
-		return nil, rez.Error
+	if err := v.loadRegistreation(&vehicle); err != nil {
+		return nil, err
 	}
 
 	return &vehicle, nil
@@ -152,13 +147,8 @@ func (v *VehicleService) ReadAll(driverUuid uuid.UUID) ([]model.Vehicle, error) 
 	}
 
 	for _, vehicle := range vehicles {
-		vehicle.Registration.ID = *vehicle.RegistrationID
-		rez = v.db.
-			Where("id = ?", *vehicle.RegistrationID).
-			First(&vehicle.Registration)
-
-		if rez.Error != nil {
-			return nil, rez.Error
+		if err := v.loadRegistreation(&vehicle); err != nil {
+			return nil, err
 		}
 	}
 
@@ -286,13 +276,8 @@ func (v *VehicleService) ReadByVin(vin string) (*model.Vehicle, error) {
 		return nil, rez.Error
 	}
 
-	vehicle.Registration.ID = *vehicle.RegistrationID
-	rez = v.db.
-		Where("id = ?", *vehicle.RegistrationID).
-		First(&vehicle.Registration)
-
-	if rez.Error != nil {
-		return nil, rez.Error
+	if err := v.loadRegistreation(&vehicle); err != nil {
+		return nil, err
 	}
 
 	v.logger.Debugf("Vehicle reg id = %+v", *vehicle.RegistrationID)
@@ -369,4 +354,17 @@ func (v *VehicleService) Update(vehicleUuid uuid.UUID, newVehicle model.Vehicle)
 	v.logger.Infof("Successfully updated vehicle UUID %s (ID: %d).", existingVehicle.Uuid, existingVehicle.ID)
 
 	return &existingVehicle, nil
+}
+
+func (v *VehicleService) loadRegistreation(vehicle *model.Vehicle) error {
+	if vehicle.RegistrationID != nil {
+		return nil
+	}
+
+	vehicle.Registration.ID = *vehicle.RegistrationID
+	rez := v.db.
+		Where("id = ?", *vehicle.RegistrationID).
+		First(&vehicle.Registration)
+
+	return rez.Error
 }
