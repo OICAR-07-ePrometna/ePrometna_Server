@@ -67,6 +67,13 @@ func (v *VehicleService) Create(vehicle *model.Vehicle, ownerUuid uuid.UUID) (*m
 		return nil, rez.Error
 	}
 
+	vehicle.RegistrationID = &vehicle.Registration.ID
+
+	rez = v.db.Save(&vehicle)
+	if rez.Error != nil {
+		return nil, rez.Error
+	}
+
 	return vehicle, nil
 }
 
@@ -280,8 +287,6 @@ func (v *VehicleService) ReadByVin(vin string) (*model.Vehicle, error) {
 		return nil, err
 	}
 
-	v.logger.Debugf("Vehicle reg id = %+v", *vehicle.RegistrationID)
-	v.logger.Debugf("Vehicle reg = %+v", vehicle.Registration.Registration)
 	return &vehicle, nil
 }
 
@@ -357,7 +362,10 @@ func (v *VehicleService) Update(vehicleUuid uuid.UUID, newVehicle model.Vehicle)
 }
 
 func (v *VehicleService) loadRegistreation(vehicle *model.Vehicle) error {
-	if vehicle.RegistrationID != nil {
+	if vehicle.RegistrationID == nil {
+		return nil
+	}
+	if vehicle.Registration == nil {
 		return nil
 	}
 
@@ -365,6 +373,9 @@ func (v *VehicleService) loadRegistreation(vehicle *model.Vehicle) error {
 	rez := v.db.
 		Where("id = ?", *vehicle.RegistrationID).
 		First(&vehicle.Registration)
+
+	v.logger.Debugf("Vehicle reg id = %+v", *vehicle.RegistrationID)
+	v.logger.Debugf("Vehicle reg = %+v", vehicle.Registration.Registration)
 
 	return rez.Error
 }
