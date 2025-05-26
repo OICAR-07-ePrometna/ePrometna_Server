@@ -67,6 +67,13 @@ func (v *VehicleService) Create(vehicle *model.Vehicle, ownerUuid uuid.UUID) (*m
 		return nil, rez.Error
 	}
 
+	vehicle.RegistrationID = &vehicle.Registration.ID
+
+	rez = v.db.Save(&vehicle)
+	if rez.Error != nil {
+		return nil, rez.Error
+	}
+
 	return vehicle, nil
 }
 
@@ -124,7 +131,7 @@ func (v *VehicleService) Read(_uuid uuid.UUID) (*model.Vehicle, error) {
 		return nil, rez.Error
 	}
 
-	if err := v.loadRegistreation(&vehicle); err != nil {
+	if err := v.loadRegistration(&vehicle); err != nil {
 		return nil, err
 	}
 
@@ -147,7 +154,7 @@ func (v *VehicleService) ReadAll(driverUuid uuid.UUID) ([]model.Vehicle, error) 
 	}
 
 	for _, vehicle := range vehicles {
-		if err := v.loadRegistreation(&vehicle); err != nil {
+		if err := v.loadRegistration(&vehicle); err != nil {
 			return nil, err
 		}
 	}
@@ -276,12 +283,10 @@ func (v *VehicleService) ReadByVin(vin string) (*model.Vehicle, error) {
 		return nil, rez.Error
 	}
 
-	if err := v.loadRegistreation(&vehicle); err != nil {
+	if err := v.loadRegistration(&vehicle); err != nil {
 		return nil, err
 	}
 
-	v.logger.Debugf("Vehicle reg id = %+v", *vehicle.RegistrationID)
-	v.logger.Debugf("Vehicle reg = %+v", vehicle.Registration.Registration)
 	return &vehicle, nil
 }
 
@@ -356,15 +361,22 @@ func (v *VehicleService) Update(vehicleUuid uuid.UUID, newVehicle model.Vehicle)
 	return &existingVehicle, nil
 }
 
-func (v *VehicleService) loadRegistreation(vehicle *model.Vehicle) error {
-	if vehicle.RegistrationID != nil {
+func (v *VehicleService) loadRegistration(vehicle *model.Vehicle) error {
+	if vehicle.RegistrationID == nil {
 		return nil
+	}
+
+	if vehicle.Registration == nil {
+		vehicle.Registration = &model.RegistrationInfo{}
 	}
 
 	vehicle.Registration.ID = *vehicle.RegistrationID
 	rez := v.db.
 		Where("id = ?", *vehicle.RegistrationID).
 		First(&vehicle.Registration)
+
+	v.logger.Debugf("Vehicle reg id = %+v", *vehicle.RegistrationID)
+	v.logger.Debugf("Vehicle reg = %+v", vehicle.Registration.Registration)
 
 	return rez.Error
 }
