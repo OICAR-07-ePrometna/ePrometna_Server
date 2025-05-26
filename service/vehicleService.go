@@ -362,8 +362,17 @@ func (v *VehicleService) Update(vehicleUuid uuid.UUID, newVehicle model.Vehicle)
 }
 
 func (v *VehicleService) loadRegistration(vehicle *model.Vehicle) error {
+	var pastRegs []model.RegistrationInfo
+
 	if vehicle.RegistrationID == nil {
-		return nil
+		rez := v.db.
+			Where("vehicle_id = ?", vehicle.ID).
+			Find(&pastRegs)
+
+		vehicle.PastRegistration = pastRegs
+		v.logger.Debugf("Vehicle past regs = %+v", vehicle.PastRegistration)
+
+		return rez.Error
 	}
 
 	if vehicle.Registration == nil {
@@ -382,9 +391,8 @@ func (v *VehicleService) loadRegistration(vehicle *model.Vehicle) error {
 	v.logger.Debugf("Vehicle reg id = %+v", *vehicle.RegistrationID)
 	v.logger.Debugf("Vehicle reg = %+v", vehicle.Registration.Registration)
 
-	var pastRegs []model.RegistrationInfo
 	rez = v.db.
-		Where("vehicle_id = ?", vehicle.ID).
+		Where("vehicle_id = ? AND id != ?", vehicle.ID, *vehicle.RegistrationID).
 		Find(&pastRegs)
 
 	vehicle.PastRegistration = pastRegs
