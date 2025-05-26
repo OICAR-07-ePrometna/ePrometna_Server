@@ -111,20 +111,29 @@ func (v *VehicleService) Delete(_uuid uuid.UUID) error {
 
 // Read implements IVehicleService.
 func (v *VehicleService) Read(_uuid uuid.UUID) (*model.Vehicle, error) {
-	var user model.Vehicle
+	var vehicle model.Vehicle
 	// TODO: see what to do with other objects
 
 	rez := v.db.
 		InnerJoins("Registration").
 		Preload("Owner").
 		Where("vehicles.uuid = ?", _uuid).
-		First(&user)
+		First(&vehicle)
 
 	if rez.Error != nil {
 		return nil, rez.Error
 	}
 
-	return &user, nil
+	vehicle.Registration.ID = *vehicle.RegistrationID
+	rez = v.db.
+		Where("id = ?", *vehicle.RegistrationID).
+		First(&vehicle.Registration)
+
+	if rez.Error != nil {
+		return nil, rez.Error
+	}
+
+	return &vehicle, nil
 }
 
 // ReadAll implements IVehicleService.
@@ -141,10 +150,21 @@ func (v *VehicleService) ReadAll(driverUuid uuid.UUID) ([]model.Vehicle, error) 
 	if rez.Error != nil {
 		return nil, rez.Error
 	}
+
+	for _, vehicle := range vehicles {
+		vehicle.Registration.ID = *vehicle.RegistrationID
+		rez = v.db.
+			Where("id = ?", *vehicle.RegistrationID).
+			First(&vehicle.Registration)
+
+		if rez.Error != nil {
+			return nil, rez.Error
+		}
+	}
+
 	return vehicles, nil
 }
 
-// TODO: test
 // ChangeOwner implements IVehicleService.
 func (v *VehicleService) ChangeOwner(vehicleUUID uuid.UUID, newOwnerUuid uuid.UUID) error {
 	var newOwner model.User
@@ -181,9 +201,10 @@ func (v *VehicleService) ChangeOwner(vehicleUUID uuid.UUID, newOwnerUuid uuid.UU
 		pastOwnerEntry := model.OwnerHistory{
 			Uuid:      uuid.New(),
 			VehicleId: vehicle.ID,
-			UserId:    *vehicle.UserId, // This should be oldOwner.ID
+			UserId:    *vehicle.UserId, // Old owner
 		}
-		if err := v.db.Create(&pastOwnerEntry).Error; err != nil { /* handle error */
+		if err := v.db.Create(&pastOwnerEntry).Error; err != nil {
+			return err
 		}
 	}
 	vehicle.UserId = &newOwner.ID
@@ -252,6 +273,7 @@ func (v *VehicleService) Registration(vehicleUuid uuid.UUID, newRegInfo model.Re
 
 // ReadByVin implements IVehicleService.
 func (v *VehicleService) ReadByVin(vin string) (*model.Vehicle, error) {
+	v.logger.Debugf("Attempting to read vehicle with vin = %s ", vin)
 	var vehicle model.Vehicle
 
 	rez := v.db.
@@ -264,6 +286,17 @@ func (v *VehicleService) ReadByVin(vin string) (*model.Vehicle, error) {
 		return nil, rez.Error
 	}
 
+	vehicle.Registration.ID = *vehicle.RegistrationID
+	rez = v.db.
+		Where("id = ?", *vehicle.RegistrationID).
+		First(&vehicle.Registration)
+
+	if rez.Error != nil {
+		return nil, rez.Error
+	}
+
+	v.logger.Debugf("Vehicle reg id = %+v", *vehicle.RegistrationID)
+	v.logger.Debugf("Vehicle reg = %+v", vehicle.Registration.Registration)
 	return &vehicle, nil
 }
 
