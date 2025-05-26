@@ -53,7 +53,7 @@ tasks:
     deps: [generate-swagger, start-db]
     cmds:
       - defer: { task: stop-db }
-      - cmd: go run .
+      - cmd: air
 
   test:
     cmd: go test -v {{.TEST_PCKGS}}

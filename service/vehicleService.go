@@ -375,8 +375,20 @@ func (v *VehicleService) loadRegistration(vehicle *model.Vehicle) error {
 		Where("id = ?", *vehicle.RegistrationID).
 		First(&vehicle.Registration)
 
+	if rez.Error != nil {
+		return rez.Error
+	}
+
 	v.logger.Debugf("Vehicle reg id = %+v", *vehicle.RegistrationID)
 	v.logger.Debugf("Vehicle reg = %+v", vehicle.Registration.Registration)
+
+	var pastRegs []model.RegistrationInfo
+	rez = v.db.
+		Where("vehicle_id = ?", vehicle.ID).
+		Find(&pastRegs)
+
+	vehicle.PastRegistration = pastRegs
+	v.logger.Debugf("Vehicle past regs = %+v", vehicle.PastRegistration)
 
 	return rez.Error
 }
