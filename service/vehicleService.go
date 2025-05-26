@@ -131,7 +131,7 @@ func (v *VehicleService) Read(_uuid uuid.UUID) (*model.Vehicle, error) {
 		return nil, rez.Error
 	}
 
-	if err := v.loadRegistreation(&vehicle); err != nil {
+	if err := v.loadRegistration(&vehicle); err != nil {
 		return nil, err
 	}
 
@@ -154,7 +154,7 @@ func (v *VehicleService) ReadAll(driverUuid uuid.UUID) ([]model.Vehicle, error) 
 	}
 
 	for _, vehicle := range vehicles {
-		if err := v.loadRegistreation(&vehicle); err != nil {
+		if err := v.loadRegistration(&vehicle); err != nil {
 			return nil, err
 		}
 	}
@@ -283,7 +283,7 @@ func (v *VehicleService) ReadByVin(vin string) (*model.Vehicle, error) {
 		return nil, rez.Error
 	}
 
-	if err := v.loadRegistreation(&vehicle); err != nil {
+	if err := v.loadRegistration(&vehicle); err != nil {
 		return nil, err
 	}
 
@@ -361,12 +361,13 @@ func (v *VehicleService) Update(vehicleUuid uuid.UUID, newVehicle model.Vehicle)
 	return &existingVehicle, nil
 }
 
-func (v *VehicleService) loadRegistreation(vehicle *model.Vehicle) error {
+func (v *VehicleService) loadRegistration(vehicle *model.Vehicle) error {
 	if vehicle.RegistrationID == nil {
 		return nil
 	}
+
 	if vehicle.Registration == nil {
-		return nil
+		vehicle.Registration = &model.RegistrationInfo{}
 	}
 
 	vehicle.Registration.ID = *vehicle.RegistrationID
