@@ -114,3 +114,45 @@ func (c *TempDataController) createTempData(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusCreated, newTempData.Uuid)
 }
+
+// getAndDeleteTempData godoc
+// @Summary		Retrieves and deletes temporary data by UUID
+// @Schemes
+// @Description	Retrieve temporary data by UUID and delete it
+// @Tags			tempdata
+// @Produce		json
+// @Param		uuid	path	string	true	"UUID of the temporary data"
+// @Success		200	{object}	model.TempData
+// @Failure		400
+// @Failure		404
+// @Failure		500
+// @Router		/tempdata/{uuid} [put]
+func (c *TempDataController) getAndDeleteTempData(ctx *gin.Context) {
+	uuidStr := ctx.Param("uuid")
+	if uuidStr == "" {
+		c.logger.Error("UUID is required")
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, "UUID is required")
+		return
+	}
+
+	_, err := uuid.Parse(uuidStr)
+	if err != nil {
+		c.logger.Errorf("Invalid UUID: %s", uuidStr)
+		ctx.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	tempData, err := c.TempDataService.GetAndDeleteByUUID(uuidStr)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.logger.Errorf("Temp data not found: %s", uuidStr)
+			ctx.AbortWithStatusJSON(http.StatusNotFound, "Temp data not found")
+			return
+		}
+		c.logger.Errorf("Failed to get/delete temp data: %+v", err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, "Failed to get/delete temp data")
+		return
+	}
+
+	ctx.JSON(http.StatusOK, tempData)
+}
