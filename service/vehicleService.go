@@ -144,7 +144,6 @@ func (v *VehicleService) ReadAll(driverUuid uuid.UUID) ([]model.Vehicle, error) 
 
 	// TODO: read vehicles that other people borrowd you
 	rez := v.db.
-		InnerJoins("Registration").
 		Joins("inner join users on vehicles.user_id = users.id").
 		Where("users.uuid = ?", driverUuid).
 		Find(&vehicles)
@@ -153,8 +152,8 @@ func (v *VehicleService) ReadAll(driverUuid uuid.UUID) ([]model.Vehicle, error) 
 		return nil, rez.Error
 	}
 
-	for _, vehicle := range vehicles {
-		if err := v.loadRegistration(&vehicle); err != nil {
+	for i := 0; i < len(vehicles); i++ {
+		if err := v.loadRegistration(&vehicles[i]); err != nil {
 			return nil, err
 		}
 	}
