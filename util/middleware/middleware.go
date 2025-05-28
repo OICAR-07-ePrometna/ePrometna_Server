@@ -48,7 +48,9 @@ func Protect(roles ...model.UserRole) gin.HandlerFunc {
 func CorsHeader() gin.HandlerFunc {
 	// Define allowed origins
 	allowedOrigins := map[string]bool{
-		"http://localhost:3000": true,
+		// NOTE: Fixed through proxy on web project still needed for mobile apps
+		//"http://localhost:3000": true,
+
 		"http://localhost:8081": true,
 		"http://localhost:8082": true,
 	}

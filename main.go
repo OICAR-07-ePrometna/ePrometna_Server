@@ -5,6 +5,7 @@ import (
 	"ePrometna_Server/config"
 	"ePrometna_Server/httpServer"
 	"ePrometna_Server/service"
+	"ePrometna_Server/util/seed"
 
 	"go.uber.org/zap"
 )
@@ -26,6 +27,8 @@ func main() {
 
 	zap.S().Infof("Database: http://localhost:8080")
 	zap.S().Infof("swagger: http://localhost:8090/swagger/index.html")
+
+	seed.CreateSuperAdmin()
 
 	httpServer.Start()
 }
