@@ -220,7 +220,7 @@ func (suite *MiddlewareTestSuite) TestProtect_ValidToken_InsufficientRole() {
 
 // --- Test Cases for CorsHeader Middleware ---
 func (suite *MiddlewareTestSuite) TestCorsHeader_AllowsConfiguredOrigin() {
-	allowedOrigin := "http://localhost:3000" // Must match one in your CorsHeader middleware
+	allowedOrigin := "http://localhost:8081" // Must match one in your CorsHeader middleware
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, "/cors-test", nil)
 	req.Header.Set("Origin", allowedOrigin)
