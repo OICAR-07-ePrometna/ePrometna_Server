@@ -23,6 +23,7 @@ type ILoginService interface {
 	Login(email, password string) (string, string, error)
 	RefreshTokens(user *model.User) (string, string, error)
 	LoginMobile(email, password string, deviceInfo device.DeviceInfo) (*MobileLoginResult, error)
+	RegisterPolice(code string, deviceInfo device.DeviceInfo) (*MobileLoginResult, error)
 }
 
 type LoginService struct {
@@ -105,4 +106,40 @@ func (s *LoginService) LoginMobile(email, password string, deviceInfo device.Dev
 
 func (s *LoginService) RefreshTokens(user *model.User) (string, string, error) {
 	return auth.GenerateTokens(user)
+}
+
+func (s LoginService) RegisterPolice(code string, deviceInfo device.DeviceInfo) (*MobileLoginResult, error) {
+	// Get user from database
+	var user model.User
+	if err := s.db.
+		Where("police_token = ?", code).
+		First(&user).
+		Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			s.logger.Errorf("Failed to register officer", err)
+			return nil, cerror.ErrInvalidCredentials
+		}
+
+		s.logger.Errorf("Error finding police officer, error = %+v", err)
+		return nil, err
+	}
+
+	accessToken, refreshToken, err := auth.GenerateTokens(&user)
+	if err != nil {
+		s.logger.Errorf("Failed to generate token error = %+v", err)
+		return nil, err
+	}
+
+	// Handle device registration through the device manager
+	deviceToken, _, err := s.deviceManager.ValidateDeviceRegistration(&user, deviceInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	// Return all tokens
+	return &MobileLoginResult{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		DeviceToken:  deviceToken,
+	}, nil
 }
