@@ -169,7 +169,6 @@ func (dto VehicleDetailsDto) FromModel(m *model.Vehicle) VehicleDetailsDto {
 				TraveledDistance: reg.TraveledDistance,
 				Registration:     reg.Registration,
 				Note:             note,
-				TechnicalDate:    reg.TechnicalDate,
 			})
 		}
 	} else {
