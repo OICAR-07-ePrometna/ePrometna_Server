@@ -1266,6 +1266,9 @@ const docTemplate = `{
                 "registration": {
                     "type": "string"
                 },
+                "technicalDate": {
+                    "type": "string"
+                },
                 "traveledDistance": {
                     "type": "integer"
                 }
@@ -1332,16 +1335,17 @@ const docTemplate = `{
                         "$ref": "#/definitions/dto.UserDto"
                     }
                 },
+                "pastRegistration": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.RegistrationDto"
+                    }
+                },
                 "registration": {
                     "type": "string"
                 },
                 "summary": {
-                    "description": "Registration   RegistrationDto\nPastRegistratins []RegistrationDto",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/dto.VehicleSummary"
-                        }
-                    ]
+                    "$ref": "#/definitions/dto.VehicleSummary"
                 },
                 "uuid": {
                     "type": "string"

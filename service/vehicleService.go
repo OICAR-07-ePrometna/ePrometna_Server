@@ -60,6 +60,7 @@ func (v *VehicleService) Create(vehicle *model.Vehicle, ownerUuid uuid.UUID) (*m
 	}
 
 	vehicle.UserId = &owner.ID
+	vehicle.Registration.TechnicalDate = time.Now()
 
 	v.logger.Debugf("Creating new vehicle %+v", vehicle)
 	rez := v.db.Create(&vehicle)
@@ -275,6 +276,7 @@ func (v *VehicleService) ReadByVin(vin string) (*model.Vehicle, error) {
 	rez := v.db.
 		InnerJoins("Registration").
 		Preload("Owner").
+		Preload("PastRegistration").
 		Where("vehicles.chassis_number = ?", vin).
 		First(&vehicle)
 

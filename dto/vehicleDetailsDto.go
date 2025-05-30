@@ -9,14 +9,13 @@ import (
 
 // TODO: add more properties
 type VehicleDetailsDto struct {
-	Uuid         string    `json:"uuid"`
-	Registration string    `json:"registration"`
-	Owner        UserDto   `json:"owner"`
-	Drivers      []UserDto `json:"drivers"`
-	PastOwners   []UserDto `json:"pastOwners"`
-	// Registration   RegistrationDto
-	// PastRegistratins []RegistrationDto
-	Summary VehicleSummary `json:"summary"`
+	Uuid             string            `json:"uuid"`
+	Registration     string            `json:"registration"`
+	Owner            UserDto           `json:"owner"`
+	Drivers          []UserDto         `json:"drivers"`
+	PastOwners       []UserDto         `json:"pastOwners"`
+	PastRegistration []RegistrationDto `json:"pastRegistration"`
+	Summary          VehicleSummary    `json:"summary"`
 }
 type VehicleSummary struct {
 	VehicleCategory                        string `json:"vehicleCategory"`                        // Kategorija vozila // J
@@ -155,6 +154,25 @@ func (dto VehicleDetailsDto) FromModel(m *model.Vehicle) VehicleDetailsDto {
 		if m.Registration != nil {
 			result.Registration = m.Registration.Registration
 		}
+	}
+
+	// Add past registrations
+	if len(m.PastRegistration) > 0 {
+		result.PastRegistration = make([]RegistrationDto, 0, len(m.PastRegistration))
+		for _, reg := range m.PastRegistration {
+			note := ""
+			if reg.Note != nil {
+				note = *reg.Note
+			}
+			result.PastRegistration = append(result.PastRegistration, RegistrationDto{
+				PassTechnical:    reg.PassTechnical,
+				TraveledDistance: reg.TraveledDistance,
+				Registration:     reg.Registration,
+				Note:             note,
+			})
+		}
+	} else {
+		result.PastRegistration = []RegistrationDto{}
 	}
 
 	if m.Owner != nil {
