@@ -53,11 +53,6 @@ definitions:
     - email
     - password
     type: object
-  dto.MobileLoginDto:
-    properties:
-      deviceToken:
-        type: string
-    type: object
   dto.MobileRegisterDto:
     properties:
       deviceInfo:
@@ -135,6 +130,11 @@ definitions:
         $ref: '#/definitions/device.DeviceInfo'
     required:
     - deviceInfo
+    type: object
+  dto.RefreshDto:
+    properties:
+      refreshToken:
+        type: string
     type: object
   dto.RegistrationDto:
     properties:
@@ -327,28 +327,6 @@ definitions:
 info:
   contact: {}
 paths:
-  /auth/device/login:
-    post:
-      consumes:
-      - application/json
-      description: Authenticates a device over device token
-      parameters:
-      - description: Police login credentials
-        in: body
-        name: mobileLoginDto
-        required: true
-        schema:
-          $ref: '#/definitions/dto.MobileLoginDto'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.DeviceLoginResponse'
-      summary: Login for Devices
-      tags:
-      - auth
   /auth/login:
     post:
       consumes:
@@ -403,7 +381,7 @@ paths:
         name: refreshToken
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/dto.RefreshDto'
       produces:
       - application/json
       responses:

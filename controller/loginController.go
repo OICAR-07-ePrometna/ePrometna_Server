@@ -46,7 +46,6 @@ func (c *LoginController) RegisterEndpoints(api *gin.RouterGroup) {
 	// Add mobile-specific endpoints
 	group.POST("/user/register", c.RegisterMobile)
 	group.POST("/police/register", c.RegisterPolice)
-	group.POST("/device/login", c.LoginDevice)
 }
 
 // Login godoc
@@ -125,7 +124,7 @@ func (l *LoginController) RegisterMobile(c *gin.Context) {
 //	@Description	Generates a new access token using a valid refresh token
 //	@Tags			auth
 //	@Produce		json
-//	@Param			refreshToken	body		string	true	"Refresh Token"
+//	@Param			refreshToken	body		dto.RefreshDto	true	"Refresh Token"
 //	@Success		200				{object}	dto.TokenDto
 //	@Router			/auth/refresh [post]
 func (l *LoginController) RefreshToken(c *gin.Context) {
@@ -212,32 +211,5 @@ func (l *LoginController) RegisterPolice(c *gin.Context) {
 		AccessToken:  result.AccessToken,
 		RefreshToken: result.RefreshToken,
 		DeviceToken:  result.DeviceToken,
-	})
-}
-
-// DeviceLogin godoc
-//
-//	@Summary		Login for Devices
-//	@Description	Authenticates a device over device token
-//	@Tags			auth
-//	@Accept			json
-//	@Produce		json
-//	@Param			mobileLoginDto	body		dto.MobileLoginDto	true	"Police login credentials"
-//	@Success		200				{object}	dto.DeviceLoginResponse
-//	@Router			/auth/device/login [post]
-func (l *LoginController) LoginDevice(c *gin.Context) {
-	var loginDto dto.MobileLoginDto
-
-	if err := c.BindJSON(&loginDto); err != nil {
-		l.logger.Errorf("Invalid mobile login request err = %+v", err)
-		c.JSON(http.StatusBadRequest, "Invalid request format")
-		return
-	}
-	panic("unimplemented")
-	// Return all tokens
-	c.JSON(http.StatusOK, dto.DeviceLoginResponse{
-		// AccessToken:  result.AccessToken,
-		// RefreshToken: result.RefreshToken,
-		// DeviceToken:  result.DeviceToken,
 	})
 }

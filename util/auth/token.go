@@ -20,7 +20,7 @@ type Claims struct {
 const (
 	accessTokenDuration  = 5 * time.Minute
 	refreshTokenDuration = 7 * 24 * time.Hour
-	deviceTokenDuration  = 30 * 24 * time.Hour
+	deviceTokenDuration  = 365 * 24 * time.Hour
 )
 
 func ParseToken(authHeader string) (*jwt.Token, *Claims, error) {

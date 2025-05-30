@@ -15,40 +15,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/auth/device/login": {
-            "post": {
-                "description": "Authenticates a device over device token",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Login for Devices",
-                "parameters": [
-                    {
-                        "description": "Police login credentials",
-                        "name": "mobileLoginDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.MobileLoginDto"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.DeviceLoginResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/auth/login": {
             "post": {
                 "description": "Authenticates a user and returns access and refresh tokens",
@@ -134,7 +100,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/dto.RefreshDto"
                         }
                     }
                 ],
@@ -1227,14 +1193,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.MobileLoginDto": {
-            "type": "object",
-            "properties": {
-                "deviceToken": {
-                    "type": "string"
-                }
-            }
-        },
         "dto.MobileRegisterDto": {
             "type": "object",
             "required": [
@@ -1341,6 +1299,14 @@ const docTemplate = `{
                 },
                 "deviceInfo": {
                     "$ref": "#/definitions/device.DeviceInfo"
+                }
+            }
+        },
+        "dto.RefreshDto": {
+            "type": "object",
+            "properties": {
+                "refreshToken": {
+                    "type": "string"
                 }
             }
         },
