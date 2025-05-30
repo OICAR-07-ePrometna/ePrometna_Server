@@ -26,6 +26,7 @@ type IUserCrudService interface {
 	GetAllPoliceOfficers() ([]model.User, error)
 	SearchUsersByName(query string) ([]model.User, error)
 	GetUserByOIB(oib string) (*model.User, error)
+	GetUserDevice(userId uint) (*model.Mobile, error)
 }
 
 type UserCrudService struct {
@@ -259,4 +260,13 @@ func (u *UserCrudService) GetUserByOIB(oib string) (*model.User, error) {
 		return nil, rez.Error
 	}
 	return &user, nil
+}
+
+// GetUserDevice implements IUserCrudService.
+func (u *UserCrudService) GetUserDevice(userId uint) (*model.Mobile, error) {
+	var mobile model.Mobile
+	if err := u.db.Where("user_id = ?", userId).First(&mobile).Error; err != nil {
+		return nil, err
+	}
+	return &mobile, nil
 }

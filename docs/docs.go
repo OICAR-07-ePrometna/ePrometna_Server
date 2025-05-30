@@ -430,6 +430,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/my-device": {
+            "get": {
+                "description": "Fetches the currently logged-in user's registered device information",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get logged-in user's device information",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.MobileDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/user/oib/{oib}": {
             "get": {
                 "description": "get a user with oib",
@@ -1190,6 +1222,21 @@ const docTemplate = `{
                 "password": {
                     "type": "string",
                     "minLength": 6
+                }
+            }
+        },
+        "dto.MobileDto": {
+            "type": "object",
+            "required": [
+                "createdAt",
+                "registeredDevice"
+            ],
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "registeredDevice": {
+                    "type": "string"
                 }
             }
         },

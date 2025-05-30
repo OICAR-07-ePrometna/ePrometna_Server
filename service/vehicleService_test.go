@@ -29,6 +29,11 @@ type MockUserCrudService struct {
 	mock.Mock
 }
 
+// GetUserDevice implements service.IUserCrudService.
+func (m *MockUserCrudService) GetUserDevice(userId uint) (*model.Mobile, error) {
+	panic("unimplemented")
+}
+
 // GetUserByOIB implements service.IUserCrudService.
 func (m *MockUserCrudService) GetUserByOIB(oib string) (*model.User, error) {
 	args := m.Called(oib)

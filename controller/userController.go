@@ -43,6 +43,7 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 
 	// Protected endpint
 	group.GET("/my-data", middleware.Protect(), u.getLoggedInUser)
+	group.GET("/my-device", middleware.Protect(), u.getLoggedInUserDevice)
 
 	// Mup admin endpiont TODO: see pagination or search and or bothe
 	group.GET("/police-officers", middleware.Protect(model.RoleMupADMIN), u.getAllPoliceOfficers)
@@ -562,4 +563,60 @@ func (u *UserController) generateToken() string {
 		token += string(digits[rand.Intn(len(digits))])
 	}
 	return token
+}
+
+// GetLoggedInUserDevice godoc
+//
+//	@Summary		Get logged-in user's device information
+//	@Description	Fetches the currently logged-in user's registered device information
+//	@Tags			user
+//	@Produce		json
+//	@Success		200	{object}	dto.MobileDto
+//	@Failure		400
+//	@Failure		401
+//	@Failure		404
+//	@Failure		500
+//	@Router			/user/my-device [get]
+func (u *UserController) getLoggedInUserDevice(c *gin.Context) {
+	// Get user UUID from JWT token
+	_, claims, err := auth.ParseToken(c.Request.Header.Get("Authorization"))
+	if err != nil {
+		u.logger.Errorf("Failed to parse token: %v", err)
+		c.AbortWithError(http.StatusUnauthorized, errors.New("invalid or expired token"))
+		return
+	}
+
+	userUUID, err := uuid.Parse(claims.Uuid)
+	if err != nil {
+		u.logger.Errorf("Error parsing UUID from claims: %v", err)
+		c.AbortWithError(http.StatusBadRequest, errors.New("invalid user identifier"))
+		return
+	}
+
+	// Get user from database
+	user, err := u.UserCrud.Read(userUUID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.AbortWithError(http.StatusNotFound, errors.New("user not found"))
+			return
+		}
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	// Get user's device
+	device, err := u.UserCrud.GetUserDevice(user.ID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusOK, gin.H{
+				"message": "No device registered for this user",
+			})
+			return
+		}
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	// Return device information
+	c.JSON(http.StatusOK, device)
 }
