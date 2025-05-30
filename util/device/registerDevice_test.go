@@ -4,7 +4,7 @@ import (
 	"ePrometna_Server/app"
 	"ePrometna_Server/config"
 	"ePrometna_Server/model"
-	"ePrometna_Server/util/auth" // Assuming auth.GenerateDeviceToken works as expected
+	"ePrometna_Server/util/auth" //
 	"ePrometna_Server/util/device"
 	"errors"
 	"fmt"
@@ -267,7 +267,6 @@ func (suite *DeviceManagerTestSuite) TestUpdateDeviceToken_Success() {
 func (suite *DeviceManagerTestSuite) TestRegisterNewDevice_Success() {
 	deviceName := "NewBrand NewModel (Platform) [ID:newDevReg1]"
 
-	// Again, assuming auth.GenerateDeviceToken works.
 	token, err := suite.deviceMgr.RegisterNewDevice(testUserGlobal, deviceName)
 	assert.NoError(suite.T(), err)
 

@@ -79,8 +79,6 @@ func (suite *UserCrudServiceTestSuite) TearDownSuite() {
 func (suite *UserCrudServiceTestSuite) clearUserTables() {
 	suite.db.Exec("PRAGMA foreign_keys = OFF")
 	defer suite.db.Exec("PRAGMA foreign_keys = ON")
-	// Clear only the users table for these tests, assuming other tables are not directly modified by UserCrudService
-	// or are handled by cascading deletes if FKs were on.
 	err := suite.db.Session(&gorm.Session{AllowGlobalUpdate: true}).Unscoped().Delete(&model.User{}).Error
 	suite.Require().NoError(err, "Failed to clear users table")
 }
