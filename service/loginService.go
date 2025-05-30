@@ -108,7 +108,7 @@ func (s *LoginService) RefreshTokens(user *model.User) (string, string, error) {
 	return auth.GenerateTokens(user)
 }
 
-func (s LoginService) RegisterPolice(code string, deviceInfo device.DeviceInfo) (*MobileLoginResult, error) {
+func (s *LoginService) RegisterPolice(code string, deviceInfo device.DeviceInfo) (*MobileLoginResult, error) {
 	// Get user from database
 	var user model.User
 	if err := s.db.
@@ -116,7 +116,7 @@ func (s LoginService) RegisterPolice(code string, deviceInfo device.DeviceInfo) 
 		First(&user).
 		Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			s.logger.Errorf("Failed to register officer", err)
+			s.logger.Debugf("Failed to register officer", err)
 			return nil, cerror.ErrInvalidCredentials
 		}
 
