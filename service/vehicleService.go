@@ -60,6 +60,7 @@ func (v *VehicleService) Create(vehicle *model.Vehicle, ownerUuid uuid.UUID) (*m
 	}
 
 	vehicle.UserId = &owner.ID
+	vehicle.Registration.TechnicalDate = time.Now()
 
 	v.logger.Debugf("Creating new vehicle %+v", vehicle)
 	rez := v.db.Create(&vehicle)
