@@ -69,7 +69,7 @@ func (m *MockUserCrudService) Delete(id uuid.UUID) error {
 	return args.Error(0)
 }
 
-func (m *MockUserCrudService) GetAllUsers() ([]model.User, error) { // For SuperAdmin
+func (m *MockUserCrudService) GetAllUsers() ([]model.User, error) {
 	args := m.Called()
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -77,7 +77,7 @@ func (m *MockUserCrudService) GetAllUsers() ([]model.User, error) { // For Super
 	return args.Get(0).([]model.User), args.Error(1)
 }
 
-func (m *MockUserCrudService) GetAllPoliceOfficers() ([]model.User, error) { // For MupAdmin
+func (m *MockUserCrudService) GetAllPoliceOfficers() ([]model.User, error) {
 	args := m.Called()
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -132,7 +132,7 @@ func (suite *UserControllerTestSuite) SetupSuite() {
 	app.Provide(func() service.IUserCrudService { return suite.mockUserCrudService })
 
 	suite.router = gin.Default()
-	apiGroup := suite.router.Group("/api") // Assuming routes are under /api
+	apiGroup := suite.router.Group("/api")
 
 	userCtrl := controller.NewUserController()
 	userCtrl.RegisterEndpoints(apiGroup)
@@ -197,7 +197,7 @@ func (suite *UserControllerTestSuite) TestCreateUser_Success() {
 	suite.router.ServeHTTP(w, req)
 
 	assert.Equal(suite.T(), http.StatusCreated, w.Code)
-	var responseDto dto.UserDto // Note: UserController.create returns UserDto, not NewUserDto
+	var responseDto dto.UserDto
 	err := json.Unmarshal(w.Body.Bytes(), &responseDto)
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), expectedUserUUID.String(), responseDto.Uuid)
@@ -207,7 +207,7 @@ func (suite *UserControllerTestSuite) TestCreateUser_Success() {
 
 func (suite *UserControllerTestSuite) TestCreateUser_Forbidden() {
 	nonAdminToken := generateUserTestToken(uuid.New(), "user@example.com", model.RoleOsoba)
-	newUserDto := dto.NewUserDto{FirstName: "Test", Role: "osoba"} // Simplified DTO
+	newUserDto := dto.NewUserDto{FirstName: "Test", Role: "osoba"}
 	jsonValue, _ := json.Marshal(newUserDto)
 
 	req, _ := http.NewRequest(http.MethodPost, "/api/user/", bytes.NewBuffer(jsonValue))
@@ -280,7 +280,7 @@ func (suite *UserControllerTestSuite) TestUpdateUser_Success() {
 		OIB: "11122233344", Residence: "Updated Residence", BirthDate: "1985-05-15",
 		Email: "updated.email@example.com", Role: "firma",
 	}
-	updatedUserModel, _ := updateDto.ToModel() // DTO to model
+	updatedUserModel, _ := updateDto.ToModel()
 
 	suite.mockUserCrudService.On("Update", targetUserUUID, mock.MatchedBy(func(u *model.User) bool {
 		return u.FirstName == updateDto.FirstName && u.Email == updateDto.Email
@@ -391,7 +391,7 @@ func (suite *UserControllerTestSuite) TestGetAllPoliceOfficers_Success() {
 }
 
 func (suite *UserControllerTestSuite) TestSearchUsersByName_Success() {
-	adminToken := generateUserTestToken(uuid.New(), "adminsearch@example.com", model.RoleSuperAdmin) // Assuming SuperAdmin can search
+	adminToken := generateUserTestToken(uuid.New(), "adminsearch@example.com", model.RoleSuperAdmin)
 	searchQuery := "John"
 	foundUsers := []model.User{
 		{Uuid: uuid.New(), FirstName: "John", LastName: "Doe", Role: model.RoleOsoba, BirthDate: time.Now()},
@@ -490,7 +490,7 @@ func (suite *UserControllerTestSuite) TestGeneratePoliceToken_Success() {
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(suite.T(), err)
 	assert.NotEmpty(suite.T(), response["token"])
-	assert.Len(suite.T(), response["token"], 8) // Assuming 8 char token
+	assert.Len(suite.T(), response["token"], 8)
 	suite.mockUserCrudService.AssertExpectations(suite.T())
 }
 

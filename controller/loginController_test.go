@@ -15,8 +15,6 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-
-	// "os" // No longer needed for TestMain
 	"strings"
 	"testing"
 	"time"
@@ -26,7 +24,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite" // Import testify/suite
+	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -75,7 +73,7 @@ func (suite *LoginControllerTestSuite) SetupSuite() {
 	loggerCfg.Level = zap.NewAtomicLevelAt(zapcore.ErrorLevel)
 	zapLogger, _ := loggerCfg.Build()
 	suite.sugar = zapLogger.Sugar()
-	zap.ReplaceGlobals(zapLogger) // For app.Invoke
+	zap.ReplaceGlobals(zapLogger)
 
 	gin.SetMode(gin.TestMode)
 

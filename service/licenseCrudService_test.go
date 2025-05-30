@@ -5,7 +5,7 @@ import (
 	"ePrometna_Server/config"
 	"ePrometna_Server/model"
 	"ePrometna_Server/service"
-	"ePrometna_Server/util/auth" // For hashing passwords for test users
+	"ePrometna_Server/util/auth"
 	"ePrometna_Server/util/cerror"
 	"errors"
 	"fmt"
@@ -15,7 +15,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock" // Keep mock for IUserCrudService dependency
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest/observer"
@@ -25,7 +25,6 @@ import (
 )
 
 // --- Mock UserCrudService (Dependency for DriverLicenseCrudService) ---
-// Re-using the same mock structure. Ensure method signatures match IUserCrudService.
 type MockUserCrudServiceForLicense struct {
 	mock.Mock
 }
@@ -104,7 +103,7 @@ type DriverLicenseCrudServiceTestSuite struct {
 	suite.Suite
 	db              *gorm.DB
 	licenseService  service.IDriverLicenseCrudService
-	mockUserSvc     *MockUserCrudServiceForLicense // Mock for the dependency
+	mockUserSvc     *MockUserCrudServiceForLicense
 	logger          *zap.SugaredLogger
 	logObserver     *observer.ObservedLogs
 	seededOwnerUser *model.User
@@ -137,14 +136,7 @@ func (suite *DriverLicenseCrudServiceTestSuite) SetupSuite() {
 	app.Provide(func() *gorm.DB { return suite.db })
 	app.Provide(func() *zap.SugaredLogger { return suite.logger })
 	app.Provide(func() service.IUserCrudService { return suite.mockUserSvc })
-	// Note: NewDriverLicenseService in the original code takes db as an argument.
-	// If it were to use DIG for all its dependencies (like logger and userService),
-	// the instantiation would be simpler, like service.NewDriverLicenseService().
-	// For now, we follow the existing signature if it's not fully DIG-injected for all its own fields.
-	// Assuming NewDriverLicenseService is updated to use DIG for all its internal fields:
-	suite.licenseService = service.NewDriverLicenseService(suite.db) // Pass DB if constructor needs it
-	// If NewDriverLicenseService() uses app.Invoke for all its fields (db, logger, userService):
-	// suite.licenseService = service.NewDriverLicenseService()
+	suite.licenseService = service.NewDriverLicenseService(suite.db)
 	suite.Require().NotNil(suite.licenseService, "LicenseService should be initialized")
 }
 
@@ -164,7 +156,7 @@ func (suite *DriverLicenseCrudServiceTestSuite) TearDownSuite() {
 func (suite *DriverLicenseCrudServiceTestSuite) clearLicenseTables() {
 	suite.db.Exec("PRAGMA foreign_keys = OFF")
 	defer suite.db.Exec("PRAGMA foreign_keys = ON")
-	tables := []string{"driver_licenses", "users"} // Clear users as well due to FK
+	tables := []string{"driver_licenses", "users"}
 	for _, table := range tables {
 		var modelInstance interface{}
 		switch table {
@@ -244,7 +236,6 @@ func (suite *DriverLicenseCrudServiceTestSuite) TestCreateLicense_Success() {
 	assert.NoError(suite.T(), err)
 	assert.NotNil(suite.T(), createdLicense)
 	assert.NotZero(suite.T(), createdLicense.ID)
-	// Assert that the license's UserId matches the seeded user's ID
 	assert.Equal(suite.T(), suite.seededOwnerUser.ID, createdLicense.UserId)
 	assert.Equal(suite.T(), newLicenseData.LicenseNumber, createdLicense.LicenseNumber)
 

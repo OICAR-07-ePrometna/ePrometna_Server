@@ -98,9 +98,6 @@ func (suite *LicenseControllerTestSuite) SetupSuite() {
 	app.Test()
 	app.Provide(func() *zap.SugaredLogger { return suite.sugar })
 	app.Provide(func() service.IDriverLicenseCrudService { return suite.mockLicenseService })
-	// Provide a mock user service if middleware or other parts need it.
-	// For simplicity, assuming middleware tests cover token parsing and basic auth.
-	// app.Provide(func() service.IUserCrudService { return new(MockUserCrudService) }) // If needed
 
 	suite.router = gin.Default()
 	apiGroup := suite.router.Group("/api")
@@ -140,8 +137,6 @@ func TestLicenseController(t *testing.T) {
 // --- Test Cases ---
 
 func (suite *LicenseControllerTestSuite) TestCreateLicense_Success() {
-	// Assuming a user with RoleOsoba or RoleFirma can create a license for themselves.
-	// The controller extracts ownerUuid from the token.
 	ownerUUID := uuid.New()
 	token := generateLicenseTestToken(ownerUUID, "owner@example.com", model.RoleOsoba)
 
@@ -169,14 +164,14 @@ func (suite *LicenseControllerTestSuite) TestCreateLicense_Success() {
 	var responseDto dto.DriverLicenseDto
 	err := json.Unmarshal(w.Body.Bytes(), &responseDto)
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), expectedLicenseModel.Uuid.String(), responseDto.Uuid) // Check generated UUID
+	assert.Equal(suite.T(), expectedLicenseModel.Uuid.String(), responseDto.Uuid)
 	assert.Equal(suite.T(), licenseDto.LicenseNumber, responseDto.LicenseNumber)
 	suite.mockLicenseService.AssertExpectations(suite.T())
 }
 
 func (suite *LicenseControllerTestSuite) TestCreateLicense_BindingError() {
 	token := generateLicenseTestToken(uuid.New(), "owner@example.com", model.RoleOsoba)
-	req, _ := http.NewRequest(http.MethodPost, "/api/license/", strings.NewReader(`{"licenseNumber": "DL123",`)) // Malformed
+	req, _ := http.NewRequest(http.MethodPost, "/api/license/", strings.NewReader(`{"licenseNumber": "DL123",`))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
 
@@ -190,7 +185,6 @@ func (suite *LicenseControllerTestSuite) TestCreateLicense_ServiceError_OwnerNot
 	token := generateLicenseTestToken(ownerUUID, "nonexistent.owner@example.com", model.RoleOsoba)
 	licenseDto := dto.DriverLicenseDto{LicenseNumber: "DLX01", Category: "X", IssueDate: "2023-01-01", ExpiringDate: "2033-01-01"}
 
-	// Mock service to return gorm.ErrRecordNotFound (simulating owner not found by service)
 	suite.mockLicenseService.On("Create", mock.AnythingOfType("*model.DriverLicense"), ownerUUID).
 		Return(nil, gorm.ErrRecordNotFound).Once()
 
@@ -230,7 +224,6 @@ func (suite *LicenseControllerTestSuite) TestCreateLicense_ServiceError_BadRole(
 func (suite *LicenseControllerTestSuite) TestGetLicense_Success() {
 	// Any authenticated user can try to get a license by UUID.
 	// Authorization for *which* license can be fetched might be handled by service or here.
-	// For this test, assume any valid token allows the attempt.
 	token := generateLicenseTestToken(uuid.New(), "viewer@example.com", model.RoleOsoba)
 	targetLicenseUUID := uuid.New()
 	expectedLicense := &model.DriverLicense{
@@ -240,7 +233,7 @@ func (suite *LicenseControllerTestSuite) TestGetLicense_Success() {
 	suite.mockLicenseService.On("GetByUuid", targetLicenseUUID).Return(expectedLicense, nil).Once()
 
 	req, _ := http.NewRequest(http.MethodGet, "/api/license/"+targetLicenseUUID.String(), nil)
-	req.Header.Set("Authorization", "Bearer "+token) // Assuming GET requires auth
+	req.Header.Set("Authorization", "Bearer "+token)
 
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, req)
@@ -270,8 +263,6 @@ func (suite *LicenseControllerTestSuite) TestGetLicense_NotFound() {
 
 func (suite *LicenseControllerTestSuite) TestGetAllLicenses_Success() {
 	// The controller extracts user UUID from token to fetch *their* licenses.
-	// However, the current service GetAll() doesn't take user UUID.
-	// This test will reflect the current controller behavior.
 	userUUID := uuid.New()
 	token := generateLicenseTestToken(userUUID, "lic.owner@example.com", model.RoleFirma)
 
@@ -279,7 +270,7 @@ func (suite *LicenseControllerTestSuite) TestGetAllLicenses_Success() {
 		{Uuid: uuid.New(), LicenseNumber: "L1", Category: "B", IssueDate: time.Now(), ExpiringDate: time.Now().AddDate(5, 0, 0)},
 		{Uuid: uuid.New(), LicenseNumber: "L2", Category: "C", IssueDate: time.Now(), ExpiringDate: time.Now().AddDate(3, 0, 0)},
 	}
-	suite.mockLicenseService.On("GetAll").Return(licenses, nil).Once() // Mocking the service's GetAll
+	suite.mockLicenseService.On("GetAll").Return(licenses, nil).Once()
 
 	req, _ := http.NewRequest(http.MethodGet, "/api/license/", nil)
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -297,8 +288,7 @@ func (suite *LicenseControllerTestSuite) TestGetAllLicenses_Success() {
 }
 
 func (suite *LicenseControllerTestSuite) TestUpdateLicense_Success() {
-	// Assume user can update their own license. Controller doesn't check ownership here, service might.
-	userUUID := uuid.New() // User performing the update (from token)
+	userUUID := uuid.New()
 	token := generateLicenseTestToken(userUUID, "updater@example.com", model.RoleOsoba)
 	targetLicenseUUID := uuid.New()
 
@@ -307,7 +297,7 @@ func (suite *LicenseControllerTestSuite) TestUpdateLicense_Success() {
 		IssueDate: "2022-02-02", ExpiringDate: "2032-02-02",
 	}
 	updatedLicenseModel, _ := updateDto.ToModel()
-	updatedLicenseModel.Uuid = targetLicenseUUID // Ensure UUID matches path param for mock
+	updatedLicenseModel.Uuid = targetLicenseUUID
 
 	suite.mockLicenseService.On("Update", targetLicenseUUID, mock.MatchedBy(func(l *model.DriverLicense) bool {
 		return l.LicenseNumber == updateDto.LicenseNumber && l.Category == updateDto.Category
