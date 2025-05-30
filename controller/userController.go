@@ -554,6 +554,7 @@ func (u *UserController) setPoliceToken(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+// Generate police token
 func (u *UserController) generateToken() string {
 	digits := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	token := ""

@@ -15,8 +15,6 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-
-	// "os" // No longer needed for TestMain
 	"strings"
 	"testing"
 	"time"
@@ -26,7 +24,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite" // Import testify/suite
+	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -34,6 +32,11 @@ import (
 // --- Mock LoginService (remains the same) ---
 type MockLoginService struct {
 	mock.Mock
+}
+
+// RegisterPolice implements service.ILoginService.
+func (m *MockLoginService) RegisterPolice(code string, deviceInfo device.DeviceInfo) (*service.MobileLoginResult, error) {
+	panic("unimplemented")
 }
 
 // LoginMobile implements service.ILoginService.
@@ -70,7 +73,7 @@ func (suite *LoginControllerTestSuite) SetupSuite() {
 	loggerCfg.Level = zap.NewAtomicLevelAt(zapcore.ErrorLevel)
 	zapLogger, _ := loggerCfg.Build()
 	suite.sugar = zapLogger.Sugar()
-	zap.ReplaceGlobals(zapLogger) // For app.Invoke
+	zap.ReplaceGlobals(zapLogger)
 
 	gin.SetMode(gin.TestMode)
 
@@ -306,7 +309,7 @@ func (suite *LoginControllerTestSuite) TestRefreshToken_BindingError() {
 
 // --- Tests for LoginMobile ---
 func (suite *LoginControllerTestSuite) TestLoginMobile_Success() {
-	mobileLoginDto := dto.MobileLoginDto{
+	mobileLoginDto := dto.MobileRegisterDto{
 		Email:    "mobile@example.com",
 		Password: "mobilePassword123",
 		DeviceInfo: device.DeviceInfo{
@@ -326,7 +329,7 @@ func (suite *LoginControllerTestSuite) TestLoginMobile_Success() {
 		Return(expectedResult, nil).Once()
 
 	jsonValue, _ := json.Marshal(mobileLoginDto)
-	req, _ := http.NewRequest(http.MethodPost, "/api/auth/login-mobile", bytes.NewBuffer(jsonValue))
+	req, _ := http.NewRequest(http.MethodPost, "/api/auth/user/register", bytes.NewBuffer(jsonValue))
 	req.Header.Set("Content-Type", "application/json")
 
 	w := httptest.NewRecorder()
@@ -334,7 +337,7 @@ func (suite *LoginControllerTestSuite) TestLoginMobile_Success() {
 
 	assert.Equal(suite.T(), http.StatusOK, w.Code)
 
-	var responseDto dto.MobileLoginResponse
+	var responseDto dto.DeviceLoginResponse
 	err := json.Unmarshal(w.Body.Bytes(), &responseDto)
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), expectedResult.AccessToken, responseDto.AccessToken)
@@ -345,7 +348,7 @@ func (suite *LoginControllerTestSuite) TestLoginMobile_Success() {
 }
 
 func (suite *LoginControllerTestSuite) TestLoginMobile_ServiceError() {
-	mobileLoginDto := dto.MobileLoginDto{
+	mobileLoginDto := dto.MobileRegisterDto{
 		Email:    "mobile.error@example.com",
 		Password: "password",
 		DeviceInfo: device.DeviceInfo{
@@ -358,20 +361,20 @@ func (suite *LoginControllerTestSuite) TestLoginMobile_ServiceError() {
 		Return((*service.MobileLoginResult)(nil), serviceErr).Once()
 
 	jsonValue, _ := json.Marshal(mobileLoginDto)
-	req, _ := http.NewRequest(http.MethodPost, "/api/auth/login-mobile", bytes.NewBuffer(jsonValue))
+	req, _ := http.NewRequest(http.MethodPost, "/api/auth/user/register", bytes.NewBuffer(jsonValue))
 	req.Header.Set("Content-Type", "application/json")
 
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, req)
 
-	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code) // Controller maps service errors to Unauthorized for login
+	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
 	assert.Contains(suite.T(), w.Body.String(), serviceErr.Error())
 	suite.mockLoginService.AssertExpectations(suite.T())
 }
 
 func (suite *LoginControllerTestSuite) TestLoginMobile_BindingError() {
 	// Malformed JSON for DeviceInfo part
-	req, _ := http.NewRequest(http.MethodPost, "/api/auth/login-mobile", strings.NewReader(`{"email": "a@b.com", "password": "pw", "deviceInfo": {"platform":`))
+	req, _ := http.NewRequest(http.MethodPost, "/api/auth/user/register", strings.NewReader(`{"email": "a@b.com", "password": "pw", "deviceInfo": {"platform":`))
 	req.Header.Set("Content-Type", "application/json")
 
 	w := httptest.NewRecorder()

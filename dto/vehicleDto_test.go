@@ -83,7 +83,7 @@ func TestVehicleDto_FromModel(t *testing.T) {
 				VehicleModel: "Actros",
 				Registration: &model.RegistrationInfo{ // Current registration
 					Uuid:             regUUID,
-					VehicleId:        1, // Assuming a vehicle ID
+					VehicleId:        1,
 					PassTechnical:    true,
 					TraveledDistance: 250000,
 					TechnicalDate:    techDate,

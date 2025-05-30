@@ -20,6 +20,15 @@ definitions:
     - newOwnerUuid
     - vehicleUuid
     type: object
+  dto.DeviceLoginResponse:
+    properties:
+      accessToken:
+        type: string
+      deviceToken:
+        type: string
+      refreshToken:
+        type: string
+    type: object
   dto.DriverLicenseDto:
     properties:
       category:
@@ -44,7 +53,7 @@ definitions:
     - email
     - password
     type: object
-  dto.MobileLoginDto:
+  dto.MobileRegisterDto:
     properties:
       deviceInfo:
         $ref: '#/definitions/device.DeviceInfo'
@@ -56,15 +65,6 @@ definitions:
     - deviceInfo
     - email
     - password
-    type: object
-  dto.MobileLoginResponse:
-    properties:
-      accessToken:
-        type: string
-      deviceToken:
-        type: string
-      refreshToken:
-        type: string
     type: object
   dto.NewUserDto:
     properties:
@@ -121,6 +121,20 @@ definitions:
         $ref: '#/definitions/dto.VehicleSummary'
       traveledDistance:
         type: integer
+    type: object
+  dto.PoliceRegisterDto:
+    properties:
+      code:
+        type: string
+      deviceInfo:
+        $ref: '#/definitions/device.DeviceInfo'
+    required:
+    - deviceInfo
+    type: object
+  dto.RefreshDto:
+    properties:
+      refreshToken:
+        type: string
     type: object
   dto.RegistrationDto:
     properties:
@@ -337,26 +351,27 @@ paths:
       summary: User login
       tags:
       - auth
-  /auth/login-mobile:
+  /auth/police/register:
     post:
       consumes:
       - application/json
-      description: Authenticates a user on a mobile device and registers the device
+      description: Authenticates a police officer on a mobile device and registers
+        the device
       parameters:
-      - description: Mobile login credentials
+      - description: Police login credentials
         in: body
         name: mobileLoginDto
         required: true
         schema:
-          $ref: '#/definitions/dto.MobileLoginDto'
+          $ref: '#/definitions/dto.PoliceRegisterDto'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.MobileLoginResponse'
-      summary: Mobile login with device registration
+            $ref: '#/definitions/dto.DeviceLoginResponse'
+      summary: Police login
       tags:
       - auth
   /auth/refresh:
@@ -368,7 +383,7 @@ paths:
         name: refreshToken
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/dto.RefreshDto'
       produces:
       - application/json
       responses:
@@ -377,6 +392,28 @@ paths:
           schema:
             $ref: '#/definitions/dto.TokenDto'
       summary: Refresh Access Token
+      tags:
+      - auth
+  /auth/user/register:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user on a mobile device and registers the device
+      parameters:
+      - description: Mobile login credentials
+        in: body
+        name: mobileLoginDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.MobileRegisterDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.DeviceLoginResponse'
+      summary: Mobile login with device registration
       tags:
       - auth
   /license:

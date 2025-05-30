@@ -49,9 +49,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/login-mobile": {
+        "/auth/police/register": {
             "post": {
-                "description": "Authenticates a user on a mobile device and registers the device",
+                "description": "Authenticates a police officer on a mobile device and registers the device",
                 "consumes": [
                     "application/json"
                 ],
@@ -61,15 +61,15 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
-                "summary": "Mobile login with device registration",
+                "summary": "Police login",
                 "parameters": [
                     {
-                        "description": "Mobile login credentials",
+                        "description": "Police login credentials",
                         "name": "mobileLoginDto",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.MobileLoginDto"
+                            "$ref": "#/definitions/dto.PoliceRegisterDto"
                         }
                     }
                 ],
@@ -77,7 +77,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.MobileLoginResponse"
+                            "$ref": "#/definitions/dto.DeviceLoginResponse"
                         }
                     }
                 }
@@ -100,7 +100,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/dto.RefreshDto"
                         }
                     }
                 ],
@@ -109,6 +109,40 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/dto.TokenDto"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/user/register": {
+            "post": {
+                "description": "Authenticates a user on a mobile device and registers the device",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Mobile login with device registration",
+                "parameters": [
+                    {
+                        "description": "Mobile login credentials",
+                        "name": "mobileLoginDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.MobileRegisterDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.DeviceLoginResponse"
                         }
                     }
                 }
@@ -1109,6 +1143,20 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.DeviceLoginResponse": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "deviceToken": {
+                    "type": "string"
+                },
+                "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.DriverLicenseDto": {
             "type": "object",
             "properties": {
@@ -1145,7 +1193,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.MobileLoginDto": {
+        "dto.MobileRegisterDto": {
             "type": "object",
             "required": [
                 "deviceInfo",
@@ -1160,20 +1208,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.MobileLoginResponse": {
-            "type": "object",
-            "properties": {
-                "accessToken": {
-                    "type": "string"
-                },
-                "deviceToken": {
-                    "type": "string"
-                },
-                "refreshToken": {
                     "type": "string"
                 }
             }
@@ -1251,6 +1285,28 @@ const docTemplate = `{
                 },
                 "traveledDistance": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.PoliceRegisterDto": {
+            "type": "object",
+            "required": [
+                "deviceInfo"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "deviceInfo": {
+                    "$ref": "#/definitions/device.DeviceInfo"
+                }
+            }
+        },
+        "dto.RefreshDto": {
+            "type": "object",
+            "properties": {
+                "refreshToken": {
+                    "type": "string"
                 }
             }
         },

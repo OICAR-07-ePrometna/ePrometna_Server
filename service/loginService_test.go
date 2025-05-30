@@ -29,10 +29,8 @@ type LoginServiceTestSuite struct {
 	suite.Suite
 	db           *gorm.DB
 	loginService service.ILoginService
-	// No mock for deviceManager, as LoginService instantiates it directly.
-	// We will test its interaction with the DB.
-	logger      *zap.SugaredLogger
-	logObserver *observer.ObservedLogs
+	logger       *zap.SugaredLogger
+	logObserver  *observer.ObservedLogs
 }
 
 // SetupSuite runs once before all tests in the suite
@@ -40,7 +38,7 @@ func (suite *LoginServiceTestSuite) SetupSuite() {
 	core, obs := observer.New(zap.InfoLevel)
 	suite.logger = zap.New(core).Sugar()
 	suite.logObserver = obs
-	zap.ReplaceGlobals(zap.New(core)) // For app.Invoke
+	zap.ReplaceGlobals(zap.New(core))
 
 	db, err := gorm.Open(sqlite.Open("file:loginservice_test.db?mode=memory&cache=shared"), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
@@ -57,11 +55,9 @@ func (suite *LoginServiceTestSuite) SetupSuite() {
 		RefreshKey:    "login-service-test-refresh-key",
 	}
 
-	// Setup DIG container and provide dependencies
 	app.Test() // Initialize DIG container
 	app.Provide(func() *gorm.DB { return suite.db })
 	app.Provide(func() *zap.SugaredLogger { return suite.logger })
-	// LoginService is what we are testing, so we get it from DIG after providing its dependencies
 	suite.loginService = service.NewLoginService()
 	suite.Require().NotNil(suite.loginService, "LoginService should be initialized by DIG")
 }
@@ -173,12 +169,10 @@ func (suite *LoginServiceTestSuite) TestRefreshTokens_Success() {
 	assert.NotEmpty(suite.T(), accessToken)
 	assert.NotEmpty(suite.T(), refreshToken)
 
-	// Further validation: parse tokens and check claims (optional, as auth.GenerateTokens is tested separately)
 	_, accessClaims, errAccess := auth.ParseToken("Bearer " + accessToken)
 	suite.Require().NoError(errAccess)
 	assert.Equal(suite.T(), user.Uuid.String(), accessClaims.Uuid)
 
-	// For refresh token, need to parse with refresh key
 	var refreshClaims auth.Claims
 	_, errRefresh := jwt.ParseWithClaims(refreshToken, &refreshClaims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(config.AppConfig.RefreshKey), nil

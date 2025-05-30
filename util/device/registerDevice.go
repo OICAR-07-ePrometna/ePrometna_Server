@@ -106,11 +106,6 @@ func (dm *DeviceManager) RegisterNewDevice(user *model.User, deviceName string) 
 // - deviceToken: the token if device is authenticated
 // - isNewRegistration: true if device was newly registered
 // - error: any error that occurred during the process
-// ValidateDeviceRegistration checks if the device can be registered or authenticated
-// Returns:
-// - deviceToken: the token if device is authenticated
-// - isNewRegistration: true if device was newly registered
-// - error: any error that occurred during the process
 func (dm *DeviceManager) ValidateDeviceRegistration(user *model.User, deviceInfo DeviceInfo) (string, bool, error) {
 	deviceIDStr := deviceInfo.DeviceID
 	deviceName := dm.FormatDeviceName(deviceInfo)

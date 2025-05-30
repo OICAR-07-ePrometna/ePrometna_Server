@@ -107,7 +107,7 @@ func setupTestEnvironment() {
 	loggerCfg.Level = zap.NewAtomicLevelAt(zapcore.ErrorLevel)
 	zapLogger, _ := loggerCfg.Build()
 	testSugarLogger = zapLogger.Sugar()
-	zap.ReplaceGlobals(zapLogger) // For app.Invoke
+	zap.ReplaceGlobals(zapLogger)
 
 	gin.SetMode(gin.TestMode)
 
@@ -116,7 +116,7 @@ func setupTestEnvironment() {
 		IsDevelopment: true,
 		AccessKey:     "controller-test-access-key",
 		RefreshKey:    "controller-test-refresh-key",
-		Port:          8080, // Not used directly in tests but good to have
+		Port:          8080,
 	}
 
 	mockVehicleService = new(MockVehicleService)
@@ -125,14 +125,12 @@ func setupTestEnvironment() {
 	app.Test() // Initialize the container
 	app.Provide(func() *zap.SugaredLogger { return testSugarLogger })
 	app.Provide(func() service.IVehicleService { return mockVehicleService }) // Provide the mock
-	// User service might be needed by middleware or other parts, provide a basic mock if so
-	// app.Provide(func() service.IUserCrudService { return new(service_test.MockUserCrudService) })
 
 	// Create router and register controller
 	testRouter = gin.Default()
-	apiGroup := testRouter.Group("/api") // Assuming your routes are under /api
+	apiGroup := testRouter.Group("/api")
 
-	vehicleCtrl := controller.NewVehicleController() // This will use DIG to get mockVehicleService
+	vehicleCtrl := controller.NewVehicleController()
 	vehicleCtrl.RegisterEndpoints(apiGroup)
 }
 
@@ -161,7 +159,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestCreateVehicle_Controller_Success(t *testing.T) {
-	mockVehicleService.ExpectedCalls = nil // Clear previous expectations
+	mockVehicleService.ExpectedCalls = nil
 	mockVehicleService.Calls = nil
 
 	ownerUUID := uuid.New()
@@ -186,7 +184,6 @@ func TestCreateVehicle_Controller_Success(t *testing.T) {
 	}
 
 	// Mock the service call
-	// We need to be careful with the first argument to mock.MatchedBy
 	mockVehicleService.On("Create",
 		mock.MatchedBy(func(v *model.Vehicle) bool {
 			return v.VehicleModel == newVehicleDto.Summary.Model &&
@@ -227,7 +224,7 @@ func TestCreateVehicle_Controller_Unauthorized(t *testing.T) {
 }
 
 func TestCreateVehicle_Controller_Forbidden(t *testing.T) {
-	token := generateTestToken(uuid.New(), "nonhakuser@example.com", model.RoleOsoba) // Osoba cannot create
+	token := generateTestToken(uuid.New(), "nonhakuser@example.com", model.RoleOsoba)
 	newVehicleDto := dto.NewVehicleDto{OwnerUuid: uuid.New().String()}
 	jsonValue, _ := json.Marshal(newVehicleDto)
 	req, _ := http.NewRequest(http.MethodPost, "/api/vehicle/", bytes.NewBuffer(jsonValue))
@@ -261,7 +258,7 @@ func TestCreateVehicle_Controller_OwnerUUIDParseError(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	testRouter.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusBadRequest, w.Code) // controller handles this before service
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestCreateVehicle_Controller_ServiceError_OwnerNotFound(t *testing.T) {
@@ -302,7 +299,7 @@ func TestCreateVehicle_Controller_ServiceError_BadRole(t *testing.T) {
 	w := httptest.NewRecorder()
 	testRouter.ServeHTTP(w, req)
 
-	assert.Equal(t, http.StatusBadRequest, w.Code) // Mapped to 400 in controller
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 	mockVehicleService.AssertExpectations(t)
 }
 
@@ -310,14 +307,14 @@ func TestGetVehicle_Controller_Success(t *testing.T) {
 	mockVehicleService.ExpectedCalls = nil
 	mockVehicleService.Calls = nil
 	vehicleUUID := uuid.New()
-	tokenUserUUID := uuid.New() // This user is making the request
+	tokenUserUUID := uuid.New()
 	token := generateTestToken(tokenUserUUID, "testuser@example.com", model.RoleOsoba)
 
 	expectedVehicle := &model.Vehicle{
 		Uuid:           vehicleUUID,
 		VehicleModel:   "Tesla Model Y",
 		VehicleType:    "Car",
-		Owner:          &model.User{Uuid: tokenUserUUID, FirstName: "Test"}, // Assume owner details
+		Owner:          &model.User{Uuid: tokenUserUUID, FirstName: "Test"},
 		Registration:   &model.RegistrationInfo{Registration: "ZG-GET-01"},
 		RegistrationID: func(id uint) *uint { return &id }(1),
 	}
@@ -336,7 +333,7 @@ func TestGetVehicle_Controller_Success(t *testing.T) {
 	assert.Equal(t, vehicleUUID.String(), respDto.Uuid)
 	assert.Equal(t, expectedVehicle.VehicleModel, respDto.Summary.Model)
 	assert.Equal(t, expectedVehicle.Registration.Registration, respDto.Registration)
-	assert.Equal(t, tokenUserUUID.String(), respDto.Owner.Uuid) // Check if owner is correctly mapped
+	assert.Equal(t, tokenUserUUID.String(), respDto.Owner.Uuid)
 
 	mockVehicleService.AssertExpectations(t)
 }
@@ -389,7 +386,7 @@ func TestMyVehicles_Controller_Success(t *testing.T) {
 	testRouter.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	var respDtos dto.VehiclesDto // This is []VehicleDto
+	var respDtos dto.VehiclesDto
 	err := json.Unmarshal(w.Body.Bytes(), &respDtos)
 	assert.NoError(t, err)
 	assert.Len(t, respDtos, 2)
@@ -455,7 +452,7 @@ func TestDeleteVehicle_Controller_NotFound(t *testing.T) {
 
 func TestDeleteVehicle_Controller_Forbidden(t *testing.T) {
 	vehicleUUID := uuid.New()
-	token := generateTestToken(uuid.New(), "userdeleter@example.com", model.RoleOsoba) // Osoba cannot delete
+	token := generateTestToken(uuid.New(), "userdeleter@example.com", model.RoleOsoba)
 
 	req, _ := http.NewRequest(http.MethodDelete, "/api/vehicle/"+vehicleUUID.String(), nil)
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -530,7 +527,6 @@ func TestRegistration_Controller_Success(t *testing.T) {
 	mockVehicleService.ExpectedCalls = nil
 	mockVehicleService.Calls = nil
 	vehicleUUID := uuid.New()
-	// Assuming HAK role is needed for registration endpoint, adjust if different
 	token := generateTestToken(uuid.New(), "hakregistrar@example.com", model.RoleHAK)
 
 	regDto := dto.RegistrationDto{
@@ -540,10 +536,6 @@ func TestRegistration_Controller_Success(t *testing.T) {
 		Note:             "Controller test registration",
 	}
 
-	// Mock the service call
-	// The service expects model.RegistrationInfo, so the mock should reflect that.
-	// We use mock.MatchedBy for the second argument because the exact model.RegistrationInfo
-	// instance created from regDto in the controller will have a new UUID and TechnicalDate.
 	mockVehicleService.On("Registration", vehicleUUID, mock.MatchedBy(func(m model.RegistrationInfo) bool {
 		return m.Registration == regDto.Registration && m.TraveledDistance == regDto.TraveledDistance
 	})).Return(nil).Once()
@@ -556,7 +548,7 @@ func TestRegistration_Controller_Success(t *testing.T) {
 	w := httptest.NewRecorder()
 	testRouter.ServeHTTP(w, req)
 
-	assert.Equal(t, http.StatusNoContent, w.Code) // Controller uses AbortWithStatus(http.StatusOK)
+	assert.Equal(t, http.StatusNoContent, w.Code)
 	mockVehicleService.AssertExpectations(t)
 }
 
@@ -606,4 +598,222 @@ func TestRegistration_Controller_BindingError(t *testing.T) {
 	w := httptest.NewRecorder()
 	testRouter.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func (suite *UserControllerTestSuite) TestDeregisterVehicle_Controller_Success() {
+	mockVehicleService.ExpectedCalls = nil
+	mockVehicleService.Calls = nil
+	vehicleUUID := uuid.New()
+	token := generateTestToken(uuid.New(), "hakderegistrar@example.com", model.RoleHAK)
+
+	mockVehicleService.On("Deregister", vehicleUUID).Return(nil).Once()
+
+	req, _ := http.NewRequest(http.MethodPut, "/api/vehicle/deregister/"+vehicleUUID.String(), nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	w := httptest.NewRecorder()
+	testRouter.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+	mockVehicleService.AssertExpectations(suite.T())
+}
+
+func (suite *UserControllerTestSuite) TestDeregisterVehicle_Controller_NotFound() {
+	mockVehicleService.ExpectedCalls = nil
+	mockVehicleService.Calls = nil
+	vehicleUUID := uuid.New()
+	token := generateTestToken(uuid.New(), "hakderegistrar@example.com", model.RoleHAK)
+
+	mockVehicleService.On("Deregister", vehicleUUID).Return(gorm.ErrRecordNotFound).Once()
+
+	req, _ := http.NewRequest(http.MethodPut, "/api/vehicle/deregister/"+vehicleUUID.String(), nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	w := httptest.NewRecorder()
+	testRouter.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
+	mockVehicleService.AssertExpectations(suite.T())
+}
+
+func (suite *UserControllerTestSuite) TestDeregisterVehicle_Controller_Forbidden() {
+	vehicleUUID := uuid.New()
+	token := generateTestToken(uuid.New(), "userderegistrar@example.com", model.RoleOsoba)
+
+	req, _ := http.NewRequest(http.MethodPut, "/api/vehicle/deregister/"+vehicleUUID.String(), nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	w := httptest.NewRecorder()
+	testRouter.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusForbidden, w.Code)
+	mockVehicleService.AssertNotCalled(suite.T(), "Deregister", mock.Anything)
+}
+
+func (suite *UserControllerTestSuite) TestGetVehicleByVin_Controller_Success() {
+	mockVehicleService.ExpectedCalls = nil
+	mockVehicleService.Calls = nil
+	targetVIN := "TESTVIN1234567890"
+	vehicleUUID := uuid.New()
+	token := generateTestToken(uuid.New(), "vingetter@example.com", model.RoleHAK)
+
+	expectedVehicle := &model.Vehicle{
+		Uuid:          vehicleUUID,
+		VehicleModel:  "VIN Test Model",
+		ChassisNumber: targetVIN,
+		Registration:  &model.RegistrationInfo{Registration: "ZG-VIN-01"},
+		Owner:         &model.User{Uuid: uuid.New(), FirstName: "VIN Owner"},
+	}
+	mockVehicleService.On("ReadByVin", targetVIN).Return(expectedVehicle, nil).Once()
+
+	req, _ := http.NewRequest(http.MethodGet, "/api/vehicle/vin/"+targetVIN, nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	w := httptest.NewRecorder()
+	testRouter.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+	var respDto dto.VehicleDetailsDto
+	err := json.Unmarshal(w.Body.Bytes(), &respDto)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), vehicleUUID.String(), respDto.Uuid)
+	assert.Equal(suite.T(), targetVIN, respDto.Summary.ChassisNumber)
+	mockVehicleService.AssertExpectations(suite.T())
+}
+
+func (suite *UserControllerTestSuite) TestGetVehicleByVin_Controller_NotFound() {
+	mockVehicleService.ExpectedCalls = nil
+	mockVehicleService.Calls = nil
+	targetVIN := "NONEXISTENTVIN00"
+	token := generateTestToken(uuid.New(), "vingetter@example.com", model.RoleHAK)
+
+	mockVehicleService.On("ReadByVin", targetVIN).Return(nil, gorm.ErrRecordNotFound).Once()
+
+	req, _ := http.NewRequest(http.MethodGet, "/api/vehicle/vin/"+targetVIN, nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	w := httptest.NewRecorder()
+	testRouter.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
+	mockVehicleService.AssertExpectations(suite.T())
+}
+
+func (suite *UserControllerTestSuite) TestGetVehicleByVin_Controller_EmptyVIN() {
+	token := generateTestToken(uuid.New(), "vingetter@example.com", model.RoleHAK)
+
+	req, _ := http.NewRequest(http.MethodGet, "/api/vehicle/vin/", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	w := httptest.NewRecorder()
+	testRouter.ServeHTTP(w, req)
+
+	if w.Code == http.StatusNotFound {
+		suite.T().Log("Gin router returned 404 for empty VIN path segment, skipping controller logic check for empty VIN.")
+	} else {
+		assert.Equal(suite.T(), http.StatusMovedPermanently, w.Code)
+		assert.Contains(suite.T(), w.Body.String(), "Moved Permanently")
+	}
+}
+
+func (suite *UserControllerTestSuite) TestUpdateVehicle_Controller_Success() {
+	mockVehicleService.ExpectedCalls = nil
+	mockVehicleService.Calls = nil
+	vehicleUUID := uuid.New()
+	token := generateTestToken(uuid.New(), "hakupdater@example.com", model.RoleHAK)
+
+	updateDto := dto.VehicleDetailsDto{
+		Uuid: vehicleUUID.String(),
+		Summary: dto.VehicleSummary{
+			Model:       "Updated Model X",
+			VehicleType: "UpdatedCar",
+		},
+	}
+	expectedVehicleModel, _ := updateDto.ToModel()
+	expectedVehicleModel.Uuid = vehicleUUID
+
+	mockVehicleService.On("Update", vehicleUUID,
+		mock.MatchedBy(func(v model.Vehicle) bool {
+			return v.VehicleModel == updateDto.Summary.Model &&
+				v.VehicleType == updateDto.Summary.VehicleType
+		})).Return(expectedVehicleModel, nil).Once()
+
+	jsonValue, _ := json.Marshal(updateDto)
+	req, _ := http.NewRequest(http.MethodPut, "/api/vehicle/"+vehicleUUID.String(), bytes.NewBuffer(jsonValue))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	w := httptest.NewRecorder()
+	testRouter.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusCreated, w.Code)
+	var responseDto dto.VehicleDto
+	err := json.Unmarshal(w.Body.Bytes(), &responseDto)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), vehicleUUID.String(), responseDto.Uuid)
+	assert.Equal(suite.T(), updateDto.Summary.Model, responseDto.Model)
+	mockVehicleService.AssertExpectations(suite.T())
+}
+
+func (suite *UserControllerTestSuite) TestUpdateVehicle_Controller_NotFound() {
+	mockVehicleService.ExpectedCalls = nil
+	mockVehicleService.Calls = nil
+	vehicleUUID := uuid.New()
+	token := generateTestToken(uuid.New(), "hakupdater@example.com", model.RoleHAK)
+
+	updateDto := dto.VehicleDetailsDto{Summary: dto.VehicleSummary{Model: "NonExistentUpdate"}}
+
+	updateModel, _ := updateDto.ToModel()
+
+	mockVehicleService.On("Update", vehicleUUID, *updateModel).Return(nil, gorm.ErrRecordNotFound).Once()
+
+	jsonValue, _ := json.Marshal(updateDto)
+	req, _ := http.NewRequest(http.MethodPut, "/api/vehicle/"+vehicleUUID.String(), bytes.NewBuffer(jsonValue))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	w := httptest.NewRecorder()
+	testRouter.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
+	mockVehicleService.AssertExpectations(suite.T())
+}
+
+func (suite *UserControllerTestSuite) TestUpdateVehicle_Controller_BindingError() {
+	vehicleUUID := uuid.New()
+	token := generateTestToken(uuid.New(), "hakupdater@example.com", model.RoleHAK)
+
+	// Malformed JSON
+	req, _ := http.NewRequest(http.MethodPut, "/api/vehicle/"+vehicleUUID.String(), strings.NewReader(`{"summary": {"model":`))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	w := httptest.NewRecorder()
+	testRouter.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
+	mockVehicleService.AssertNotCalled(suite.T(), "Update", mock.Anything, mock.Anything)
+}
+
+func (suite *UserControllerTestSuite) TestUpdateVehicle_Controller_ServiceError_BadRole() {
+	mockVehicleService.ExpectedCalls = nil
+	mockVehicleService.Calls = nil
+	vehicleUUID := uuid.New()
+	token := generateTestToken(uuid.New(), "hakupdater@example.com", model.RoleHAK)
+
+	updateDto := dto.VehicleDetailsDto{Summary: dto.VehicleSummary{Model: "BadRoleUpdate"}}
+	updateModel, _ := updateDto.ToModel()
+
+	mockVehicleService.On("Update", vehicleUUID, *updateModel).Return(nil, cerror.ErrBadRole).Once()
+
+	jsonValue, _ := json.Marshal(updateDto)
+	req, _ := http.NewRequest(http.MethodPut, "/api/vehicle/"+vehicleUUID.String(), bytes.NewBuffer(jsonValue))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	w := httptest.NewRecorder()
+	testRouter.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
+	mockVehicleService.AssertExpectations(suite.T())
 }

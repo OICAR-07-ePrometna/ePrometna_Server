@@ -79,8 +79,6 @@ func (suite *UserCrudServiceTestSuite) TearDownSuite() {
 func (suite *UserCrudServiceTestSuite) clearUserTables() {
 	suite.db.Exec("PRAGMA foreign_keys = OFF")
 	defer suite.db.Exec("PRAGMA foreign_keys = ON")
-	// Clear only the users table for these tests, assuming other tables are not directly modified by UserCrudService
-	// or are handled by cascading deletes if FKs were on.
 	err := suite.db.Session(&gorm.Session{AllowGlobalUpdate: true}).Unscoped().Delete(&model.User{}).Error
 	suite.Require().NoError(err, "Failed to clear users table")
 }
@@ -355,8 +353,6 @@ func (suite *UserCrudServiceTestSuite) TestGetUserByOIB_NotFound() {
 }
 
 func (suite *UserCrudServiceTestSuite) TestCreateUser_InvalidRoleInModel() {
-	// This test checks if the BeforeCreate hook in the User model correctly prevents invalid roles.
-	// The service itself might not directly validate this if it relies on the model's hook.
 	invalidRoleUser := &model.User{
 		Uuid:         uuid.New(),
 		FirstName:    "Bad",
@@ -366,25 +362,13 @@ func (suite *UserCrudServiceTestSuite) TestCreateUser_InvalidRoleInModel() {
 		Role:         model.UserRole("nonexistentrole"), // Invalid role string
 		BirthDate:    time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC),
 		Residence:    "123 Error St",
-		PasswordHash: "somehash", // PasswordHash would be set by service, but for direct DB it's needed
+		PasswordHash: "somehash",
 	}
 
-	// Attempt to create directly in DB to test the hook
 	err := suite.db.Create(invalidRoleUser).Error
 	assert.Error(suite.T(), err)
-	assert.Contains(suite.T(), err.Error(), "invalid user role") // Error from BeforeCreate hook
+	assert.Contains(suite.T(), err.Error(), "invalid user role")
 
-	// Now test through the service, which also calls BeforeCreate via GORM
-	// The service's Create method doesn't pre-validate the role string if it's already UserRole type.
-	// However, if the role was set from a string that couldn't be parsed by model.StoUserRole,
-	// the service.Create would fail earlier. Here we assume the model.User struct is already populated.
-	// If we pass a model.User with an invalid model.UserRole type value, GORM's BeforeCreate should catch it.
-	// For the service test, it's more about if the service passes a malformed role string to the model.
-	// The current service.Create takes a *model.User, so the role is already typed.
-	// The DTO to Model conversion is where StoUserRole is called.
-
-	// Let's test the path where StoUserRole in DTO conversion fails.
-	// This is more of a DTO test, but relevant to how service receives the model.
 	dtoWithBadRole := dto.NewUserDto{
 		FirstName: "DtoBad", LastName: "RoleDto", OIB: "50000000002",
 		Email: "bad.role.dto@example.com", Role: "verybadrole", Password: "password",
@@ -393,4 +377,108 @@ func (suite *UserCrudServiceTestSuite) TestCreateUser_InvalidRoleInModel() {
 	_, errDto := dtoWithBadRole.ToModel() // This calls model.StoUserRole
 	assert.Error(suite.T(), errDto)
 	assert.True(suite.T(), errors.Is(errDto, cerror.ErrUnknownRole))
+}
+
+func (suite *UserCrudServiceTestSuite) TestCreateUser_PoliceRole_WithToken() {
+	policeTokenValue := "POLICETOKEN123"
+	newUser := &model.User{
+		Uuid:        uuid.New(),
+		FirstName:   "Officer",
+		LastName:    "WithToken",
+		OIB:         "POLICE00001",
+		Email:       "officer.withtoken@example.com",
+		Role:        model.RolePolicija,
+		BirthDate:   time.Date(1988, 8, 8, 0, 0, 0, 0, time.UTC),
+		Residence:   "Police Station 1",
+		PoliceToken: &policeTokenValue, // Explicitly set token for police role
+	}
+	plainPassword := "officerPass"
+
+	createdUser, err := suite.userCrudService.Create(newUser, plainPassword)
+
+	assert.NoError(suite.T(), err)
+	assert.NotNil(suite.T(), createdUser)
+	assert.Equal(suite.T(), model.RolePolicija, createdUser.Role)
+	assert.NotNil(suite.T(), createdUser.PoliceToken, "PoliceToken should be set for police officer")
+	if createdUser.PoliceToken != nil {
+		assert.Equal(suite.T(), policeTokenValue, *createdUser.PoliceToken)
+	}
+
+	// Verify in DB
+	var dbUser model.User
+	errDb := suite.db.First(&dbUser, createdUser.ID).Error
+	assert.NoError(suite.T(), errDb)
+	assert.Equal(suite.T(), model.RolePolicija, dbUser.Role)
+	assert.NotNil(suite.T(), dbUser.PoliceToken)
+	if dbUser.PoliceToken != nil {
+		assert.Equal(suite.T(), policeTokenValue, *dbUser.PoliceToken)
+	}
+}
+
+func (suite *UserCrudServiceTestSuite) TestCreateUser_PoliceRole_WithoutTokenInModel() {
+	// Test case where the PoliceToken field in the input model.User is nil,
+	// but the role is policija. The service should not automatically generate one here;
+	// token generation/setting is a separate admin action via UserController.
+	newUser := &model.User{
+		Uuid:        uuid.New(),
+		FirstName:   "Officer",
+		LastName:    "NoTokenInModel",
+		OIB:         "POLICE00002",
+		Email:       "officer.notokenmodel@example.com",
+		Role:        model.RolePolicija,
+		BirthDate:   time.Date(1989, 9, 9, 0, 0, 0, 0, time.UTC),
+		Residence:   "Police Station 2",
+		PoliceToken: nil, // Token is nil in the model being passed to Create
+	}
+	plainPassword := "officerPassNoToken"
+
+	createdUser, err := suite.userCrudService.Create(newUser, plainPassword)
+
+	assert.NoError(suite.T(), err)
+	assert.NotNil(suite.T(), createdUser)
+	assert.Equal(suite.T(), model.RolePolicija, createdUser.Role)
+	// If the input DTO (and thus the model passed to Create) had no token,
+	// the created user's PoliceToken should also be nil or empty string after creation.
+	// The service's Create method will set it to nil if the role is not policija,
+	// or use the provided value if it is policija. If nil is provided for policija, it stays nil.
+	assert.Nil(suite.T(), createdUser.PoliceToken, "PoliceToken should be nil if not provided for police officer during creation")
+
+	// Verify in DB
+	var dbUser model.User
+	errDb := suite.db.First(&dbUser, createdUser.ID).Error
+	assert.NoError(suite.T(), errDb)
+	assert.Equal(suite.T(), model.RolePolicija, dbUser.Role)
+	assert.Nil(suite.T(), dbUser.PoliceToken)
+}
+
+func (suite *UserCrudServiceTestSuite) TestCreateUser_NonPoliceRole_IgnoresPoliceTokenField() {
+	// If a non-police role user is created, any value in PoliceToken field of the input model
+	// should be ignored and set to nil by the service.
+	ignoredTokenValue := "SHOULD BE IGNORED"
+	newUser := &model.User{
+		Uuid:        uuid.New(),
+		FirstName:   "Civilian",
+		LastName:    "WithSuperfluousToken",
+		OIB:         "CIVIL00001",
+		Email:       "civilian.withtoken@example.com",
+		Role:        model.RoleOsoba, // Non-police role
+		BirthDate:   time.Date(1991, 1, 1, 0, 0, 0, 0, time.UTC),
+		Residence:   "Civilian Residence",
+		PoliceToken: &ignoredTokenValue, // Provide a token, but it should be ignored
+	}
+	plainPassword := "civilianPass"
+
+	createdUser, err := suite.userCrudService.Create(newUser, plainPassword)
+
+	assert.NoError(suite.T(), err)
+	assert.NotNil(suite.T(), createdUser)
+	assert.Equal(suite.T(), model.RoleOsoba, createdUser.Role)
+	assert.Nil(suite.T(), createdUser.PoliceToken, "PoliceToken should be nil for non-police officer, even if provided")
+
+	// Verify in DB
+	var dbUser model.User
+	errDb := suite.db.First(&dbUser, createdUser.ID).Error
+	assert.NoError(suite.T(), errDb)
+	assert.Equal(suite.T(), model.RoleOsoba, dbUser.Role)
+	assert.Nil(suite.T(), dbUser.PoliceToken)
 }
