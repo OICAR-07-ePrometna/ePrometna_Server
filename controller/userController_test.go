@@ -10,6 +10,7 @@ import (
 	"ePrometna_Server/service"
 	"ePrometna_Server/util/auth"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -460,4 +461,157 @@ func (suite *UserControllerTestSuite) TestGetUserByOib_NotFound() {
 	suite.router.ServeHTTP(w, req)
 	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
 	suite.mockUserCrudService.AssertExpectations(suite.T())
+}
+
+func (suite *UserControllerTestSuite) TestGeneratePoliceToken_Success() {
+	adminToken := generateUserTestToken(uuid.New(), "admin@example.com", model.RoleMupADMIN)
+	targetUserUUID := uuid.New()
+	policeUser := &model.User{
+		Uuid: targetUserUUID, FirstName: "Officer", LastName: "Test", Role: model.RolePolicija,
+		BirthDate: time.Now().AddDate(-25, 0, 0), OIB: "POLICE00100", Email: "officer.test@example.com",
+	}
+
+	// Mock UserCrud.Read to return the police user
+	suite.mockUserCrudService.On("Read", targetUserUUID).Return(policeUser, nil).Once()
+	// Mock UserCrud.Update to simulate saving the user with the new token
+	// We expect the policeToken field to be non-nil and have a length of 8 after generation.
+	suite.mockUserCrudService.On("Update", targetUserUUID, mock.MatchedBy(func(u *model.User) bool {
+		return u.Uuid == targetUserUUID && u.PoliceToken != nil && len(*u.PoliceToken) == 8
+	})).Return(policeUser, nil).Once() // The returned user here would have the token
+
+	req, _ := http.NewRequest(http.MethodPost, "/api/user/"+targetUserUUID.String()+"/generate-token", nil)
+	req.Header.Set("Authorization", "Bearer "+adminToken)
+
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+	var response map[string]string
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(suite.T(), err)
+	assert.NotEmpty(suite.T(), response["token"])
+	assert.Len(suite.T(), response["token"], 8) // Assuming 8 char token
+	suite.mockUserCrudService.AssertExpectations(suite.T())
+}
+
+func (suite *UserControllerTestSuite) TestGeneratePoliceToken_UserNotFound() {
+	adminToken := generateUserTestToken(uuid.New(), "admin@example.com", model.RoleMupADMIN)
+	targetUserUUID := uuid.New()
+
+	suite.mockUserCrudService.On("Read", targetUserUUID).Return(nil, gorm.ErrRecordNotFound).Once()
+
+	req, _ := http.NewRequest(http.MethodPost, "/api/user/"+targetUserUUID.String()+"/generate-token", nil)
+	req.Header.Set("Authorization", "Bearer "+adminToken)
+
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
+	suite.mockUserCrudService.AssertExpectations(suite.T())
+}
+
+func (suite *UserControllerTestSuite) TestGeneratePoliceToken_NotPoliceRole() {
+	adminToken := generateUserTestToken(uuid.New(), "admin@example.com", model.RoleMupADMIN)
+	targetUserUUID := uuid.New()
+	nonPoliceUser := &model.User{
+		Uuid: targetUserUUID, FirstName: "Civilian", LastName: "Test", Role: model.RoleOsoba,
+	}
+
+	suite.mockUserCrudService.On("Read", targetUserUUID).Return(nonPoliceUser, nil).Once()
+	// Update should not be called if role is not police
+
+	req, _ := http.NewRequest(http.MethodPost, "/api/user/"+targetUserUUID.String()+"/generate-token", nil)
+	req.Header.Set("Authorization", "Bearer "+adminToken)
+
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
+	assert.Contains(suite.T(), w.Body.String(), "Police token can only be generated for police officers")
+	suite.mockUserCrudService.AssertExpectations(suite.T())
+}
+
+func (suite *UserControllerTestSuite) TestSetPoliceToken_Success() {
+	adminToken := generateUserTestToken(uuid.New(), "admin@example.com", model.RoleMupADMIN)
+	targetUserUUID := uuid.New()
+	policeUser := &model.User{
+		Uuid: targetUserUUID, FirstName: "OfficerSet", LastName: "Token", Role: model.RolePolicija,
+	}
+	tokenToSet := "SETTOKEN"
+
+	suite.mockUserCrudService.On("Read", targetUserUUID).Return(policeUser, nil).Once()
+	suite.mockUserCrudService.On("Update", targetUserUUID, mock.MatchedBy(func(u *model.User) bool {
+		return u.Uuid == targetUserUUID && u.PoliceToken != nil && *u.PoliceToken == tokenToSet
+	})).Return(policeUser, nil).Once()
+
+	tokenPayload := fmt.Sprintf(`{"police_token": "%s"}`, tokenToSet)
+	req, _ := http.NewRequest(http.MethodPatch, "/api/user/"+targetUserUUID.String()+"/police-token", strings.NewReader(tokenPayload))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+adminToken)
+
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+	suite.mockUserCrudService.AssertExpectations(suite.T())
+}
+
+func (suite *UserControllerTestSuite) TestSetPoliceToken_UserNotFound() {
+	adminToken := generateUserTestToken(uuid.New(), "admin@example.com", model.RoleMupADMIN)
+	targetUserUUID := uuid.New()
+	tokenToSet := "ANYTOKEN"
+
+	suite.mockUserCrudService.On("Read", targetUserUUID).Return(nil, gorm.ErrRecordNotFound).Once()
+
+	tokenPayload := fmt.Sprintf(`{"police_token": "%s"}`, tokenToSet)
+	req, _ := http.NewRequest(http.MethodPatch, "/api/user/"+targetUserUUID.String()+"/police-token", strings.NewReader(tokenPayload))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+adminToken)
+
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
+	suite.mockUserCrudService.AssertExpectations(suite.T())
+}
+
+func (suite *UserControllerTestSuite) TestSetPoliceToken_NotPoliceRole() {
+	adminToken := generateUserTestToken(uuid.New(), "admin@example.com", model.RoleMupADMIN)
+	targetUserUUID := uuid.New()
+	nonPoliceUser := &model.User{
+		Uuid: targetUserUUID, FirstName: "CivilianSet", LastName: "Token", Role: model.RoleOsoba,
+	}
+	tokenToSet := "ANYTOKEN"
+
+	suite.mockUserCrudService.On("Read", targetUserUUID).Return(nonPoliceUser, nil).Once()
+
+	tokenPayload := fmt.Sprintf(`{"police_token": "%s"}`, tokenToSet)
+	req, _ := http.NewRequest(http.MethodPatch, "/api/user/"+targetUserUUID.String()+"/police-token", strings.NewReader(tokenPayload))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+adminToken)
+
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
+	assert.Contains(suite.T(), w.Body.String(), "Police token can only be set for police officers")
+	suite.mockUserCrudService.AssertExpectations(suite.T())
+}
+
+func (suite *UserControllerTestSuite) TestSetPoliceToken_BindingError() {
+	adminToken := generateUserTestToken(uuid.New(), "admin@example.com", model.RoleMupADMIN)
+	targetUserUUID := uuid.New()
+
+	// Malformed JSON payload
+	req, _ := http.NewRequest(http.MethodPatch, "/api/user/"+targetUserUUID.String()+"/police-token", strings.NewReader(`{"police_token":`))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+adminToken)
+
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
+	// No service calls expected due to binding error
+	suite.mockUserCrudService.AssertNotCalled(suite.T(), "Read", mock.Anything)
+	suite.mockUserCrudService.AssertNotCalled(suite.T(), "Update", mock.Anything, mock.Anything)
 }
