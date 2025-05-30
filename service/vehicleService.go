@@ -275,6 +275,7 @@ func (v *VehicleService) ReadByVin(vin string) (*model.Vehicle, error) {
 	rez := v.db.
 		InnerJoins("Registration").
 		Preload("Owner").
+		Preload("PastRegistration").
 		Where("vehicles.chassis_number = ?", vin).
 		First(&vehicle)
 
