@@ -8,10 +8,11 @@ import (
 )
 
 type RegistrationDto struct {
-	PassTechnical    bool   `json:"passTechnical"`
-	TraveledDistance int    `json:"traveledDistance"`
-	Registration     string `json:"registration"`
-	Note             string `json:"note"`
+	PassTechnical    bool      `json:"passTechnical"`
+	TraveledDistance int       `json:"traveledDistance"`
+	Registration     string    `json:"registration"`
+	Note             string    `json:"note"`
+	TechnicalDate    time.Time `json:"technicalDate"`
 }
 
 func (dto *RegistrationDto) ToModel() (model.RegistrationInfo, error) {
@@ -21,7 +22,7 @@ func (dto *RegistrationDto) ToModel() (model.RegistrationInfo, error) {
 		TraveledDistance: dto.TraveledDistance,
 		Registration:     dto.Registration,
 		Note:             &dto.Note,
-		TechnicalDate:    time.Now(),
+		TechnicalDate:    dto.TechnicalDate,
 	}
 
 	return m, nil

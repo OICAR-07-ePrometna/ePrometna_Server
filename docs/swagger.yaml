@@ -66,6 +66,15 @@ definitions:
     - email
     - password
     type: object
+  dto.MobileLoginResponse:
+    properties:
+      accessToken:
+        type: string
+      deviceToken:
+        type: string
+      refreshToken:
+        type: string
+    type: object
   dto.NewUserDto:
     properties:
       birthDate:
@@ -144,6 +153,8 @@ definitions:
         type: boolean
       registration:
         type: string
+      technicalDate:
+        type: string
       traveledDistance:
         type: integer
     type: object
@@ -187,6 +198,10 @@ definitions:
         items:
           $ref: '#/definitions/dto.UserDto'
         type: array
+      pastRegistration:
+        items:
+          $ref: '#/definitions/dto.RegistrationDto'
+        type: array
       registration:
         type: string
       summary:
@@ -195,6 +210,7 @@ definitions:
         description: |-
           Registration   RegistrationDto
           PastRegistratins []RegistrationDto
+        $ref: '#/definitions/dto.VehicleSummary'
       uuid:
         type: string
     type: object
@@ -357,11 +373,19 @@ paths:
         the device
       parameters:
       - description: Police login credentials
+  /auth/login-mobile:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user on a mobile device and registers the device
+      parameters:
+      - description: Mobile login credentials
         in: body
         name: mobileLoginDto
         required: true
         schema:
           $ref: '#/definitions/dto.PoliceRegisterDto'
+          $ref: '#/definitions/dto.MobileLoginDto'
       produces:
       - application/json
       responses:
@@ -370,6 +394,8 @@ paths:
           schema:
             $ref: '#/definitions/dto.DeviceLoginResponse'
       summary: Police login
+            $ref: '#/definitions/dto.MobileLoginResponse'
+      summary: Mobile login with device registration
       tags:
       - auth
   /auth/refresh:
@@ -382,6 +408,7 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.RefreshDto'
+          type: string
       produces:
       - application/json
       responses:
