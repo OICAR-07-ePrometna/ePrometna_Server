@@ -312,7 +312,8 @@ func (v *VehicleService) Deregister(vehicleUuid uuid.UUID) error {
 
 		if vehicle.Registration != nil {
 			v.logger.Infof("Vehicle UUID %s (ID: %d) has an active registration (RegistrationInfo ID: %d). This registration will be moved to past registrations.", vehicle.Uuid, vehicle.ID, vehicle.Registration.ID)
-			if err := tx.Model(&vehicle).Omit("RegistrationID").
+			if err := tx.Model(&vehicle).
+				Omit("RegistrationID").
 				Association("PastRegistration").Append(vehicle.Registration); err != nil {
 				return err
 			}

@@ -481,6 +481,139 @@ func (suite *VehicleServiceTestSuite) TestReadAllVehicles_OwnerHasNoVehicles() {
 	assert.Len(suite.T(), retrievedVehicles, 0, "Should retrieve an empty list for an owner with no vehicles")
 }
 
+func (suite *VehicleServiceTestSuite) TestReadByVin_Success() {
+	owner := createTestUserInDB(suite.db, &suite.Suite, model.RoleOsoba, uuid.New())
+	vinToFind := "VINSUCCESS123"
+	vehicle := createTestVehicleWithInitialReg(suite.db, &suite.Suite, owner.ID, uuid.New(), "ZG-VIN-S01")
+	vehicle.ChassisNumber = vinToFind // Set the VIN for this test
+	errUpdate := suite.db.Save(vehicle).Error
+	suite.Require().NoError(errUpdate)
+
+	readVehicle, err := suite.vehicleService.ReadByVin(vinToFind)
+
+	assert.NoError(suite.T(), err)
+	assert.NotNil(suite.T(), readVehicle)
+	assert.Equal(suite.T(), vehicle.Uuid, readVehicle.Uuid)
+	assert.Equal(suite.T(), vinToFind, readVehicle.ChassisNumber)
+	assert.NotNil(suite.T(), readVehicle.Registration)
+	assert.Equal(suite.T(), "ZG-VIN-S01", readVehicle.Registration.Registration)
+	assert.NotNil(suite.T(), readVehicle.Owner)
+	assert.Equal(suite.T(), owner.ID, readVehicle.Owner.ID)
+}
+
+func (suite *VehicleServiceTestSuite) TestReadByVin_NotFound() {
+	nonExistentVIN := "VINNOTFOUND000"
+	_, err := suite.vehicleService.ReadByVin(nonExistentVIN)
+
+	assert.Error(suite.T(), err)
+	assert.True(suite.T(), errors.Is(err, gorm.ErrRecordNotFound), "Expected gorm.ErrRecordNotFound for non-existent VIN")
+}
+
+func (suite *VehicleServiceTestSuite) TestDeregister_Success() {
+	owner := createTestUserInDB(suite.db, &suite.Suite, model.RoleOsoba, uuid.New())
+	vehicle := createTestVehicleWithInitialReg(suite.db, &suite.Suite, owner.ID, uuid.New(), "ZG-DEREG-01")
+	initialRegID := vehicle.Registration.ID
+
+	err := suite.vehicleService.Deregister(vehicle.Uuid)
+	assert.NoError(suite.T(), err)
+
+	var dbVehicle model.Vehicle
+	err = suite.db.Preload("PastRegistration").First(&dbVehicle, "uuid = ?", vehicle.Uuid).Error
+	assert.NoError(suite.T(), err)
+
+	assert.Nil(suite.T(), dbVehicle.RegistrationID, "RegistrationID should be nil after deregistration")
+
+	// Check if the old registration is now in PastRegistration
+	foundInPast := false
+	for _, pastReg := range dbVehicle.PastRegistration {
+		if pastReg.ID == initialRegID {
+			foundInPast = true
+			assert.Equal(suite.T(), "ZG-DEREG-01", pastReg.Registration)
+			break
+		}
+	}
+	assert.True(suite.T(), foundInPast, "Initial registration should be moved to past registrations")
+}
+
+func (suite *VehicleServiceTestSuite) TestDeregister_VehicleNotFound() {
+	nonExistentUUID := uuid.New()
+	err := suite.vehicleService.Deregister(nonExistentUUID)
+	assert.Error(suite.T(), err)
+	assert.True(suite.T(), errors.Is(err, gorm.ErrRecordNotFound), "Expected gorm.ErrRecordNotFound for non-existent vehicle")
+}
+
+func (suite *VehicleServiceTestSuite) TestDeregister_VehicleAlreadyDeregistered() {
+	owner := createTestUserInDB(suite.db, &suite.Suite, model.RoleOsoba, uuid.New())
+	vehicle := createTestVehicleWithInitialReg(suite.db, &suite.Suite, owner.ID, uuid.New(), "ZG-DEREG-ALR")
+	initialRegID := vehicle.Registration.ID
+
+	// First deregistration
+	err := suite.vehicleService.Deregister(vehicle.Uuid)
+	assert.NoError(suite.T(), err)
+
+	// Attempt to deregister again
+	err = suite.vehicleService.Deregister(vehicle.Uuid)
+	assert.NoError(suite.T(), err, "Deregistering an already deregistered vehicle should not error (idempotent)")
+
+	var dbVehicle model.Vehicle
+	err = suite.db.Preload("PastRegistration").First(&dbVehicle, "uuid = ?", vehicle.Uuid).Error
+	assert.NoError(suite.T(), err)
+	assert.Nil(suite.T(), dbVehicle.RegistrationID)
+
+	// Ensure the original registration is still in past registrations and not duplicated
+	countPastRegs := 0
+	for _, pastReg := range dbVehicle.PastRegistration {
+		if pastReg.ID == initialRegID {
+			countPastRegs++
+		}
+	}
+	assert.Equal(suite.T(), 1, countPastRegs, "Initial registration should appear only once in past registrations")
+}
+
+func (suite *VehicleServiceTestSuite) TestUpdateVehicle_Service_Success() {
+	owner := createTestUserInDB(suite.db, &suite.Suite, model.RoleOsoba, uuid.New())
+	vehicleToUpdate := createTestVehicleWithInitialReg(suite.db, &suite.Suite, owner.ID, uuid.New(), "ZG-UPDATE-01")
+
+	updateData := model.Vehicle{
+		// Note: VehicleService.Update only updates fields present in model.Vehicle.Update method
+		HomologationType: "UPDATED_HOMO_TYPE",
+		BodyShape:        "Updated Coupe",
+		ColourOfVehicle:  "Deep Blue",
+		EnginePower:      "250kW",
+		// Other fields that are updatable by vehicle.Update()
+	}
+
+	updatedVehicle, err := suite.vehicleService.Update(vehicleToUpdate.Uuid, updateData)
+	assert.NoError(suite.T(), err)
+	assert.NotNil(suite.T(), updatedVehicle)
+
+	assert.Equal(suite.T(), vehicleToUpdate.Uuid, updatedVehicle.Uuid) // UUID should not change
+	assert.Equal(suite.T(), updateData.HomologationType, updatedVehicle.HomologationType)
+	assert.Equal(suite.T(), updateData.BodyShape, updatedVehicle.BodyShape)
+	assert.Equal(suite.T(), updateData.ColourOfVehicle, updatedVehicle.ColourOfVehicle)
+	assert.Equal(suite.T(), updateData.EnginePower, updatedVehicle.EnginePower)
+
+	// Verify in DB
+	var dbVehicle model.Vehicle
+	errDb := suite.db.First(&dbVehicle, "uuid = ?", vehicleToUpdate.Uuid).Error
+	assert.NoError(suite.T(), errDb)
+	assert.Equal(suite.T(), updateData.HomologationType, dbVehicle.HomologationType)
+	assert.Equal(suite.T(), updateData.BodyShape, dbVehicle.BodyShape)
+
+	// Fields not in vehicle.Update() should remain unchanged from original
+	assert.Equal(suite.T(), vehicleToUpdate.VehicleModel, dbVehicle.VehicleModel)
+	assert.Equal(suite.T(), vehicleToUpdate.ChassisNumber, dbVehicle.ChassisNumber)
+}
+
+func (suite *VehicleServiceTestSuite) TestUpdateVehicle_Service_NotFound() {
+	nonExistentUUID := uuid.New()
+	updateData := model.Vehicle{VehicleModel: "NonExistentUpdate"}
+
+	_, err := suite.vehicleService.Update(nonExistentUUID, updateData)
+	assert.Error(suite.T(), err)
+	assert.True(suite.T(), errors.Is(err, gorm.ErrRecordNotFound), "Expected gorm.ErrRecordNotFound for non-existent vehicle")
+}
+
 // --- Run Test Suite ---
 func TestVehicleServiceSuite(t *testing.T) {
 	suite.Run(t, new(VehicleServiceTestSuite))
