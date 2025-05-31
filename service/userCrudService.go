@@ -26,6 +26,8 @@ type IUserCrudService interface {
 	GetAllPoliceOfficers() ([]model.User, error)
 	SearchUsersByName(query string) ([]model.User, error)
 	GetUserByOIB(oib string) (*model.User, error)
+	GetUserDevice(userId uint) (*model.Mobile, error)
+	DeleteUserDevice(userUUID uuid.UUID) error
 }
 
 type UserCrudService struct {
@@ -259,4 +261,35 @@ func (u *UserCrudService) GetUserByOIB(oib string) (*model.User, error) {
 		return nil, rez.Error
 	}
 	return &user, nil
+}
+
+// GetUserDevice implements IUserCrudService.
+func (u *UserCrudService) GetUserDevice(userId uint) (*model.Mobile, error) {
+	var mobile model.Mobile
+	if err := u.db.Where("user_id = ?", userId).First(&mobile).Error; err != nil {
+		return nil, err
+	}
+	return &mobile, nil
+}
+
+// DeleteUserDevice implements IUserCrudService.
+func (u *UserCrudService) DeleteUserDevice(userUUID uuid.UUID) error {
+	var user model.User
+	if err := u.db.Where("uuid = ?", userUUID).First(&user).Error; err != nil {
+		return err
+	}
+
+	var deviceCount int64
+	if err := u.db.Model(&model.Mobile{}).Where("user_id = ?", user.ID).Count(&deviceCount).Error; err != nil {
+		return err
+	}
+	if deviceCount == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	if err := u.db.Where("user_id = ?", user.ID).Delete(&model.Mobile{}).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

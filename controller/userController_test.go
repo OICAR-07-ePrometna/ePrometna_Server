@@ -32,6 +32,11 @@ type MockUserCrudService struct {
 	mock.Mock
 }
 
+// DeleteUserDevice implements service.IUserCrudService.
+func (m *MockUserCrudService) DeleteUserDevice(userUUID uuid.UUID) error {
+	panic("unimplemented")
+}
+
 func (m *MockUserCrudService) Create(user *model.User, password string) (*model.User, error) {
 	args := m.Called(user, password)
 	if args.Get(0) == nil {
@@ -99,6 +104,14 @@ func (m *MockUserCrudService) GetUserByOIB(oib string) (*model.User, error) {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*model.User), args.Error(1)
+}
+
+func (m *MockUserCrudService) GetUserDevice(userId uint) (*model.Mobile, error) {
+	args := m.Called(userId)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.Mobile), args.Error(1)
 }
 
 // --- UserController Test Suite ---
@@ -614,4 +627,84 @@ func (suite *UserControllerTestSuite) TestSetPoliceToken_BindingError() {
 	// No service calls expected due to binding error
 	suite.mockUserCrudService.AssertNotCalled(suite.T(), "Read", mock.Anything)
 	suite.mockUserCrudService.AssertNotCalled(suite.T(), "Update", mock.Anything, mock.Anything)
+}
+
+func (suite *UserControllerTestSuite) TestGetLoggedInUserDevice_Success() {
+	loggedInUserUUID := uuid.New()
+	loggedInUserEmail := "device.user@example.com"
+	loggedInUserRole := model.RoleOsoba
+	token := generateUserTestToken(loggedInUserUUID, loggedInUserEmail, loggedInUserRole)
+
+	expectedUser := &model.User{
+		Model: gorm.Model{
+			ID: 1,
+		},
+		Uuid:      loggedInUserUUID,
+		FirstName: "Device",
+		LastName:  "User",
+		Role:      loggedInUserRole,
+		BirthDate: time.Now().AddDate(-20, 0, 0),
+		OIB:       "55566677788",
+		Email:     loggedInUserEmail,
+	}
+
+	expectedDevice := &model.Mobile{
+		Uuid:             uuid.New(),
+		UserId:           expectedUser.ID,
+		RegisteredDevice: "Test Device",
+		ActivationToken:  "test-token",
+	}
+
+	suite.mockUserCrudService.On("Read", loggedInUserUUID).Return(expectedUser, nil).Once()
+	suite.mockUserCrudService.On("GetUserDevice", expectedUser.ID).Return(expectedDevice, nil).Once()
+
+	req, _ := http.NewRequest(http.MethodGet, "/api/user/my-device", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+	var responseDevice model.Mobile
+	err := json.Unmarshal(w.Body.Bytes(), &responseDevice)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), expectedDevice.Uuid, responseDevice.Uuid)
+	assert.Equal(suite.T(), expectedDevice.RegisteredDevice, responseDevice.RegisteredDevice)
+	suite.mockUserCrudService.AssertExpectations(suite.T())
+}
+
+func (suite *UserControllerTestSuite) TestGetLoggedInUserDevice_NoDevice() {
+	loggedInUserUUID := uuid.New()
+	loggedInUserEmail := "no.device@example.com"
+	loggedInUserRole := model.RoleOsoba
+	token := generateUserTestToken(loggedInUserUUID, loggedInUserEmail, loggedInUserRole)
+
+	expectedUser := &model.User{
+		Model: gorm.Model{
+			ID: 2,
+		},
+		Uuid:      loggedInUserUUID,
+		FirstName: "No",
+		LastName:  "Device",
+		Role:      loggedInUserRole,
+		BirthDate: time.Now().AddDate(-20, 0, 0),
+		OIB:       "99988877766",
+		Email:     loggedInUserEmail,
+	}
+
+	suite.mockUserCrudService.On("Read", loggedInUserUUID).Return(expectedUser, nil).Once()
+	suite.mockUserCrudService.On("GetUserDevice", expectedUser.ID).Return(nil, gorm.ErrRecordNotFound).Once()
+
+	req, _ := http.NewRequest(http.MethodGet, "/api/user/my-device", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, req)
+
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+	var response map[string]string
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), "No device registered for this user", response["message"])
+	suite.mockUserCrudService.AssertExpectations(suite.T())
 }

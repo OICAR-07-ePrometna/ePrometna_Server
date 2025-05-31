@@ -53,6 +53,16 @@ definitions:
     - email
     - password
     type: object
+  dto.MobileDto:
+    properties:
+      createdAt:
+        type: string
+      registeredDevice:
+        type: string
+    required:
+    - createdAt
+    - registeredDevice
+    type: object
   dto.MobileRegisterDto:
     properties:
       deviceInfo:
@@ -724,6 +734,45 @@ paths:
         "500":
           description: Internal Server Error
       summary: Get logged-in user data
+      tags:
+      - user
+  /user/my-device:
+    delete:
+      description: Deletes the currently logged-in user's registered device
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Delete logged-in user's device
+      tags:
+      - user
+    get:
+      description: Fetches the currently logged-in user's registered device information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.MobileDto'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Get logged-in user's device information
       tags:
       - user
   /user/oib/{oib}:
