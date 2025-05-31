@@ -12,7 +12,7 @@ var digContainer *dig.Container = nil
 
 var once = sync.Once{}
 
-// Test configurs app so that it can be used in unit testing
+// Test configures app so that it can be used in unit testing
 func Test() {
 	digContainer = dig.New()
 }

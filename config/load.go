@@ -27,7 +27,6 @@ func LoadConfig() error {
 
 func loadData() error {
 	conf := &AppConfiguration{}
-	// conf.IsDevelopment = isDevEnvironment()
 	conf.Env = LoadEnv()
 	conf.DbConnection = loadString("DB_CONN")
 	conf.AccessKey = loadString("ACCESS_KEY")
