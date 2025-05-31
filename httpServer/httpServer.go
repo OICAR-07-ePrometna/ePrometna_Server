@@ -61,8 +61,8 @@ func checkInterrupt(ctx context.Context, wg *sync.WaitGroup, schedulerCancel con
 
 func run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	// gin.DisableConsoleColor()
-	if !config.AppConfig.IsDevelopment {
+
+	if config.AppConfig.Env == config.Prod {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	router := gin.Default()

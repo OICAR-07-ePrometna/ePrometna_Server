@@ -23,7 +23,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
+	"go.uber.org/zap/zaptest/observer"
 	"gorm.io/gorm"
 )
 
@@ -74,29 +74,28 @@ type LicenseControllerTestSuite struct {
 	suite.Suite
 	router             *gin.Engine
 	mockLicenseService *MockDriverLicenseCrudService
-	sugar              *zap.SugaredLogger
+	logger             *zap.SugaredLogger
+	logObserver        *observer.ObservedLogs
 }
 
 // SetupSuite runs once before all tests
 func (suite *LicenseControllerTestSuite) SetupSuite() {
-	loggerCfg := zap.NewDevelopmentConfig()
-	loggerCfg.Level = zap.NewAtomicLevelAt(zapcore.ErrorLevel)
-	zapLogger, _ := loggerCfg.Build()
-	suite.sugar = zapLogger.Sugar()
-	zap.ReplaceGlobals(zapLogger)
-
+	core, obs := observer.New(zap.InfoLevel)
+	suite.logger = zap.New(core).Sugar()
+	suite.logObserver = obs
+	zap.ReplaceGlobals(zap.New(core))
 	gin.SetMode(gin.TestMode)
 
 	config.AppConfig = &config.AppConfiguration{
-		IsDevelopment: true,
-		AccessKey:     "license-ctrl-test-access-key",
-		RefreshKey:    "license-ctrl-test-refresh-key",
+		Env:        config.Dev,
+		AccessKey:  "license-ctrl-test-access-key",
+		RefreshKey: "license-ctrl-test-refresh-key",
 	}
 
 	suite.mockLicenseService = new(MockDriverLicenseCrudService)
 
 	app.Test()
-	app.Provide(func() *zap.SugaredLogger { return suite.sugar })
+	app.Provide(func() *zap.SugaredLogger { return suite.logger })
 	app.Provide(func() service.IDriverLicenseCrudService { return suite.mockLicenseService })
 
 	suite.router = gin.Default()
@@ -108,8 +107,8 @@ func (suite *LicenseControllerTestSuite) SetupSuite() {
 
 // TearDownSuite runs once after all tests
 func (suite *LicenseControllerTestSuite) TearDownSuite() {
-	if suite.sugar != nil {
-		_ = suite.sugar.Sync()
+	if suite.logger != nil {
+		_ = suite.logger.Sync()
 	}
 }
 

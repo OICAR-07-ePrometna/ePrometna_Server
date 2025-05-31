@@ -50,9 +50,9 @@ func (suite *LoginServiceTestSuite) SetupSuite() {
 	suite.Require().NoError(err, "Failed to migrate database schema")
 
 	config.AppConfig = &config.AppConfiguration{
-		IsDevelopment: true,
-		AccessKey:     "login-service-test-access-key",
-		RefreshKey:    "login-service-test-refresh-key",
+		Env:        config.Dev,
+		AccessKey:  "login-service-test-access-key",
+		RefreshKey: "login-service-test-refresh-key",
 	}
 
 	app.Test() // Initialize DIG container

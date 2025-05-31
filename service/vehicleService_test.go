@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
+	"go.uber.org/zap/zaptest/observer"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -115,22 +115,22 @@ type VehicleServiceTestSuite struct {
 	db             *gorm.DB
 	vehicleService service.IVehicleService
 	mockUserSvc    *MockUserCrudService
-	sugar          *zap.SugaredLogger
+	logger         *zap.SugaredLogger
+	logObserver    *observer.ObservedLogs
 }
 
 // SetupSuite runs once before all tests in the suite
 func (suite *VehicleServiceTestSuite) SetupSuite() {
-	loggerCfg := zap.NewDevelopmentConfig()
-	loggerCfg.Level = zap.NewAtomicLevelAt(zapcore.ErrorLevel)
-	loggerCfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-	zapLogger, _ := loggerCfg.Build()
-	suite.sugar = zapLogger.Sugar()
+	core, obs := observer.New(zap.InfoLevel)
+	suite.logger = zap.New(core).Sugar()
+	suite.logObserver = obs
+	zap.ReplaceGlobals(zap.New(core))
 
 	config.AppConfig = &config.AppConfiguration{
-		IsDevelopment: true,
-		AccessKey:     "test-access-key",
-		RefreshKey:    "test-refresh-key",
-		DbConnection:  "",
+		Env:          config.Dev,
+		AccessKey:    "test-access-key",
+		RefreshKey:   "test-refresh-key",
+		DbConnection: "",
 	}
 
 	app.Test()
@@ -150,7 +150,7 @@ func (suite *VehicleServiceTestSuite) SetupSuite() {
 	suite.mockUserSvc = new(MockUserCrudService)
 
 	app.Provide(func() *gorm.DB { return suite.db })
-	app.Provide(func() *zap.SugaredLogger { return suite.sugar })
+	app.Provide(func() *zap.SugaredLogger { return suite.logger })
 	app.Provide(func() service.IUserCrudService { return suite.mockUserSvc })
 	suite.vehicleService = service.NewVehicleService()
 }
@@ -160,8 +160,8 @@ func (suite *VehicleServiceTestSuite) TearDownSuite() {
 		sqlDB, _ := suite.db.DB()
 		sqlDB.Close()
 	}
-	if suite.sugar != nil {
-		suite.sugar.Sync()
+	if suite.logger != nil {
+		suite.logger.Sync()
 	}
 }
 
@@ -175,7 +175,7 @@ func (suite *VehicleServiceTestSuite) SetupTest() {
 	for _, table := range tables {
 		err := suite.db.Exec(fmt.Sprintf("DELETE FROM %s", table)).Error
 		if err != nil && !strings.Contains(err.Error(), "no such table") {
-			suite.sugar.Warnf("Could not clean table %s: %v", table, err)
+			suite.logger.Warnf("Could not clean table %s: %v", table, err)
 		}
 	}
 	suite.mockUserSvc.ExpectedCalls = nil
@@ -413,7 +413,6 @@ func (suite *VehicleServiceTestSuite) TestRegistration_SupersedeExisting() {
 func (suite *VehicleServiceTestSuite) TestDeleteVehicle_Success() {
 	owner := createTestUserInDB(suite.db, &suite.Suite, model.RoleOsoba, uuid.New())
 	vehicleToTest := createTestVehicleWithInitialReg(suite.db, &suite.Suite, owner.ID, uuid.New(), "ZG-DEL-01")
-	suite.T().Logf("Vehicle created for deletion test: ID=%d, UUID=%s, OwnerID=%d", vehicleToTest.ID, vehicleToTest.Uuid, *vehicleToTest.UserId)
 
 	err := suite.vehicleService.Delete(vehicleToTest.Uuid)
 	assert.NoError(suite.T(), err)

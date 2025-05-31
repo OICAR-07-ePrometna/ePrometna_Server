@@ -51,9 +51,9 @@ func (suite *UserCrudServiceTestSuite) SetupSuite() {
 	suite.Require().NoError(err, "Failed to migrate database schema for UserCrudService tests")
 
 	config.AppConfig = &config.AppConfiguration{ // Basic config for any auth utilities if used indirectly
-		IsDevelopment: true,
-		AccessKey:     "usercrud-service-test-access-key",
-		RefreshKey:    "usercrud-service-test-refresh-key",
+		Env:        config.Dev,
+		AccessKey:  "usercrud-service-test-access-key",
+		RefreshKey: "usercrud-service-test-refresh-key",
 	}
 
 	app.Test()

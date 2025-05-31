@@ -113,10 +113,10 @@ func setupTestEnvironment() {
 
 	// Setup config
 	config.AppConfig = &config.AppConfiguration{
-		IsDevelopment: true,
-		AccessKey:     "controller-test-access-key",
-		RefreshKey:    "controller-test-refresh-key",
-		Port:          8080,
+		Env:        config.Dev,
+		AccessKey:  "controller-test-access-key",
+		RefreshKey: "controller-test-refresh-key",
+		Port:       8080,
 	}
 
 	mockVehicleService = new(MockVehicleService)
