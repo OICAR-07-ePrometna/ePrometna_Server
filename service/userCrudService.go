@@ -279,8 +279,15 @@ func (u *UserCrudService) DeleteUserDevice(userUUID uuid.UUID) error {
 		return err
 	}
 
-	// Delete the device using Unscoped().Delete to permanently remove it
-	if err := u.db.Unscoped().Where("user_id = ?", user.ID).Delete(&model.Mobile{}).Error; err != nil {
+	var deviceCount int64
+	if err := u.db.Model(&model.Mobile{}).Where("user_id = ?", user.ID).Count(&deviceCount).Error; err != nil {
+		return err
+	}
+	if deviceCount == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	if err := u.db.Where("user_id = ?", user.ID).Delete(&model.Mobile{}).Error; err != nil {
 		return err
 	}
 
