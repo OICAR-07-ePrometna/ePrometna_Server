@@ -27,6 +27,7 @@ type IUserCrudService interface {
 	SearchUsersByName(query string) ([]model.User, error)
 	GetUserByOIB(oib string) (*model.User, error)
 	GetUserDevice(userId uint) (*model.Mobile, error)
+	DeleteUserDevice(userUUID uuid.UUID) error
 }
 
 type UserCrudService struct {
@@ -269,4 +270,19 @@ func (u *UserCrudService) GetUserDevice(userId uint) (*model.Mobile, error) {
 		return nil, err
 	}
 	return &mobile, nil
+}
+
+// DeleteUserDevice implements IUserCrudService.
+func (u *UserCrudService) DeleteUserDevice(userUUID uuid.UUID) error {
+	var user model.User
+	if err := u.db.Where("uuid = ?", userUUID).First(&user).Error; err != nil {
+		return err
+	}
+
+	// Delete the device using Unscoped().Delete to permanently remove it
+	if err := u.db.Unscoped().Where("user_id = ?", user.ID).Delete(&model.Mobile{}).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -29,6 +29,11 @@ type MockUserCrudServiceForLicense struct {
 	mock.Mock
 }
 
+// DeleteUserDevice implements service.IUserCrudService.
+func (m *MockUserCrudServiceForLicense) DeleteUserDevice(userUUID uuid.UUID) error {
+	panic("unimplemented")
+}
+
 // GetUserDevice implements service.IUserCrudService.
 func (m *MockUserCrudServiceForLicense) GetUserDevice(userId uint) (*model.Mobile, error) {
 	panic("unimplemented")

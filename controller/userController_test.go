@@ -32,6 +32,11 @@ type MockUserCrudService struct {
 	mock.Mock
 }
 
+// DeleteUserDevice implements service.IUserCrudService.
+func (m *MockUserCrudService) DeleteUserDevice(userUUID uuid.UUID) error {
+	panic("unimplemented")
+}
+
 func (m *MockUserCrudService) Create(user *model.User, password string) (*model.User, error) {
 	args := m.Called(user, password)
 	if args.Get(0) == nil {

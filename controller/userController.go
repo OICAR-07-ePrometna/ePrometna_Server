@@ -44,6 +44,7 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 	// Protected endpint
 	group.GET("/my-data", middleware.Protect(), u.getLoggedInUser)
 	group.GET("/my-device", middleware.Protect(), u.getLoggedInUserDevice)
+	group.DELETE("/my-device", middleware.Protect(), u.deleteLoggedInUserDevice)
 
 	// Mup admin endpiont TODO: see pagination or search and or bothe
 	group.GET("/police-officers", middleware.Protect(model.RoleMupADMIN), u.getAllPoliceOfficers)
@@ -619,4 +620,46 @@ func (u *UserController) getLoggedInUserDevice(c *gin.Context) {
 
 	// Return device information
 	c.JSON(http.StatusOK, device)
+}
+
+// DeleteLoggedInUserDevice godoc
+//
+//	@Summary		Delete logged-in user's device
+//	@Description	Deletes the currently logged-in user's registered device
+//	@Tags			user
+//	@Produce		json
+//	@Success		204
+//	@Failure		400
+//	@Failure		401
+//	@Failure		404
+//	@Failure		500
+//	@Router			/user/my-device [delete]
+func (u *UserController) deleteLoggedInUserDevice(c *gin.Context) {
+	// Get user UUID from JWT token
+	_, claims, err := auth.ParseToken(c.Request.Header.Get("Authorization"))
+	if err != nil {
+		u.logger.Errorf("Failed to parse token: %v", err)
+		c.AbortWithError(http.StatusUnauthorized, errors.New("invalid or expired token"))
+		return
+	}
+
+	userUUID, err := uuid.Parse(claims.Uuid)
+	if err != nil {
+		u.logger.Errorf("Error parsing UUID from claims: %v", err)
+		c.AbortWithError(http.StatusBadRequest, errors.New("invalid user identifier"))
+		return
+	}
+
+	// Delete user's device
+	err = u.UserCrud.DeleteUserDevice(userUUID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.AbortWithError(http.StatusNotFound, errors.New("device not found"))
+			return
+		}
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
