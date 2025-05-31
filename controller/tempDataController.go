@@ -155,5 +155,3 @@ func (c *TempDataController) getAndDeleteTempData(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, result)
 }
-
-//TODO success dto a ne model
