@@ -5,8 +5,10 @@ import (
 	"ePrometna_Server/dto"
 	"ePrometna_Server/model"
 	"ePrometna_Server/service"
+	"ePrometna_Server/util/auth"
 	"errors"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -55,47 +57,39 @@ func (c *TempDataController) RegisterEndpoints(api *gin.RouterGroup) {
 // @Failure		500
 // @Router		/tempdata/ [post]
 func (c *TempDataController) createTempData(ctx *gin.Context) {
-	var tempData dto.TempData
-
-	if err := ctx.ShouldBindJSON(&tempData); err != nil {
-		c.logger.Errorf("Invalid request: %+v", err)
-		ctx.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
-
-	vehicleUUID, err := uuid.Parse(tempData.VehicleId)
+	// Parse JWT and get driver UUID
+	_, claims, err := auth.ParseToken(ctx.Request.Header.Get("Authorization"))
 	if err != nil {
-		c.logger.Errorf("Invalid vehicleId: %s", tempData.VehicleId)
-		ctx.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
-	driverUUID, err := uuid.Parse(tempData.DriverId)
-	if err != nil {
-		c.logger.Errorf("Invalid driverId: %s", tempData.DriverId)
-		ctx.AbortWithError(http.StatusBadRequest, err)
+		c.logger.Errorf("Failed to parse token: %v", err)
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, "Invalid token")
 		return
 	}
 
-	vehicle, err := c.VehicleService.Read(vehicleUUID)
+	driverUUID, err := uuid.Parse(claims.Uuid)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.logger.Errorf("Vehicle not found: %s", vehicleUUID)
-			ctx.AbortWithError(http.StatusNotFound, err)
-			return
-		}
-		c.logger.Errorf("Failed to read vehicle: %+v", err)
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		c.logger.Errorf("Failed to parse uuid from token claims = %s, err = %+v", claims.Uuid, err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, "Invalid user UUID in token")
 		return
 	}
+
+	// Get all vehicles for this driver
+	vehicles, err := c.VehicleService.ReadAll(driverUUID)
+	if err != nil || len(vehicles) == 0 {
+		c.logger.Errorf("Failed to read vehicles for user %s: %+v", driverUUID, err)
+		ctx.AbortWithStatusJSON(http.StatusNotFound, "No vehicles found for user")
+		return
+	}
+	vehicle := vehicles[0]
+
 	driver, err := c.UserService.Read(driverUUID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.logger.Errorf("Driver not found: %s", driverUUID)
-			ctx.AbortWithError(http.StatusNotFound, err)
+			ctx.AbortWithStatusJSON(http.StatusNotFound, "Driver not found")
 			return
 		}
 		c.logger.Errorf("Failed to read driver: %+v", err)
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, "Failed to read driver")
 		return
 	}
 
@@ -108,7 +102,7 @@ func (c *TempDataController) createTempData(ctx *gin.Context) {
 
 	if err := c.TempDataService.CreateTempData(newTempData); err != nil {
 		c.logger.Errorf("Failed to create temp data: %+v", err)
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, "Failed to create temp data")
 		return
 	}
 
@@ -122,7 +116,7 @@ func (c *TempDataController) createTempData(ctx *gin.Context) {
 // @Tags			tempdata
 // @Produce		json
 // @Param		uuid	path	string	true	"UUID of the temporary data"
-// @Success		200	{object}	model.TempData
+// @Success		200	{object}	dto.TempDataDto
 // @Failure		400
 // @Failure		404
 // @Failure		500
@@ -138,7 +132,7 @@ func (c *TempDataController) getAndDeleteTempData(ctx *gin.Context) {
 	_, err := uuid.Parse(uuidStr)
 	if err != nil {
 		c.logger.Errorf("Invalid UUID: %s", uuidStr)
-		ctx.AbortWithError(http.StatusBadRequest, err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, "Invalid UUID")
 		return
 	}
 
@@ -154,5 +148,12 @@ func (c *TempDataController) getAndDeleteTempData(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, tempData)
+	result := dto.TempData{
+		VehicleId: strconv.FormatUint(uint64(tempData.VehicleId), 10),
+		DriverId:  strconv.FormatUint(uint64(tempData.DriverId), 10),
+	}
+
+	ctx.JSON(http.StatusOK, result)
 }
+
+//TODO success dto a ne model
