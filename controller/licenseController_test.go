@@ -88,9 +88,9 @@ func (suite *LicenseControllerTestSuite) SetupSuite() {
 	gin.SetMode(gin.TestMode)
 
 	config.AppConfig = &config.AppConfiguration{
-		IsDevelopment: true,
-		AccessKey:     "license-ctrl-test-access-key",
-		RefreshKey:    "license-ctrl-test-refresh-key",
+		Env:        config.Dev,
+		AccessKey:  "license-ctrl-test-access-key",
+		RefreshKey: "license-ctrl-test-refresh-key",
 	}
 
 	suite.mockLicenseService = new(MockDriverLicenseCrudService)

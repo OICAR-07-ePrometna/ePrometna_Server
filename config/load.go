@@ -27,7 +27,8 @@ func LoadConfig() error {
 
 func loadData() error {
 	conf := &AppConfiguration{}
-	conf.IsDevelopment = isDevEnvironment()
+	// conf.IsDevelopment = isDevEnvironment()
+	conf.Env = LoadEnv()
 	conf.DbConnection = loadString("DB_CONN")
 	conf.AccessKey = loadString("ACCESS_KEY")
 	conf.RefreshKey = loadString("REFRESH_KEY")
@@ -66,11 +67,28 @@ func loadString(name string) string {
 	return rez
 }
 
-func isDevEnvironment() bool {
-	name := "APP_ENV"
+func LoadEnv() environment {
+	name := "ENV"
 	rez := os.Getenv(name)
 	if rez == "" {
-		fmt.Printf("Env variable %s is empty\n", name)
+		fmt.Printf("variable ENV is empty\n")
 	}
-	return rez == "development"
+
+	switch rez {
+	case Dev:
+		fmt.Printf("Running in %s environment \n", Dev)
+		return Dev
+
+	case Prod:
+		fmt.Printf("Running in %s environment \n", Prod)
+		return Prod
+
+	case Test:
+		fmt.Printf("Running in %s environment \n", Test)
+		return Test
+
+	default:
+		fmt.Printf("Bad ENV value (%s) must be: (%s,%s,%s) \n", rez, Prod, Dev, Test)
+		return Prod
+	}
 }

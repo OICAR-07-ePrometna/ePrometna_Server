@@ -127,10 +127,10 @@ func (suite *VehicleServiceTestSuite) SetupSuite() {
 	suite.sugar = zapLogger.Sugar()
 
 	config.AppConfig = &config.AppConfiguration{
-		IsDevelopment: true,
-		AccessKey:     "test-access-key",
-		RefreshKey:    "test-refresh-key",
-		DbConnection:  "",
+		Env:          config.Dev,
+		AccessKey:    "test-access-key",
+		RefreshKey:   "test-refresh-key",
+		DbConnection: "",
 	}
 
 	app.Test()

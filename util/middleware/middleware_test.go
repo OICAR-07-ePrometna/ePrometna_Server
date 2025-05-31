@@ -36,11 +36,11 @@ func (suite *MiddlewareTestSuite) SetupSuite() {
 	suite.sugar = zapLogger.Sugar()
 
 	config.AppConfig = &config.AppConfiguration{
-		AccessKey:     "test-middleware-access-key",
-		RefreshKey:    "test-middleware-refresh-key",
-		IsDevelopment: true,
-		Port:          8090, // Not directly used by middleware tests
-		DbConnection:  "",   // Not used by middleware tests
+		AccessKey:    "test-middleware-access-key",
+		RefreshKey:   "test-middleware-refresh-key",
+		Env:          config.Dev,
+		Port:         8090,
+		DbConnection: "",
 	}
 
 	// Setup Gin router for testing

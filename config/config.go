@@ -16,8 +16,17 @@ var AppConfig *AppConfiguration = nil
 type AppConfiguration struct {
 	// IsDevelopment describes the environment
 	IsDevelopment bool
+	Env           environment
 	Port          int
 	DbConnection  string
 	AccessKey     string
 	RefreshKey    string
 }
+
+type environment = string
+
+const (
+	Dev  = "dev"
+	Test = "test"
+	Prod = "prod"
+)

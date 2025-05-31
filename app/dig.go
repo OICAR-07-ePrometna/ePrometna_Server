@@ -31,7 +31,7 @@ func Setup() {
 }
 
 func setupLogger() {
-	if config.AppConfig.IsDevelopment {
+	if config.AppConfig.Env == config.Dev || config.AppConfig.Env == config.Test {
 		err := devLoggerSetup()
 		if err != nil {
 			zap.S().Panicf("failed to set up logger, err = %+v", err)

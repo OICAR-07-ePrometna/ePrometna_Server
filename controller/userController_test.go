@@ -133,9 +133,9 @@ func (suite *UserControllerTestSuite) SetupSuite() {
 	gin.SetMode(gin.TestMode)
 
 	config.AppConfig = &config.AppConfiguration{
-		IsDevelopment: true,
-		AccessKey:     "user-ctrl-test-access-key",
-		RefreshKey:    "user-ctrl-test-refresh-key",
+		Env:        config.Dev,
+		AccessKey:  "user-ctrl-test-access-key",
+		RefreshKey: "user-ctrl-test-refresh-key",
 	}
 
 	suite.mockUserCrudService = new(MockUserCrudService)

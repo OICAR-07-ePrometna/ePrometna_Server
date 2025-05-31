@@ -136,8 +136,8 @@ func (suite *DriverLicenseCrudServiceTestSuite) SetupSuite() {
 	suite.Require().NoError(err, "Failed to migrate database schema for LicenseService tests")
 
 	config.AppConfig = &config.AppConfiguration{
-		IsDevelopment: true,
-		AccessKey:     "license-service-test-access-key",
+		Env:       config.Dev,
+		AccessKey: "license-service-test-access-key",
 	}
 
 	suite.mockUserSvc = new(MockUserCrudServiceForLicense)

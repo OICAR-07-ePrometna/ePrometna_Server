@@ -78,10 +78,10 @@ func (suite *LoginControllerTestSuite) SetupSuite() {
 	gin.SetMode(gin.TestMode)
 
 	config.AppConfig = &config.AppConfiguration{
-		IsDevelopment: true,
-		AccessKey:     "login-ctrl-test-access-key",
-		RefreshKey:    "login-ctrl-test-refresh-key",
-		Port:          8080,
+		Env:        config.Dev,
+		AccessKey:  "login-ctrl-test-access-key",
+		RefreshKey: "login-ctrl-test-refresh-key",
+		Port:       8080,
 	}
 
 	suite.mockLoginService = new(MockLoginService)
