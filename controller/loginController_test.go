@@ -26,7 +26,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
+	"go.uber.org/zap/zaptest/observer"
 )
 
 // --- Mock LoginService (remains the same) ---
@@ -64,16 +64,16 @@ type LoginControllerTestSuite struct {
 	suite.Suite
 	router           *gin.Engine
 	mockLoginService *MockLoginService
-	sugar            *zap.SugaredLogger
+	logger           *zap.SugaredLogger
+	logObserver      *observer.ObservedLogs
 }
 
 // SetupSuite runs once before all tests in the suite
 func (suite *LoginControllerTestSuite) SetupSuite() {
-	loggerCfg := zap.NewDevelopmentConfig()
-	loggerCfg.Level = zap.NewAtomicLevelAt(zapcore.ErrorLevel)
-	zapLogger, _ := loggerCfg.Build()
-	suite.sugar = zapLogger.Sugar()
-	zap.ReplaceGlobals(zapLogger)
+	core, obs := observer.New(zap.InfoLevel)
+	suite.logger = zap.New(core).Sugar()
+	suite.logObserver = obs
+	zap.ReplaceGlobals(zap.New(core))
 
 	gin.SetMode(gin.TestMode)
 
@@ -87,7 +87,7 @@ func (suite *LoginControllerTestSuite) SetupSuite() {
 	suite.mockLoginService = new(MockLoginService)
 
 	app.Test() // Initialize DIG container
-	app.Provide(func() *zap.SugaredLogger { return suite.sugar })
+	app.Provide(func() *zap.SugaredLogger { return suite.logger })
 	app.Provide(func() service.ILoginService { return suite.mockLoginService })
 
 	suite.router = gin.Default()
@@ -99,8 +99,8 @@ func (suite *LoginControllerTestSuite) SetupSuite() {
 
 // TearDownSuite runs once after all tests in the suite
 func (suite *LoginControllerTestSuite) TearDownSuite() {
-	if suite.sugar != nil {
-		suite.sugar.Sync()
+	if suite.logger != nil {
+		suite.logger.Sync()
 	}
 }
 

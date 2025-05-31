@@ -23,7 +23,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
+	"go.uber.org/zap/zaptest/observer"
 	"gorm.io/gorm"
 )
 
@@ -119,17 +119,16 @@ type UserControllerTestSuite struct {
 	suite.Suite
 	router              *gin.Engine
 	mockUserCrudService *MockUserCrudService
-	sugar               *zap.SugaredLogger
+	logger              *zap.SugaredLogger
+	logObserver         *observer.ObservedLogs
 }
 
 // SetupSuite runs once before all tests in the suite
 func (suite *UserControllerTestSuite) SetupSuite() {
-	loggerCfg := zap.NewDevelopmentConfig()
-	loggerCfg.Level = zap.NewAtomicLevelAt(zapcore.ErrorLevel)
-	zapLogger, _ := loggerCfg.Build()
-	suite.sugar = zapLogger.Sugar()
-	zap.ReplaceGlobals(zapLogger)
-
+	core, obs := observer.New(zap.InfoLevel)
+	suite.logger = zap.New(core).Sugar()
+	suite.logObserver = obs
+	zap.ReplaceGlobals(zap.New(core))
 	gin.SetMode(gin.TestMode)
 
 	config.AppConfig = &config.AppConfiguration{
@@ -141,7 +140,7 @@ func (suite *UserControllerTestSuite) SetupSuite() {
 	suite.mockUserCrudService = new(MockUserCrudService)
 
 	app.Test()
-	app.Provide(func() *zap.SugaredLogger { return suite.sugar })
+	app.Provide(func() *zap.SugaredLogger { return suite.logger })
 	app.Provide(func() service.IUserCrudService { return suite.mockUserCrudService })
 
 	suite.router = gin.Default()
@@ -153,8 +152,8 @@ func (suite *UserControllerTestSuite) SetupSuite() {
 
 // TearDownSuite runs once after all tests
 func (suite *UserControllerTestSuite) TearDownSuite() {
-	if suite.sugar != nil {
-		_ = suite.sugar.Sync()
+	if suite.logger != nil {
+		_ = suite.logger.Sync()
 	}
 }
 
