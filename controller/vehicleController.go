@@ -37,7 +37,7 @@ func (c *VehicleController) RegisterEndpoints(api *gin.RouterGroup) {
 	group := api.Group("/vehicle")
 
 	// Publicly accessible or role-specific GETs
-	group.GET("/:uuid", middleware.Protect(model.RoleHAK, model.RoleFirma, model.RoleOsoba), c.get)
+	group.GET("/:uuid", middleware.Protect(model.RoleHAK, model.RoleFirma, model.RoleOsoba, model.RolePolicija), c.get)
 	group.GET("/", middleware.Protect(model.RoleFirma, model.RoleOsoba), c.myVehicles)
 	group.GET("/vin/:vin", middleware.Protect(model.RoleHAK, model.RoleFirma, model.RoleOsoba), c.getByVin)
 

@@ -62,7 +62,7 @@ func (c *TempDataController) createTempData(ctx *gin.Context) {
 	vehicleUuidStr := ctx.Param("uuid")
 	if vehicleUuidStr == "" {
 		c.logger.Error("Empty UUID provided")
-		ctx.AbortWithError(http.StatusBadRequest, errors.New("Vehicle UUID is required"))
+		ctx.AbortWithError(http.StatusBadRequest, errors.New("vehicle UUID is required"))
 		return
 	}
 

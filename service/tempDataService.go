@@ -35,12 +35,8 @@ func (s *TempDataService) GetAndDeleteByUUID(uuid uuid.UUID) (string, string, er
 		return "", "", err
 	}
 
-	err = s.db.Unscoped().Delete(&tempData).Error
-	if err != nil {
-		return "", "", err
-	}
-
 	if time.Now().After(tempData.Expiring) {
+		s.db.Unscoped().Delete(&tempData)
 		return "", "", cerror.ErrOutdated
 	}
 
@@ -54,6 +50,11 @@ func (s *TempDataService) GetAndDeleteByUUID(uuid uuid.UUID) (string, string, er
 	rez = s.db.First(&vehicle, "id = ?", tempData.VehicleId)
 	if rez.Error != nil {
 		return "", "", rez.Error
+	}
+
+	err = s.db.Unscoped().Delete(&tempData).Error
+	if err != nil {
+		return "", "", err
 	}
 
 	return user.Uuid.String(), vehicle.Uuid.String(), nil

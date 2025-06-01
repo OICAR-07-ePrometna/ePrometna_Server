@@ -41,6 +41,9 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 	// create a group with the name of the router
 	group := api.Group("/user")
 
+	// Protected get
+	group.GET("/:uuid", middleware.Protect(model.RolePolicija), u.get)
+
 	// Protected endpint
 	group.GET("/my-data", middleware.Protect(), u.getLoggedInUser)
 	group.GET("/my-device", middleware.Protect(), u.getLoggedInUserDevice)
