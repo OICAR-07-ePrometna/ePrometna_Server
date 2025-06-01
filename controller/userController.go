@@ -41,25 +41,25 @@ func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
 	// create a group with the name of the router
 	group := api.Group("/user")
 
+	// Protected get
+
 	// Protected endpint
 	group.GET("/my-data", middleware.Protect(), u.getLoggedInUser)
 	group.GET("/my-device", middleware.Protect(), u.getLoggedInUserDevice)
 	group.DELETE("/my-device", middleware.Protect(), u.deleteLoggedInUserDevice)
 
-	// Mup admin endpiont TODO: see pagination or search and or bothe
 	group.GET("/police-officers", middleware.Protect(model.RoleMupADMIN), u.getAllPoliceOfficers)
-
-	// HAK can search users by OIB for vehicle registration
 	group.GET("/oib/:oib", middleware.Protect(model.RoleHAK), u.getUserByOib)
 
 	// Police token endpoints
 	group.POST("/:uuid/generate-token", middleware.Protect(model.RoleSuperAdmin, model.RoleMupADMIN), u.generatePoliceToken)
 	group.PATCH("/:uuid/police-token", middleware.Protect(model.RoleSuperAdmin, model.RoleMupADMIN), u.setPoliceToken)
 
+	group.GET("/:uuid", middleware.Protect(model.RolePolicija, model.RoleSuperAdmin, model.RoleMupADMIN), u.get)
+
 	// register Endpoints
 	group.Use(middleware.Protect(model.RoleSuperAdmin, model.RoleMupADMIN))
 	group.POST("/", u.create)
-	group.GET("/:uuid", u.get)
 	group.PUT("/:uuid", u.update)
 	group.DELETE("/:uuid", u.delete)
 	group.GET("/all-users", u.getAllUsersForSuperAdmin)
