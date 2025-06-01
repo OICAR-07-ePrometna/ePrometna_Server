@@ -12,5 +12,5 @@ type TempData struct {
 	Uuid      uuid.UUID `gorm:"type:uuid;unique;not null"`
 	VehicleId uint      `gorm:"type:uint;unique;not null"`
 	DriverId  uint      `gorm:"type:uint;unique;not null"`
-	Expiring  time.Time `gorm:"type:date;not null"`
+	Expiring  time.Time `gorm:"type:timestamp;not null"`
 }

@@ -115,7 +115,7 @@ func (c *TempDataController) createTempData(ctx *gin.Context) {
 		Uuid:      uuid.New(),
 		VehicleId: vehicle.ID,
 		DriverId:  driver.ID,
-		Expiring:  time.Now().Add(1 * time.Minute),
+		Expiring:  time.Now().Add(5 * time.Minute),
 	}
 
 	if err := c.TempDataService.CreateTempData(newTempData); err != nil {
