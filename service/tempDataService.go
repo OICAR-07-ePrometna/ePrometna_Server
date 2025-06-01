@@ -25,11 +25,7 @@ func NewTempDataService(db *gorm.DB) ITempDataService {
 }
 
 func (s *TempDataService) CreateTempData(tempData *model.TempData) error {
-	err := s.db.Create(tempData).Error
-	if err != nil {
-		return err
-	}
-	return nil
+	return s.db.Create(tempData).Error
 }
 
 func (s *TempDataService) GetAndDeleteByUUID(uuid uuid.UUID) (string, string, error) {

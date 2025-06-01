@@ -6,6 +6,7 @@ import (
 	"ePrometna_Server/model"
 	"ePrometna_Server/service"
 	"ePrometna_Server/util/auth"
+	"ePrometna_Server/util/cerror"
 	"ePrometna_Server/util/middleware"
 	"errors"
 	"net/http"
@@ -61,7 +62,7 @@ func (c *TempDataController) createTempData(ctx *gin.Context) {
 	vehicleUuidStr := ctx.Param("uuid")
 	if vehicleUuidStr == "" {
 		c.logger.Error("Empty UUID provided")
-		ctx.AbortWithError(http.StatusBadRequest, errors.New("VIN number is required"))
+		ctx.AbortWithError(http.StatusBadRequest, errors.New("Vehicle UUID is required"))
 		return
 	}
 
@@ -162,6 +163,12 @@ func (c *TempDataController) getAndDeleteTempData(ctx *gin.Context) {
 			ctx.AbortWithStatusJSON(http.StatusNotFound, "Temp data not found")
 			return
 		}
+		if errors.Is(err, cerror.ErrOutdated) {
+			c.logger.Errorf("Temp data expired: %s", uuid)
+			ctx.AbortWithStatusJSON(http.StatusGone, "Temporary data has expired")
+			return
+		}
+
 		c.logger.Errorf("Failed to get/delete temp data: %+v", err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, "Failed to get/delete temp data")
 		return
