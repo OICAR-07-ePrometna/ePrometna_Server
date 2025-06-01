@@ -327,6 +327,77 @@ const docTemplate = `{
                 }
             }
         },
+        "/tempdata/{uuid}": {
+            "put": {
+                "description": "Retrieve temporary data by UUID and delete it",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tempdata"
+                ],
+                "summary": "Retrieves and deletes temporary data by UUID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UUID of the temporary data",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.TempDataDto"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new temporary data entry with vehicle and user information",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tempdata"
+                ],
+                "summary": "Creates a new temporary data entry",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UUID of vehicle",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/user": {
             "post": {
                 "produces": [
@@ -1401,6 +1472,17 @@ const docTemplate = `{
                 },
                 "traveledDistance": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.TempDataDto": {
+            "type": "object",
+            "properties": {
+                "driverUuid": {
+                    "type": "string"
+                },
+                "vehicleUuid": {
+                    "type": "string"
                 }
             }
         },

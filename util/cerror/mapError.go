@@ -16,4 +16,5 @@ var (
 	ErrInvalidTokenFormat = errors.New("invalid token format")
 	ErrUserIsNil          = errors.New("user is nil")
 	ErrBadRole            = errors.New("role is not allowed")
+	ErrOutdated           = errors.New("entry expired")
 )
