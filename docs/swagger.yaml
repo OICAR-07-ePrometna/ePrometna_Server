@@ -133,6 +133,13 @@ definitions:
       traveledDistance:
         type: integer
     type: object
+  dto.TempDataDto:
+    properties:
+      driverUuid:
+        type: string
+      vehicleUuid:
+        type: string
+    type: object
   dto.TokenDto:
     properties:
       accessToken:
@@ -494,6 +501,53 @@ paths:
       summary: Updates a license
       tags:
       - license
+  /tempdata/{uuid}:
+    post:
+      description: Create a new temporary data entry with vehicle and user information
+      parameters:
+      - description: UUID of vehicle
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Creates a new temporary data entry
+      tags:
+      - tempdata
+    put:
+      description: Retrieve temporary data by UUID and delete it
+      parameters:
+      - description: UUID of the temporary data
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.TempDataDto'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Retrieves and deletes temporary data by UUID
+      tags:
+      - tempdata
   /user:
     post:
       parameters:

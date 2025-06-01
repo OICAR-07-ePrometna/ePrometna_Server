@@ -23,6 +23,7 @@ func main() {
 	app.Provide(service.NewUserCrudService)
 	app.Provide(service.NewVehicleService)
 	app.Provide(service.NewDriverLicenseService)
+	app.Provide(service.NewTempDataService)
 
 	zap.S().Infof("Database: http://localhost:8080")
 	zap.S().Infof("swagger: http://localhost:8090/swagger/index.html")

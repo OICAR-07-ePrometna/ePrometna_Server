@@ -6,9 +6,9 @@ import (
 	"ePrometna_Server/model"
 	"ePrometna_Server/service"
 	"ePrometna_Server/util/auth"
+	"ePrometna_Server/util/middleware"
 	"errors"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -40,23 +40,38 @@ func NewTempDataController() *TempDataController {
 func (c *TempDataController) RegisterEndpoints(api *gin.RouterGroup) {
 	// create a group with the name of the router
 	group := api.Group("/tempdata")
-
 	// register Endpoints
-	group.POST("/", c.createTempData)
-	group.PUT("/:uuid", c.getAndDeleteTempData)
+	group.POST("/:uuid", middleware.Protect(model.RoleFirma, model.RoleOsoba), c.createTempData)
+	group.PUT("/:uuid", middleware.Protect(model.RolePolicija), c.getAndDeleteTempData)
 }
 
 // createTempData godoc
-// @Summary		Creates a new temporary data entry
-// @Schemes
-// @Description	Create a new temporary data entry with vehicle and user information
-// @Tags			tempdata
-// @Produce		json
-// @Success		201	{object}	string
-// @Failure		400
-// @Failure		500
-// @Router		/tempdata/ [post]
+//
+//	@Summary	Creates a new temporary data entry
+//	@Schemes
+//	@Description	Create a new temporary data entry with vehicle and user information
+//	@Tags			tempdata
+//	@Param			uuid	path	string	true	"UUID of vehicle"
+//	@Produce		json
+//	@Success		201	{object}	string
+//	@Failure		400
+//	@Failure		500
+//	@Router			/tempdata/{uuid} [post]
 func (c *TempDataController) createTempData(ctx *gin.Context) {
+	vehicleUuidStr := ctx.Param("uuid")
+	if vehicleUuidStr == "" {
+		c.logger.Error("Empty UUID provided")
+		ctx.AbortWithError(http.StatusBadRequest, errors.New("VIN number is required"))
+		return
+	}
+
+	vehicleUuid, err := uuid.Parse(vehicleUuidStr)
+	if err != nil {
+		c.logger.Errorf("Error parsing UUID = %s", vehicleUuidStr)
+		ctx.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
 	// Parse JWT and get driver UUID
 	_, claims, err := auth.ParseToken(ctx.Request.Header.Get("Authorization"))
 	if err != nil {
@@ -72,14 +87,17 @@ func (c *TempDataController) createTempData(ctx *gin.Context) {
 		return
 	}
 
-	// Get all vehicles for this driver
-	vehicles, err := c.VehicleService.ReadAll(driverUUID)
-	if err != nil || len(vehicles) == 0 {
-		c.logger.Errorf("Failed to read vehicles for user %s: %+v", driverUUID, err)
-		ctx.AbortWithStatusJSON(http.StatusNotFound, "No vehicles found for user")
+	vehicle, err := c.VehicleService.Read(vehicleUuid)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.logger.Errorf("vehicle not found: %s", vehicleUuid)
+			ctx.AbortWithStatusJSON(http.StatusNotFound, "vehicle not found")
+			return
+		}
+		c.logger.Errorf("Failed to read vehicle: %+v", err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, "Failed to read vehicle")
 		return
 	}
-	vehicle := vehicles[0]
 
 	driver, err := c.UserService.Read(driverUUID)
 	if err != nil {
@@ -110,17 +128,18 @@ func (c *TempDataController) createTempData(ctx *gin.Context) {
 }
 
 // getAndDeleteTempData godoc
-// @Summary		Retrieves and deletes temporary data by UUID
-// @Schemes
-// @Description	Retrieve temporary data by UUID and delete it
-// @Tags			tempdata
-// @Produce		json
-// @Param		uuid	path	string	true	"UUID of the temporary data"
-// @Success		200	{object}	dto.TempDataDto
-// @Failure		400
-// @Failure		404
-// @Failure		500
-// @Router		/tempdata/{uuid} [put]
+//
+//	@Summary	Retrieves and deletes temporary data by UUID
+//	@Schemes
+//	@Description	Retrieve temporary data by UUID and delete it
+//	@Tags			tempdata
+//	@Produce		json
+//	@Param			uuid	path		string	true	"UUID of the temporary data"
+//	@Success		200		{object}	dto.TempDataDto
+//	@Failure		400
+//	@Failure		404
+//	@Failure		500
+//	@Router			/tempdata/{uuid} [put]
 func (c *TempDataController) getAndDeleteTempData(ctx *gin.Context) {
 	uuidStr := ctx.Param("uuid")
 	if uuidStr == "" {
@@ -129,17 +148,17 @@ func (c *TempDataController) getAndDeleteTempData(ctx *gin.Context) {
 		return
 	}
 
-	_, err := uuid.Parse(uuidStr)
+	uuid, err := uuid.Parse(uuidStr)
 	if err != nil {
 		c.logger.Errorf("Invalid UUID: %s", uuidStr)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, "Invalid UUID")
 		return
 	}
 
-	tempData, err := c.TempDataService.GetAndDeleteByUUID(uuidStr)
+	driverUuid, vehicleUuid, err := c.TempDataService.GetAndDeleteByUUID(uuid)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.logger.Errorf("Temp data not found: %s", uuidStr)
+			c.logger.Errorf("Temp data not found: %s", uuid)
 			ctx.AbortWithStatusJSON(http.StatusNotFound, "Temp data not found")
 			return
 		}
@@ -148,9 +167,9 @@ func (c *TempDataController) getAndDeleteTempData(ctx *gin.Context) {
 		return
 	}
 
-	result := dto.TempData{
-		VehicleId: strconv.FormatUint(uint64(tempData.VehicleId), 10),
-		DriverId:  strconv.FormatUint(uint64(tempData.DriverId), 10),
+	result := dto.TempDataDto{
+		VehicleUuid: vehicleUuid,
+		DriverUuid:  driverUuid,
 	}
 
 	ctx.JSON(http.StatusOK, result)

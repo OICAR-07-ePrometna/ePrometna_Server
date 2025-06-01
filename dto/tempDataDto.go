@@ -1,6 +1,6 @@
 package dto
 
-type TempData struct {
-	VehicleId string `json:"vehicleUuid"`
-	DriverId  string `json:"driverUuid"`
+type TempDataDto struct {
+	VehicleUuid string `json:"vehicleUuid"`
+	DriverUuid  string `json:"driverUuid"`
 }
