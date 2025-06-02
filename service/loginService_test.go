@@ -218,7 +218,7 @@ func (suite *LoginServiceTestSuite) TestLoginMobile_Success_ExistingDevice_SameU
 		ModelName: "iPhoneTest",
 		DeviceID:  "existingDeviceID456",
 	}
-	deviceMgr := device.NewDeviceManager(suite.db, suite.logger) // Need DeviceManager instance
+	deviceMgr := device.NewDeviceManager()
 	formattedName := deviceMgr.FormatDeviceName(deviceInfo)
 
 	// Pre-register the device
@@ -264,7 +264,7 @@ func (suite *LoginServiceTestSuite) TestLoginMobile_Error_DeviceRegisteredToAnot
 		ModelName: "SharedModel",
 		DeviceID:  "sharedDeviceID789",
 	}
-	deviceMgr := device.NewDeviceManager(suite.db, suite.logger)
+	deviceMgr := device.NewDeviceManager()
 	formattedName := deviceMgr.FormatDeviceName(deviceInfo)
 
 	// Register device to user1
@@ -294,7 +294,7 @@ func (suite *LoginServiceTestSuite) TestLoginMobile_Error_UserAlreadyHasDifferen
 
 	// Register an initial device for the user
 	initialDeviceInfo := device.DeviceInfo{DeviceID: "initialUserDeviceABC"}
-	deviceMgr := device.NewDeviceManager(suite.db, suite.logger)
+	deviceMgr := device.NewDeviceManager()
 	formattedInitialName := deviceMgr.FormatDeviceName(initialDeviceInfo)
 	initialDeviceToken, _ := auth.GenerateDeviceToken(user)
 	initialMobile := model.Mobile{

@@ -63,9 +63,6 @@ func (suite *DeviceManagerTestSuite) SetupSuite() {
 	err = suite.db.AutoMigrate(model.GetAllModels()...)
 	suite.Require().NoError(err, "Failed to migrate database schema")
 
-	// Initialize DeviceManager with the real (in-memory) DB
-	suite.deviceMgr = device.NewDeviceManager(suite.db, suite.logger)
-
 	// Configure AppConfig for auth.GenerateDeviceToken
 	config.AppConfig = &config.AppConfiguration{
 		AccessKey:  "test-access-key-device-sqlite",
@@ -75,6 +72,8 @@ func (suite *DeviceManagerTestSuite) SetupSuite() {
 	app.Test()
 	app.Provide(func() *gorm.DB { return suite.db })
 	app.Provide(func() *zap.SugaredLogger { return suite.logger })
+	// Initialize DeviceManager with the real (in-memory) DB
+	suite.deviceMgr = device.NewDeviceManager()
 }
 
 // TearDownSuite runs once after all tests in the suite
