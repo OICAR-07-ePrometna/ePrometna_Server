@@ -169,6 +169,7 @@ func (dto VehicleDetailsDto) FromModel(m *model.Vehicle) VehicleDetailsDto {
 				TraveledDistance: reg.TraveledDistance,
 				Registration:     reg.Registration,
 				Note:             note,
+				TechnicalDate:    reg.TechnicalDate.Format("2006-01-02"),
 			})
 		}
 	} else {
