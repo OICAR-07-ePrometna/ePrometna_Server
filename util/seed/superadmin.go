@@ -65,6 +65,7 @@ func createSuperAdmin() error {
 	if err != nil {
 		return err
 	}
+	admin = user
 	zap.S().Infof("superadmin created, %+v\n", user)
 	return nil
 }

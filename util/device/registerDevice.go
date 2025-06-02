@@ -2,6 +2,7 @@ package device
 
 import (
 	"database/sql"
+	"ePrometna_Server/app"
 	"ePrometna_Server/model"
 	"ePrometna_Server/util/auth"
 	"errors"
@@ -27,11 +28,17 @@ type DeviceManager struct {
 }
 
 // NewDeviceManager creates a new device manager
-func NewDeviceManager(db *gorm.DB, logger *zap.SugaredLogger) *DeviceManager {
-	return &DeviceManager{
-		DB:     db,
-		Logger: logger,
-	}
+func NewDeviceManager() *DeviceManager {
+	var service *DeviceManager
+
+	app.Invoke(func(db *gorm.DB, logger *zap.SugaredLogger) {
+		// Initialize the device manager
+		service = &DeviceManager{
+			DB:     db,
+			Logger: logger,
+		}
+	})
+	return service
 }
 
 // FormatDeviceName creates a consistent device name format
