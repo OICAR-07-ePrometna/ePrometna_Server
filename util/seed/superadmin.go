@@ -19,7 +19,7 @@ const (
 // It reads the password from the SUPERADMIN_PASSWORD environment variable.
 // The function will panic if required environment variables are missing or
 // if user creation fails, as this is critical for application bootstrap.
-func CreateSuperAdmin() {
+func createSuperAdmin() error {
 	userCrud := service.NewUserCrudService()
 
 	// Check if SuperAdmin exists
@@ -29,25 +29,22 @@ func CreateSuperAdmin() {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				zap.S().Infof("SuperAdmin not found, err %+v", err)
 			} else {
-				zap.S().DPanicf("Error reading users, err %+v", err)
-				return
+				return err
 			}
 		} else {
 			zap.S().Infoln("SuperAdmin found")
 			zap.S().Infoln("Skipping superadmin creation")
-			return
+			return nil
 		}
 	}
 
 	zap.S().Infoln("Crating superadmin creation")
 	password := os.Getenv(_PASSWORD_ENV)
 	if password == "" {
-		zap.S().DPanicf("Env variable %s is empty\n", _PASSWORD_ENV)
-		return
+		return errors.New("env variable is empty")
 	}
 	if len(password) < 8 {
-		zap.S().DPanicln("SuperAdmin password must be at least 8 characters long")
-		return
+		return errors.New("password must be at least 8 characters long")
 	}
 
 	dto := dto.NewUserDto{
@@ -61,14 +58,14 @@ func CreateSuperAdmin() {
 	}
 	newUser, err := dto.ToModel()
 	if err != nil {
-		zap.S().DPanicf("Failed to map superadmin, err = %+v\n", err)
-		return
+		return err
 	}
 
 	user, err := userCrud.Create(newUser, dto.Password)
 	if err != nil {
-		zap.S().DPanicf("Failed to create superadmin, err = %+v\n", err)
-		return
+		return err
 	}
+	admin = user
 	zap.S().Infof("superadmin created, %+v\n", user)
+	return nil
 }

@@ -37,7 +37,7 @@ func NewLoginService() ILoginService {
 
 	app.Invoke(func(db *gorm.DB, logger *zap.SugaredLogger) {
 		// Initialize the device manager
-		deviceManager := device.NewDeviceManager(db, logger)
+		deviceManager := device.NewDeviceManager()
 
 		service = &LoginService{
 			db:            db,
