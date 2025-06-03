@@ -5,13 +5,14 @@
 
 # --- Configuration ---
 # !!! REPLACE WITH YOUR ACTUAL API BASE URL !!!
-API_BASE_URL="http://localhost:8090/api" # Example: might be http://localhost:8080
+API_BASE_URL="http://192.168.0.127:8090/api" # Example: might be http://localhost:8080
 
 # --- Existing User Credentials and UUID ---
 # !!! REPLACE WITH THE DETAILS OF AN EXISTING USER !!!
-EXISTING_USER_EMAIL="bash.user@example.com"
+# EXISTING_USER_EMAIL="bash.user@example.com"
+EXISTING_USER_EMAIL="lkovacic@test.hr"
 EXISTING_USER_PASSWORD='Pa$$w0rd'
-EXISTING_USER_UUID="9fea1366-82fe-4775-ba1e-772b77105bb0" # e.g., "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+EXISTING_USER_UUID="d0499fb2-9d15-47c0-9cfc-408295407349" # e.g., "a1b2c3d4-e5f6-7890-1234-567890abcdef"
 
 # --- New Vehicle Details ---
 # Generate a somewhat unique identifier for testing vehicle details
