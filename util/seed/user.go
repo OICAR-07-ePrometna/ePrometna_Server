@@ -18,6 +18,8 @@ const (
 
 var osoba *model.User
 var admin *model.User
+var hak *model.User
+var vehicle *model.Vehicle
 
 func Insert() {
 	if err := createSuperAdmin(); err != nil {
@@ -28,8 +30,14 @@ func Insert() {
 		if err := createUser(); err != nil {
 			zap.S().Panicf("Failed to create user, err = %+v\n", err)
 		}
+		if err := createHakUser(); err != nil {
+			zap.S().Panicf("Failed to create user(HAK), err = %+v\n", err)
+		}
 		if err := createDevice(); err != nil {
-
+			zap.S().Panicf("Failed to create device, err = %+v\n", err)
+		}
+		if err := createVehicle(); err != nil {
+			zap.S().Panicf("Failed to create vehicle, err = %+v\n", err)
 		}
 	}
 }
@@ -43,6 +51,7 @@ func createUser() error {
 		Email:     "osoba@test.hr",
 		OIB:       "72352576276",
 		Role:      model.RoleOsoba,
+		Residence: "Zagreb",
 		BirthDate: time.Now().AddDate(-20, 0, 0),
 		Uuid:      uuid.New(),
 	}
@@ -54,6 +63,30 @@ func createUser() error {
 
 	zap.S().Infof("User created, %+v\n", user)
 	osoba = user
+	return nil
+}
+
+func createHakUser() error {
+	userCrud := service.NewUserCrudService()
+
+	newUser := model.User{
+		FirstName: "hak",
+		LastName:  "hakovac",
+		Email:     "hak@test.hr",
+		OIB:       "30998630164",
+		Role:      model.RoleHAK,
+		Residence: "Zagreb",
+		BirthDate: time.Now().AddDate(-20, 0, 0),
+		Uuid:      uuid.New(),
+	}
+
+	user, err := userCrud.Create(&newUser, _TEST_PASSWORD)
+	if err != nil {
+		return err
+	}
+
+	zap.S().Infof("User (HAK) created, %+v\n", user)
+	hak = user
 	return nil
 }
 
