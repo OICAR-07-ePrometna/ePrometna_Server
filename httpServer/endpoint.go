@@ -13,6 +13,7 @@ import (
 func setupHandlers(router *gin.Engine) {
 	// TODO: Replace gin default logger with zap
 	// router.Use(gin.Recovery())
+	router.GET("/", func(ctx *gin.Context) {})
 
 	router.Use(middleware.CorsHeader())
 	api := router.Group("/api")
