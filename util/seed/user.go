@@ -17,6 +17,7 @@ const (
 )
 
 var osoba *model.User
+var osoba2 *model.User
 var admin *model.User
 var hak *model.User
 var vehicle *model.Vehicle
@@ -27,8 +28,8 @@ func Insert() {
 	}
 
 	if config.AppConfig.Env == config.Test {
-		if err := createUser(); err != nil {
-			zap.S().Panicf("Failed to create user, err = %+v\n", err)
+		if err := createTestUsers(); err != nil {
+			zap.S().Panicf("Failed to create test users, err = %+v\n", err)
 		}
 		if err := createHakUser(); err != nil {
 			zap.S().Panicf("Failed to create user(HAK), err = %+v\n", err)
@@ -42,10 +43,11 @@ func Insert() {
 	}
 }
 
-func createUser() error {
+func createTestUsers() error {
 	userCrud := service.NewUserCrudService()
 
-	newUser := model.User{
+	// First user
+	user1 := model.User{
 		FirstName: "Test",
 		LastName:  "Osoba",
 		Email:     "osoba@test.hr",
@@ -56,13 +58,32 @@ func createUser() error {
 		Uuid:      uuid.New(),
 	}
 
-	user, err := userCrud.Create(&newUser, _TEST_PASSWORD)
+	createdUser1, err := userCrud.Create(&user1, _TEST_PASSWORD)
 	if err != nil {
 		return err
 	}
+	zap.S().Infof("First test user created, %+v\n", createdUser1)
+	osoba = createdUser1
 
-	zap.S().Infof("User created, %+v\n", user)
-	osoba = user
+	// Second user
+	user2 := model.User{
+		FirstName: "Test2",
+		LastName:  "Osoba",
+		Email:     "osoba2@test.hr",
+		OIB:       "89190011773",
+		Role:      model.RoleOsoba,
+		Residence: "Zagreb",
+		BirthDate: time.Now().AddDate(-20, 0, 0),
+		Uuid:      uuid.New(),
+	}
+
+	createdUser2, err := userCrud.Create(&user2, _TEST_PASSWORD)
+	if err != nil {
+		return err
+	}
+	zap.S().Infof("Second test user created, %+v\n", createdUser2)
+	osoba2 = createdUser2
+
 	return nil
 }
 
