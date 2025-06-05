@@ -66,10 +66,10 @@ func createUser() error {
 	osoba = user
 
 	newUser2 := model.User{
-		FirstName: "Test",
-		LastName:  "Osoba",
-		Email:     "osoba@test.hr",
-		OIB:       "72352576276",
+		FirstName: "Test2",
+		LastName:  "Osoba2",
+		Email:     "osoba2@test.hr",
+		OIB:       "89190011773",
 		Role:      model.RoleOsoba,
 		Residence: "Zagreb",
 		BirthDate: time.Now().AddDate(-20, 0, 0),
