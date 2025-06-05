@@ -17,6 +17,7 @@ const (
 )
 
 var osoba *model.User
+var osoba2 *model.User
 var admin *model.User
 var hak *model.User
 var vehicle *model.Vehicle
@@ -63,6 +64,26 @@ func createUser() error {
 
 	zap.S().Infof("User created, %+v\n", user)
 	osoba = user
+
+	newUser2 := model.User{
+		FirstName: "Test",
+		LastName:  "Osoba",
+		Email:     "osoba@test.hr",
+		OIB:       "72352576276",
+		Role:      model.RoleOsoba,
+		Residence: "Zagreb",
+		BirthDate: time.Now().AddDate(-20, 0, 0),
+		Uuid:      uuid.New(),
+	}
+
+	user2, err := userCrud.Create(&newUser2, _TEST_PASSWORD)
+	if err != nil {
+		return err
+	}
+
+	zap.S().Infof("User2 created, %+v\n", user)
+	osoba2 = user2
+
 	return nil
 }
 
