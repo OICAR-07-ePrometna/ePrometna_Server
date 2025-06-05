@@ -81,7 +81,7 @@ func createUser() error {
 		return err
 	}
 
-	zap.S().Infof("User2 created, %+v\n", user)
+	zap.S().Infof("User2 created, %+v\n", user2)
 	osoba2 = user2
 
 	return nil
