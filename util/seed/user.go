@@ -147,8 +147,8 @@ func createMupOfficerUser() error {
 	userCrud := service.NewUserCrudService()
 
 	newUser := model.User{
-		FirstName: "mup",
-		LastName:  "mupovac",
+		FirstName: "officer",
+		LastName:  "mup Officer",
 		Email:     "mupOfficer@test.hr",
 		OIB:       "22978358568",
 		Role:      model.RolePolicija,
