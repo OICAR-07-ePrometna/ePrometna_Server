@@ -25,6 +25,21 @@ func NewTempDataService(db *gorm.DB) ITempDataService {
 }
 
 func (s *TempDataService) CreateTempData(tempData *model.TempData) error {
+	// First check if there's existing temp data for this user
+	var existingTempData model.TempData
+	err := s.db.Where("driver_id = ?", tempData.DriverId).First(&existingTempData).Error
+
+	// If we found existing data, delete it
+	if err == nil {
+		if err := s.db.Unscoped().Delete(&existingTempData).Error; err != nil {
+			return err
+		}
+	} else if err != gorm.ErrRecordNotFound {
+		// If error is not "record not found", return it
+		return err
+	}
+
+	// Proceed with creating new temp data
 	return s.db.Create(tempData).Error
 }
 
