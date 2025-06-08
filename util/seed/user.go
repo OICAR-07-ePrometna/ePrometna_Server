@@ -18,11 +18,13 @@ const (
 
 var osoba *model.User
 var osoba2 *model.User
+var osoba3 *model.User
 var admin *model.User
 var hak *model.User
 var mup *model.User
 var officer *model.User
 var vehicle *model.Vehicle
+var vehicle2 *model.Vehicle
 
 func Insert() {
 	if err := createSuperAdmin(); err != nil {
@@ -91,6 +93,25 @@ func createUser() error {
 
 	zap.S().Infof("User2 created, %+v\n", user2)
 	osoba2 = user2
+
+	newUser3 := model.User{
+		FirstName: "Test3",
+		LastName:  "Osoba3",
+		Email:     "osoba3@test.hr",
+		OIB:       "02535077085",
+		Role:      model.RoleOsoba,
+		Residence: "Zagreb",
+		BirthDate: time.Now().AddDate(-20, 0, 0),
+		Uuid:      uuid.New(),
+	}
+
+	user3, err := userCrud.Create(&newUser3, _TEST_PASSWORD)
+	if err != nil {
+		return err
+	}
+
+	zap.S().Infof("User2 created, %+v\n", user3)
+	osoba3 = user3
 
 	return nil
 }
