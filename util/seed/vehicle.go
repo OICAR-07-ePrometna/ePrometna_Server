@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func createVehicle() error {
+func createVehicles() error {
 	vservice := service.NewVehicleService()
 
 	vehicleInfo := model.Vehicle{
