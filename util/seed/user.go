@@ -145,16 +145,17 @@ func createMupAdminUser() error {
 
 func createMupOfficerUser() error {
 	userCrud := service.NewUserCrudService()
-
+	token := "ABCDEFGH"
 	newUser := model.User{
-		FirstName: "officer",
-		LastName:  "mup Officer",
-		Email:     "mupOfficer@test.hr",
-		OIB:       "22978358568",
-		Role:      model.RolePolicija,
-		Residence: "Zagreb",
-		BirthDate: time.Now().AddDate(-20, 0, 0),
-		Uuid:      uuid.New(),
+		FirstName:   "officer",
+		LastName:    "mup Officer",
+		Email:       "mupOfficer@test.hr",
+		OIB:         "22978358568",
+		Role:        model.RolePolicija,
+		Residence:   "Zagreb",
+		BirthDate:   time.Now().AddDate(-20, 0, 0),
+		Uuid:        uuid.New(),
+		PoliceToken: &token,
 	}
 
 	user, err := userCrud.Create(&newUser, _TEST_PASSWORD)
