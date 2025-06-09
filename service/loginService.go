@@ -124,6 +124,19 @@ func (s *LoginService) RegisterPolice(code string, deviceInfo device.DeviceInfo)
 		return nil, err
 	}
 
+	// Hash the police token after successful authentication
+	hashedToken, err := auth.HashPassword(code)
+	if err != nil {
+		s.logger.Errorf("Failed to hash police token, error = %+v", err)
+		return nil, err
+	}
+
+	// Update the police token with the hashed version
+	if err := s.db.Model(&user).Update("police_token", hashedToken).Error; err != nil {
+		s.logger.Errorf("Failed to update police token, error = %+v", err)
+		return nil, err
+	}
+
 	accessToken, refreshToken, err := auth.GenerateTokens(&user)
 	if err != nil {
 		s.logger.Errorf("Failed to generate token error = %+v", err)
