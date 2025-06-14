@@ -287,7 +287,7 @@ func (u *UserCrudService) DeleteUserDevice(userUUID uuid.UUID) error {
 		return gorm.ErrRecordNotFound
 	}
 
-	if err := u.db.Where("user_id = ?", user.ID).Delete(&model.Mobile{}).Error; err != nil {
+	if err := u.db.Unscoped().Where("user_id = ?", user.ID).Delete(&model.Mobile{}).Error; err != nil {
 		return err
 	}
 
